@@ -1,4 +1,4 @@
-gspec
+GSpec
 =====
 
 GSpec is a Go testing framework that makes it easy to organize and verify the
