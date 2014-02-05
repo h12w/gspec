@@ -5,9 +5,8 @@
 package gspec
 
 import (
+	. "github.com/onsi/gomega"
 	"runtime"
-	"sort"
-	"sync"
 	"testing"
 	"time"
 )
@@ -18,10 +17,9 @@ func init() {
 
 /*
 TODO:
-* describe DSL
+* formatter
 * handle panic
 * assert
-* formatter
 * go test options (e.g. parallel)
 */
 
@@ -30,7 +28,7 @@ Story: Dveloper write tests
 
 As a developer
 I want to write tests
-So that I can get my code verified by running those tests
+So that I can get my test code run (sequentially or concurrently)
 */
 
 /*
@@ -41,7 +39,8 @@ Scenario: run a test defined in a closure
 */
 func TestRunClosureTest(t *testing.T) {
 	ch := NewSChan()
-	Run(func(do Desc) {
+	RunSeq(func(g *G) {
+		do := g.Group
 		do(func() {
 			ch.Send("a")
 		})
@@ -59,7 +58,8 @@ Scenario: setup a common test context for two tests (before each)
 */
 func TestBeforeEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(do Desc) {
+	Run(func(g *G) {
+		do := g.Group
 		do(func() {
 			s := "s"
 			do(func() {
@@ -77,7 +77,7 @@ func TestBeforeEach(t *testing.T) {
 		})
 	})
 	if exp := []string{"sa", "sb", "sc"}; !ch.EqualSorted(exp) {
-		t.Fatalf("Wrong execution sequence for nested context, expected: %v, got: %v", exp, ch.Slice())
+		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
 	}
 }
 
@@ -89,7 +89,8 @@ Scenario: teardown a common test context for two tests (after each)
 */
 func TestAfterEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(do Desc) {
+	Run(func(g *G) {
+		do := g.Group
 		do(func() {
 			s := ""
 			defer func() {
@@ -105,13 +106,13 @@ func TestAfterEach(t *testing.T) {
 		})
 	})
 	if exp := []string{"at", "bt"}; !ch.EqualSorted(exp) {
-		t.Fatalf("Wrong execution sequence for nested context, expected: %v, got: %v", exp, ch.Slice())
+		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
 	}
 }
 
 /*
-Scenario: nested testing context
-	Given a nested testing context defined by closures like pseudo code below:
+Scenario: nested testing group
+	Given a nested testing group defined by closures like pseudo code below:
 
 		a {
 		    b {}
@@ -128,7 +129,8 @@ Scenario: nested testing context
 */
 func TestNestedTestingContext(t *testing.T) {
 	ch := NewSChan()
-	Run(func(do Desc) {
+	Run(func(g *G) {
+		do := g.Group
 		do(func() {
 			s := ""
 			defer func() {
@@ -159,7 +161,7 @@ func TestNestedTestingContext(t *testing.T) {
 		})
 	})
 	if exp := []string{"abA", "acdCA", "aefA"}; !ch.EqualSorted(exp) {
-		t.Fatalf("Wrong execution sequence for nested context, expected: %v, got: %v", exp, ch.Slice())
+		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
 	}
 }
 
@@ -173,7 +175,8 @@ Scenario: concurrent running tests
 func TestConcurrentRunning(t *testing.T) {
 	delay := 10 * time.Millisecond
 	tm := time.Now()
-	Run(func(do Desc) {
+	Run(func(g *G) {
+		do := g.Group
 		do(func() {
 			time.Sleep(delay)
 			do(func() {
@@ -194,6 +197,115 @@ func TestConcurrentRunning(t *testing.T) {
 	}
 }
 
+/*
+Story: Dveloper describe tests
+
+As a developer
+I want to describe my tests
+So that a structured, readable specification can be generated
+*/
+
+/*
+Scenario: Use customized alias names for group function.
+	Given the G object provided by GSpec
+	When I want to define a better name (or a set of different names) for it
+	Then I can make aliases out of it and GSpec will pass them within description
+
+Scenario: Attach a string as the description to the testing group
+	Given a group function
+	When attach a string as the description
+	Then GSpec will pass them to Collector
+*/
+func TestDescriptions(t *testing.T) {
+	RegisterTestingT(t)
+	ds := []string{}
+	NewCollector = func() Collector {
+		return CollectFunc(func(g *TestGroup, path []FuncId) {
+			ds = append(ds, g.Description)
+		})
+	}
+	Run(func(g *G) {
+		describe, context, it := g.Alias3("describe", "context", "it")
+		describe, it = g.Alias2("describe", "it")
+		describe("a", func() {
+			context("b", func() {
+				it("c", func() {
+				})
+			})
+		})
+	})
+	Expect(ds).To(Equal([]string{"describe a", "context b", "it c"}), "description not stored correctly")
+}
+
+/*
+Story: Internal Tests
+	Test internal types/functions
+*/
+
+func TestTreeCollector(t *testing.T) {
+	RegisterTestingT(t)
+	co := NewTreeCollector()
+
+	a := &TestGroup{
+		Id:          1,
+		Description: "a",
+	}
+	b := &TestGroup{
+		Id:          2,
+		Description: "b",
+	}
+	c := &TestGroup{
+		Id:          3,
+		Description: "c",
+	}
+	d := &TestGroup{
+		Id:          4,
+		Description: "d",
+	}
+	z := &TestGroup{
+		Id:          5,
+		Description: "z",
+	}
+	co.Start(a, []FuncId{})
+	co.Start(b, []FuncId{1})
+	co.Start(c, []FuncId{1, 2})
+	err := &TestError{}
+	co.End(3, err)
+	co.Start(a, []FuncId{})
+	co.Start(b, []FuncId{1})
+	co.Start(d, []FuncId{1, 2})
+	co.Start(z, []FuncId{})
+
+	exp := []*TestGroup{
+		&TestGroup{
+			Id:          1,
+			Description: "a",
+			Children: []*TestGroup{
+				&TestGroup{
+					Id:          2,
+					Description: "b",
+					Children: []*TestGroup{
+						&TestGroup{
+							Id:          3,
+							Description: "c",
+							Error:       err,
+						},
+						&TestGroup{
+							Id:          4,
+							Description: "d",
+						},
+					},
+				},
+			},
+		},
+		&TestGroup{
+			Id:          5,
+			Description: "z",
+		},
+	}
+	Expect(co.Groups).To(Equal(exp), "TreeCollector fail to reconstruct correct tree")
+}
+
 func TestFuncUniqueId(t *testing.T) {
 	f1 := func() {}
 	f2 := func() {}
@@ -206,107 +318,21 @@ func TestFuncUniqueId(t *testing.T) {
 }
 
 func TestPath(t *testing.T) {
+	RegisterTestingT(t)
 	p := path{}
 	p.push(1)
 	p.push(2)
-	if exp := []funcId{1, 2}; !idSliceEqual(p.a, exp) {
-		t.Fatalf("path.push failed, expected: %v, got %v", exp, p.a)
-	}
+	Expect(p.a).To(Equal([]FuncId{1, 2}), "path.push failed")
 	i := p.pop()
-	if exp := []funcId{1}; !idSliceEqual(p.a, exp) {
-		t.Fatalf("path.pop failed, expected: %v, got %v", exp, p.a)
-	}
-	if i != 2 {
-		t.Fatalf("path.pop failed, expected: %v, got %v", 2, i)
-	}
+	Expect(p.a).To(Equal([]FuncId{1}), "path.pop failed")
+	Expect(i).To(Equal(FuncId(2)), "path.pop failed")
 	i = p.pop()
-	if exp := []funcId{}; !idSliceEqual(p.a, exp) {
-		t.Fatalf("path.pop failed, expected: %v, got %v", exp, p.a)
-	}
-
-	if !panicked(func() { p.pop() }) {
-		t.Fatal("path.pop should panic when empty")
-	}
+	Expect(p.a).To(Equal([]FuncId{}), "path.pop failed")
+	Expect(func() { p.pop() }).To(Panic(), "path.pop should panic when empty")
 }
 
 func TestP(t *testing.T) {
 	if err := p(""); err != nil {
 		t.Fatalf("fmt.Println return err %v", err)
 	}
-}
-
-func panicked(f func()) (r bool) {
-	defer func() {
-		if err := recover(); err != nil {
-			r = true
-		}
-	}()
-	f()
-	return false
-}
-
-type SChan struct {
-	ch chan string
-	ss []string
-	wg sync.WaitGroup
-}
-
-func NewSChan() *SChan {
-	return &SChan{ch: make(chan string)}
-}
-
-func (c *SChan) Send(s string) {
-	c.wg.Add(1)
-	go func() {
-		c.ch <- s
-		c.wg.Done()
-	}()
-}
-
-func (c *SChan) Slice() []string {
-	return c.ss
-}
-
-func (c *SChan) receiveAll() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		for s := range c.ch {
-			c.ss = append(c.ss, s)
-		}
-		wg.Done()
-	}()
-	c.wg.Wait()
-	close(c.ch)
-	wg.Wait()
-}
-
-func (c *SChan) EqualSorted(ss []string) bool {
-	c.receiveAll()
-	sort.Strings(c.ss)
-	return c.equal(ss)
-}
-
-func (c *SChan) equal(ss []string) bool {
-	if len(ss) != len(c.ss) {
-		return false
-	}
-	for i := range ss {
-		if ss[i] != c.ss[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func idSliceEqual(a, b []funcId) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }

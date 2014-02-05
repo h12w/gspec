@@ -14,10 +14,10 @@ func p(v ...interface{}) error {
 	return err
 }
 
-type funcId uintptr
+type FuncId uintptr
 
-func getFuncId(f interface{}) funcId {
-	return funcId(reflect.ValueOf(f).Pointer())
+func getFuncId(f interface{}) FuncId {
+	return FuncId(reflect.ValueOf(f).Pointer())
 }
 
 func imin(a, b int) int {

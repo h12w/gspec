@@ -13,7 +13,7 @@ Design goals:
   run faster and faster on future hardware.
 * It should be minimal yet extensible. Core features are provided by composition
   of orthogonal parts and advanced features are provided by external extensions.
-* It should be reliable itself by careful design and 100% test coverage.
+* It should be reliable itself by robust design and 100% test coverage.
 * It should respect the design of builtin "go test" tool so that there will not
   be any integration issues.
 
@@ -42,25 +42,26 @@ Here is my thought:
   tests?
 * It has some challenges and it is fun.
 
-The following sections are organized in the sequence of design decisions, from
-major to minor ones.
+Features
+--------
 
-Extend "go test"
-----------------
+The following sections are organized in the sequence of design decisions, from
+major features to minor ones.
+
+###Extend "go test"
 GSpec should extend rather than replace "go test". It means:
 * "go test" command is the only way to run tests.
 * "go test" command arguments are respected as much as possible.
 * Tests are written in or called from test functions.
 
-Basics
-------
-A test needs running some code and verifying the result. Further, the code run
-by a test can be usually seperated into 4 steps:
+###Test Case
+A test case needs running some code and verifying the result. Further, the code
+run by a test case can be usually seperated into 4 steps:
 
-* setup a testing context
+* setup a test context
 * perform an action
 * verify the result
-* teardown the testing context (optional)
+* teardown the test context (optional)
 
 Some setup/teardown code might be shared between tests, so there are 4 cases:
 
@@ -69,8 +70,8 @@ Some setup/teardown code might be shared between tests, so there are 4 cases:
 * setup run once before all tests
 * teardown run once after all tests
 
-Besides tests themselves, there must be some mechanism to gather all the tests
-together and run them (test runner).
+Besides tests themselves, there must be some mechanism to gather all the test
+cases together and run them (test runner).
 
 "go test" meed the requirement above by providing a way to define a test (test
 functions with specific signature) and a mechanism to gather tests (specific
@@ -81,63 +82,64 @@ help the developer with setup/teardown, devlopers have to figure out themselves.
 Traditional xUnit style testing frameworks implement each step above as virtual
 methods in a base class or interface. They do provide a complete solution,
 including concurrency. However, They have to introduce unavoidable boilerplate
-code of defining derived test classes, and nested testing context is not
-straight forward to implement with derived classes.
+code of defining derived test classes, and nested test group is not straight
+forward to implement with derived classes.
 
 BDD style frameworks like RSpec use closures to provide an ad hoc and natual
-way to specify a test. Pros of this method include:
+way to specify test cases. Pros of this method include:
 
 * A natual short test description rather than a function name
-* Setup/teardown code can be nested to form multiple levels of testing contexts
+* Setup/teardown code can be nested to form multiple levels of test group
 
 GSpec will try to follow this way, though it is not obvious on how to implement
 concurrency at this stage.
 
-Nested Testing Context
-----------------------
-Most of the tests do not share a testing context, but when they do, the context
-should be setup (teardown) before (after) each test to isolate tests from each
-other.
+###Nested Test Group
+Most of the test cases do not share a test context, but when they do, the
+context should be setup (teardown) before (after) each test to isolate tests
+from each other.
 
-Thus, nested testing context is a tree structure. Each leaf represents a test
-case and the path from the root node to the leaf represents the setup sequence
-of the testing context for the test case. e.g.
+Thus, nested test group is a tree structure. Each leaf represents a test case
+and the path from the root node to the leaf represents the setup sequence of the
+test context for the test case. Reversely, the path from the leaf to the root
+represents the teardown sequence of the test context for the test case. e.g.
 
     a
         b
             c1
             c2
 
-The execution sequence will be: abc1 abc2.
+The setup sequence will be: abc1 abc2, and the teardown sequence will be: c1ba
+c2ba. (The relative order between c1 and c2 is not important)
 
-One way of doing setup is hook function as what RSpec does (before each:, after
-:each). An alternative way is to define the setup code directly in the closure
-and schedule it to run before each test case. As long as the scheduling logic
-does not introduce too much overhead and concurrency can be supported, the
-latter should be preferred because of its simplicity. Also, the teardown could
-be supported simply by a defer statement. e.g.
+One way of doing setup/teardown is hook function as what RSpec does (before,
+after method with argument :each). An alternative way is to define the setup
+code directly in the closure and schedule it to run before each test case. As
+long as the scheduling logic does not introduce too much overhead and
+concurrency can be supported, the latter should be preferred because of its
+simplicity. Also, the teardown could be supported simply by a defer statement.
+e.g.
 
-    do(func() {
+    group(func() {
         // setup
         defer func() {
             // teardown
         }()
-        do(func() {
+        group(func() {
             // test case 1
         })
-        do(func() {
+        group(func() {
             // test case 2
         })
     })
 
-It is rare to setup (teardown) a testing context before (after) all tests
-without worrying about its state changing. In such rare cases, they can be
-handled separatedly at the start (end) of the "go test" testing functions.
+It is rare to setup (teardown) a test context before (after) all tests without
+worrying about its state changing. In such rare cases, they can be handled
+separatedly at the start (end) of the "go test" testing functions.
 
-Concurrency
------------
+###Concurrency
 Concurrency is a core feature of Go. "go test" supports concurency at the level
-of test functions. With a testing framework with nested testing context by
+of test functions. With a testing framework with nested test group by
 closures, it is expected to have dozens (or even hundreds) of test cases written
 in one test function. On a quad-core CPU, you probably could just split test
 cases into four test functions, but CPU could easily get many cores (hundreds or
@@ -146,7 +148,7 @@ goroutine per test case to make the most of the hardware.
 
 When the test cases are organized in a tree of closures, there is no way to know
 the whole structure without actually running it. So it is not possible to run
-all test cases simultaneously, and the process has to be exploratory, start
+all test cases simultaneously, and the process has to be exploratory, starting
 goroutines on the fly.
 
 To support concurency, test cases should be completed isolated from each other.
@@ -162,12 +164,12 @@ The path has to be stored somewhare but the path should not be shared between
 test cases. Thus, scheduling related variables have to be passed into the
 goroutine function as an argument. e.g.
 
-    Run(func(s S) {
-        s.do(func() {
-            s.do(func() {
+    Run(func(g *G) {
+        g.Group(func() {
+            g.Group(func() {
                 // test case 1
             })
-            s.do(func() {
+            g.Group(func() {
                 // test case 2
             })
         })
@@ -175,26 +177,57 @@ goroutine function as an argument. e.g.
 
 where variable s of type S contains all the variables needed to control which
 test case to run, and function Run is the scheduler that makes sure each test
-case run once concurrently.
+case run once concurrently (or sequentially).
 
-Panicking
----------
+###Test Specification
+GSpec should be able to generate a structured, readable plain text specification
+from the tests written. There should be a way to define and collect information
+for each level of test group.
 
-Timeout
--------
+####Alias
+GSpec should be able to provide a convenient way to use customized alias names
+for the nested group function. e.g. describe, context, it, specify and example.
 
-Test Description
-----------------
-"go test": Function test name
-string short test description
+GSpec should be able to tell what alias name is used for a certain test group.
 
-Matchers
---------
+####Description
+GSpec should be able to assotiate a description to each level of test group.
 
-Auto Test
----------
+Besides, it also should be able to allow types inserted between test description
+so that during refactoring, these types can be found and modified too and won't
+get out of sync. Go does not support first class type, so it could be
+implemented by variables with zero value. (OPTIONAL)
 
-###Nested Testing Context
+####Collector
+A collector collects the outputs out the tests, including the structure of
+nested test groups, test descriptions and the results of test running.
+
+The implementation of a collector must assume being called concurrently out of
+order. To reconstruct a tree structure, a parent node must be collected before
+a child node, so a collector has to collect before the start of each test group.
+To collect the result, a collector also needs to collect after the end of each
+test group.
+
+####Formatter
+A formatter generate a complete report of all tests.
+
+###Failure
+GSpec should isolate each test case so that a fail on one test case does not
+affect another, when any of the test case fails, t.Fail should be called.
+
+GSpec should call t.FailNow when an internal error occurs, e.g. Formatter error.
+
+###Timeout
+
+###Matchers
+
+###Focus Mode
+
+###Benchmark
+
+###Mock
+
+###Auto Test
 
 Existing Go Testing Frameworks
 ------------------------------
@@ -210,10 +243,14 @@ Existing Go Testing Frameworks
 * github.com/stesla/gospecify
 * github.com/azer/mao
 * github.com/pranavraja/zen (forked from mao)
+
 ###Matcher
 * github.com/onsi/gomega
+* launchpad.net/gocheck
+* github.com/stretchr/testify
+
 ###Mock
-* code.google.com/p/gomock/
+* code.google.com/p/gomock
 
 Reference
 ---------
