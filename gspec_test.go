@@ -258,7 +258,7 @@ func TestTreeCollector(t *testing.T) {
 		Id:          3,
 		Description: "c",
 	}
-	cp := []FuncId{1, 2}
+	cp := []FuncId{1, 2, 3}
 	d := &TestGroup{
 		Id:          4,
 		Description: "d",
@@ -267,14 +267,14 @@ func TestTreeCollector(t *testing.T) {
 		Id:          5,
 		Description: "z",
 	}
-	co.AddGroup(a, []FuncId{})
-	co.AddGroup(b, []FuncId{1})
-	co.AddGroup(c, cp)
+	co.GroupStart(a, []FuncId{1})
+	co.GroupStart(b, []FuncId{1, 2})
+	co.GroupStart(c, cp)
 	c.Error = &TestError{}
-	co.AddGroup(a, []FuncId{})
-	co.AddGroup(b, []FuncId{1})
-	co.AddGroup(d, []FuncId{1, 2})
-	co.AddGroup(z, []FuncId{})
+	co.GroupStart(a, []FuncId{1})
+	co.GroupStart(b, []FuncId{1, 2})
+	co.GroupStart(d, []FuncId{1, 2, 4})
+	co.GroupStart(z, []FuncId{5})
 
 	exp := []*TestGroup{
 		&TestGroup{

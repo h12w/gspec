@@ -1,7 +1,7 @@
 package gspec
 
 // The interface for G to call back
-type runner interface {
+type scheduler interface {
 	run(p path)
 	GroupListener
 }
@@ -12,29 +12,28 @@ type G struct {
 	cur       path
 	skipRest  bool
 	skipCount int
-	runner
+	scheduler
 }
 
-func newG(p path, r runner) *G {
-	return &G{dst: p, runner: r}
+func newG(p path, s scheduler) *G {
+	return &G{dst: p, scheduler: s}
 }
 
-func (t *G) Group(f func()) bool {
-	t.cur.push(getFuncId(f))
+func (t *G) group(id FuncId, f func()) {
+	t.cur.push(id)
 	defer t.cur.pop()
 	if !t.cur.onPath(t.dst) {
-		return false
+		return
 	} else if t.skipRest {
 		t.run(t.cur.clone())
 		t.skipCount++
-		return false
+		return
 	}
 	sc := t.skipCount
 	f()
 	if sc == t.skipCount { // true when f is a leaf node
 		t.skipRest = true
 	}
-	return true
 }
 
 type path struct {

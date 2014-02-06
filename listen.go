@@ -9,8 +9,8 @@ type groupListeners struct {
 	mu sync.Mutex
 }
 
-func (ls *groupListeners) add(l Listener) {
-	ls.a = append(ls.a, l)
+func (ls *groupListeners) append(l ...GroupListener) {
+	ls.a = append(ls.a, l...)
 }
 
 func (ls *groupListeners) GroupStart(g *TestGroup, path []FuncId) {
@@ -55,6 +55,11 @@ type TestError struct {
 
 type DescFunc func(description string, f func())
 
+func (t *G) Group(f func()) {
+	alias := t.Alias("")
+	alias("", f)
+}
+
 func (t *G) Alias(name string) DescFunc {
 	return func(description string, f func()) {
 		id := getFuncId(f)
@@ -63,12 +68,12 @@ func (t *G) Alias(name string) DescFunc {
 			Description: name + " " + description,
 		}
 		path := t.cur.slice()
-		t.GroupStart(g, path)
-
-		if t.Group(f) {
+		t.group(id, func() {
+			t.GroupStart(g, path)
+			f()
 			// g.Error =
 			t.GroupEnd(g, path)
-		}
+		})
 	}
 }
 
@@ -90,18 +95,49 @@ func newTreeCollector() treeCollector {
 	return treeCollector{m: make(map[FuncId]*TestGroup)}
 }
 
-func (c *treeCollector) AddGroup(g *TestGroup, path []FuncId) {
+func (c *treeCollector) GroupStart(g *TestGroup, path []FuncId) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.m[g.Id] != nil {
 		return
 	}
-	if len(path) > 0 {
-		parentId := path[len(path)-1]
+	if len(path) > 1 {
+		parentId := path[len(path)-2]
 		parent := c.m[parentId] // must exists
 		parent.Children = append(parent.Children, g)
 	} else {
 		c.groups = append(c.groups, g)
 	}
 	c.m[g.Id] = g
+}
+
+func (*treeCollector) GroupEnd(*TestGroup, []FuncId) {
+}
+
+type TextListener struct {
+	cnt  int
+	fcnt int
+}
+
+func NewTextListener() *TextListener {
+	return &TextListener{}
+}
+
+func (l *TextListener) Start() {
+	l.cnt = 0
+	l.fcnt = 0
+	p("test started.")
+}
+
+func (l *TextListener) End(groups []*TestGroup) {
+	p("test ended.")
+}
+
+func (l *TextListener) GroupStart(g *TestGroup, path []FuncId) {
+	l.cnt++
+}
+
+func (l *TextListener) GroupEnd(g *TestGroup, path []FuncId) {
+	l.fcnt++
+	p(l.fcnt, "/", l.cnt)
 }
