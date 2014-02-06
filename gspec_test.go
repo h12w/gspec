@@ -215,6 +215,7 @@ Scenario: Attach a string as the description to the testing group
 	When attach a string as the description
 	Then GSpec will pass them to collector
 */
+/*
 func TestDescriptions(t *testing.T) {
 	RegisterTestingT(t)
 	ds := []string{}
@@ -235,6 +236,7 @@ func TestDescriptions(t *testing.T) {
 	})
 	Expect(ds).To(Equal([]string{"describe a", "context b", "it c"}), "description not stored correctly")
 }
+*/
 
 /*
 Story: Internal Tests
@@ -243,8 +245,7 @@ Story: Internal Tests
 
 func TestTreeCollector(t *testing.T) {
 	RegisterTestingT(t)
-	co := &treeCollector{}
-	co.Start()
+	co := newTreeCollector()
 	a := &TestGroup{
 		Id:          1,
 		Description: "a",
@@ -257,6 +258,7 @@ func TestTreeCollector(t *testing.T) {
 		Id:          3,
 		Description: "c",
 	}
+	cp := []FuncId{1, 2}
 	d := &TestGroup{
 		Id:          4,
 		Description: "d",
@@ -265,16 +267,14 @@ func TestTreeCollector(t *testing.T) {
 		Id:          5,
 		Description: "z",
 	}
-	co.GroupStart(a, []FuncId{})
-	co.GroupStart(b, []FuncId{1})
-	co.GroupStart(c, []FuncId{1, 2})
-	err := &TestError{}
-	co.GroupEnd(3, err)
-	co.GroupStart(a, []FuncId{})
-	co.GroupStart(b, []FuncId{1})
-	co.GroupStart(d, []FuncId{1, 2})
-	co.GroupStart(z, []FuncId{})
-	co.End()
+	co.AddGroup(a, []FuncId{})
+	co.AddGroup(b, []FuncId{1})
+	co.AddGroup(c, cp)
+	c.Error = &TestError{}
+	co.AddGroup(a, []FuncId{})
+	co.AddGroup(b, []FuncId{1})
+	co.AddGroup(d, []FuncId{1, 2})
+	co.AddGroup(z, []FuncId{})
 
 	exp := []*TestGroup{
 		&TestGroup{
@@ -288,7 +288,7 @@ func TestTreeCollector(t *testing.T) {
 						&TestGroup{
 							Id:          3,
 							Description: "c",
-							Error:       err,
+							Error:       c.Error,
 						},
 						&TestGroup{
 							Id:          4,
@@ -303,7 +303,7 @@ func TestTreeCollector(t *testing.T) {
 			Description: "z",
 		},
 	}
-	Expect(co.Groups).To(Equal(exp), "TreeCollector fail to reconstruct correct tree")
+	Expect(co.groups).To(Equal(exp), "TreeCollector fail to reconstruct correct tree")
 }
 
 func TestFuncUniqueId(t *testing.T) {

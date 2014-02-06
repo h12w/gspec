@@ -1,7 +1,9 @@
 package gspec
 
-type pathRunner interface {
+// The interface for G to call back
+type runner interface {
 	run(p path)
+	GroupListener
 }
 
 // G contains minimal context variables needed to implement nested test group
@@ -10,12 +12,11 @@ type G struct {
 	cur       path
 	skipRest  bool
 	skipCount int
-	collector
-	pathRunner
+	runner
 }
 
-func newG(p path, r pathRunner, c collector) *G {
-	return &G{dst: p, pathRunner: r, collector: c}
+func newG(p path, r runner) *G {
+	return &G{dst: p, runner: r}
 }
 
 func (t *G) Group(f func()) bool {
@@ -52,8 +53,12 @@ func (p *path) pop() (i FuncId) {
 	return
 }
 
+func (p *path) slice() []FuncId {
+	return append([]FuncId{}, p.a...)
+}
+
 func (p *path) clone() path {
-	return path{append([]FuncId{}, p.a...)}
+	return path{p.slice()}
 }
 
 func (p *path) onPath(dst path) bool {

@@ -157,7 +157,7 @@ The path has to be stored somewhare but the path should not be shared between
 test cases. Thus, scheduling related variables have to be passed into the
 goroutine function as an argument. e.g.
 
-    Run(func(g *G) {
+    runner.Run(func(g *G) {
         g.Group(func() {
             g.Group(func() {
                 // test case 1
@@ -169,8 +169,8 @@ goroutine function as an argument. e.g.
     })
 
 where variable s of type S contains all the variables needed to control which
-test case to run, and function Run is the scheduler that makes sure each test
-case run once concurrently (or sequentially).
+test case to run, and runner is the scheduler that makes sure each test case run
+once concurrently (or sequentially).
 
 ###Test Specification
 GSpec should be able to generate a structured, readable plain text specification
@@ -196,16 +196,16 @@ so that during refactoring, these types can be found and modified too and won't
 get out of sync. Go does not support first class type, so it could be
 implemented by variables with zero value. (OPTIONAL)
 
-####Collector
-A collector is an internal object that collects the outputs out the tests,
-including the structure of nested test groups, test descriptions and the results
-of test running.
+####Listener
+A listener is an interface that collects the outputs from the tests, including
+the structure of nested test groups, test descriptions and the results of test
+running.
 
-The implementation of a collector must assume being called concurrently out of
-order. To reconstruct a tree structure, a parent node must be collected before
-a child node, so a collector has to collect before the start of each test group.
-To collect the result of each test case, a collector also needs to collect at
-the end of each test group.
+The implementation of a listener must assume being called concurrently out of
+order. To reconstruct a tree structure, it will be easy if a parent node is
+always collected before its children, so a listener should collect before the
+start of each test group. To collect the result of each test case, a listener
+also needs to collect at the end of each test group.
 
 ###Reporting
 ####Report progress
@@ -227,6 +227,10 @@ GSpec should call t.FailNow when an internal error occurs, e.g. Formatter error.
 ###Focus Mode
 
 ###Benchmark
+
+###Options
+Options of GSpec should able to set hard coded or via CLI flags. Flag should
+have higher priority than hard coded value so that can be changed at runtime.
 
 ###Mock
 

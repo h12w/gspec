@@ -8,49 +8,66 @@ import (
 	"sync"
 )
 
+/*
+TODO:
+	generate start/end event
+	default listener
+	register listener
+*/
+
 type RootFunc func(g *G)
 
 func Run(f RootFunc) {
-	runner := concurrentRunner{baseRunner: baseRunner{f: f, collector: NewCollector()}}
-	runner.run(path{})
-	runner.Wait()
+	newConcurrentRunner(f, nil).start()
 }
 
 func RunSeq(f RootFunc) {
-	runner := sequentialRunner{baseRunner{f: f, collector: NewCollector()}}
-	runner.run(path{})
+	newSequentialRunner(f, nil).start()
 }
 
 type concurrentRunner struct {
-	baseRunner
+	*sequentialRunner
 	wg sync.WaitGroup
+}
+
+func newConcurrentRunner(f RootFunc, l Listener) *concurrentRunner {
+	r := &concurrentRunner{sequentialRunner: newSequentialRunner(f, l)}
+	r.self = r
+	return r
+}
+
+func (r *concurrentRunner) start() {
+	defer r.wg.Wait()
+	r.sequentialRunner.start()
 }
 
 func (r *concurrentRunner) run(p path) {
 	r.wg.Add(1) // no need to lock
 	go func() {
 		defer r.wg.Done()
-		r.runPath(r, p)
+		r.sequentialRunner.run(p)
 	}()
 }
 
-func (r *concurrentRunner) Wait() {
-	r.wg.Wait()
+type sequentialRunner struct {
+	f    RootFunc
+	l    Listener
+	tc   treeCollector
+	self runner
+	groupListeners
 }
 
-type sequentialRunner struct {
-	baseRunner
+func newSequentialRunner(f RootFunc, l Listener) *sequentialRunner {
+	r := &sequentialRunner{f: f, l: l, tc: newTreeCollector()}
+	r.groupListeners.add(l)
+	r.self = r
+	return r
+}
+
+func (r *sequentialRunner) start() {
+	r.run(path{})
 }
 
 func (r *sequentialRunner) run(p path) {
-	r.runPath(r, p)
-}
-
-type baseRunner struct {
-	f RootFunc
-	collector
-}
-
-func (r *baseRunner) runPath(pr pathRunner, p path) {
-	r.f(newG(p, pr, r.collector))
+	r.f(newG(p, r.self))
 }
