@@ -14,7 +14,7 @@ Design goals:
 * It should be minimal yet extensible. Core features are provided by composition
   of orthogonal parts and advanced features are provided by external extensions.
 * It should be reliable itself by robust design and 100% test coverage.
-* It should respect the design of builtin "go test" tool so that there will not
+* It should respect the design of builtin go-test tool so that there will not
   be any integration issues.
 
 Yet Another One?
@@ -22,25 +22,14 @@ Yet Another One?
 Why writing yet another testing framework, given there are already many? (
 http://code.google.com/p/go-wiki/wiki/Projects#Testing)
 
-Here is my thought:
-* To write software with high quality in both design and implementation, a good
-  process of design and test is important, especially for a project with only
-  a single developer. A single developer will always be short of time, and it
-  means there will not enough time to do manual testing. Without enough test,
-  the developer will hesitate to do any improvement to avoid breaking existing
-  functionalities.
-* "go test" only meets minimal requirement, and left the rest to developers
-  themselves.
-* When I check all the other testing frameworks, I can barely find any projects
-  actually using them, even among the repositories of the framework's authors.
-  Since there is not a single mature and dominant testing framework, why not
-  using a testing framework written by myself?
-* I also checked the source code of these frameworks. It seems that a testing
-  framework is not trivial but not hard to implement either.
-* It is a good way to learn testing itself.
-  e.g. What to test? How much to test? How to test? How to name and orgnaize
-  tests?
-* It has some challenges and it is fun.
+* Automatic test is important, especially for a single developer who lacks time
+  to test manually.
+* go-test only meets minimal requirement, it leaves a gap to fill in a way or
+  another.
+* None of the existing frameworks fully satisfy all the goals above.
+* It is a good way to learn testing itself. e.g. What to test? How much to test?
+  How to test? How to name and orgnaize tests?
+* Writing a testing framework is not trivial but not hard either, and it is fun.
 
 Features
 --------
@@ -48,10 +37,10 @@ Features
 The following sections are organized in the sequence of design decisions, from
 major features to minor ones.
 
-###Extend "go test"
-GSpec should extend rather than replace "go test". It means:
-* "go test" command is the only way to run tests.
-* "go test" command arguments are respected as much as possible.
+###Extend go-test
+GSpec should extend rather than replace go-test. It means:
+* go-test command is the only way to run tests.
+* go-test command arguments are respected as much as possible.
 * Tests are written in or called from test functions.
 
 ###Test Case
@@ -73,10 +62,10 @@ Some setup/teardown code might be shared between tests, so there are 4 cases:
 Besides tests themselves, there must be some mechanism to gather all the test
 cases together and run them (test runner).
 
-"go test" meed the requirement above by providing a way to define a test (test
+go-test meed the requirement above by providing a way to define a test (test
 functions with specific signature) and a mechanism to gather tests (specific
 function/file naming conventions). It is minimal yet flexible. It can support
-concurency at test function level easily. However, "go test" does nothing to
+concurency at test function level easily. However, go-test does nothing to
 help the developer with setup/teardown, devlopers have to figure out themselves.
 
 Traditional xUnit style testing frameworks implement each step above as virtual
@@ -133,12 +122,16 @@ e.g.
         })
     })
 
+A limitation of lacking a dedicated setup method is: when the setup panicks,
+there is no way to tell it is a leaf node or it still has children. It is a
+tolerable tradeoff.
+
 It is rare to setup (teardown) a test context before (after) all tests without
 worrying about its state changing. In such rare cases, they can be handled
-separatedly at the start (end) of the "go test" testing functions.
+separatedly at the start (end) of the go-test testing functions.
 
 ###Concurrency
-Concurrency is a core feature of Go. "go test" supports concurency at the level
+Concurrency is a core feature of Go. go-test supports concurency at the level
 of test functions. With a testing framework with nested test group by
 closures, it is expected to have dozens (or even hundreds) of test cases written
 in one test function. On a quad-core CPU, you probably could just split test
@@ -184,6 +177,11 @@ GSpec should be able to generate a structured, readable plain text specification
 from the tests written. There should be a way to define and collect information
 for each level of test group.
 
+Note that a specification should be generated for each go-test function
+separately, because there is no direct way to call "generate" after all go-test
+functions return. (A timeout mechanism in a special test function may help, but
+it just does not worth it)
+
 ####Alias
 GSpec should be able to provide a convenient way to use customized alias names
 for the nested group function. e.g. describe, context, it, specify and example.
@@ -199,17 +197,22 @@ get out of sync. Go does not support first class type, so it could be
 implemented by variables with zero value. (OPTIONAL)
 
 ####Collector
-A collector collects the outputs out the tests, including the structure of
-nested test groups, test descriptions and the results of test running.
+A collector is an internal object that collects the outputs out the tests,
+including the structure of nested test groups, test descriptions and the results
+of test running.
 
 The implementation of a collector must assume being called concurrently out of
 order. To reconstruct a tree structure, a parent node must be collected before
 a child node, so a collector has to collect before the start of each test group.
-To collect the result, a collector also needs to collect after the end of each
-test group.
+To collect the result of each test case, a collector also needs to collect at
+the end of each test group.
 
-####Formatter
-A formatter generate a complete report of all tests.
+###Reporting
+####Report progress
+A progresser shows the progress of testing.
+
+####Report final result
+A reporter generates a complete report of all tests.
 
 ###Failure
 GSpec should isolate each test case so that a fail on one test case does not

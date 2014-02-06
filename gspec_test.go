@@ -17,10 +17,9 @@ func init() {
 
 /*
 TODO:
-* formatter
-* handle panic
+* TextFormatter
+* handle failure
 * assert
-* go test options (e.g. parallel)
 */
 
 /*
@@ -214,12 +213,12 @@ Scenario: Use customized alias names for group function.
 Scenario: Attach a string as the description to the testing group
 	Given a group function
 	When attach a string as the description
-	Then GSpec will pass them to Collector
+	Then GSpec will pass them to collector
 */
 func TestDescriptions(t *testing.T) {
 	RegisterTestingT(t)
 	ds := []string{}
-	NewCollector = func() Collector {
+	NewCollector = func() collector {
 		return CollectFunc(func(g *TestGroup, path []FuncId) {
 			ds = append(ds, g.Description)
 		})
@@ -244,8 +243,8 @@ Story: Internal Tests
 
 func TestTreeCollector(t *testing.T) {
 	RegisterTestingT(t)
-	co := NewTreeCollector()
-
+	co := &treeCollector{}
+	co.Start()
 	a := &TestGroup{
 		Id:          1,
 		Description: "a",
@@ -266,15 +265,16 @@ func TestTreeCollector(t *testing.T) {
 		Id:          5,
 		Description: "z",
 	}
-	co.Start(a, []FuncId{})
-	co.Start(b, []FuncId{1})
-	co.Start(c, []FuncId{1, 2})
+	co.GroupStart(a, []FuncId{})
+	co.GroupStart(b, []FuncId{1})
+	co.GroupStart(c, []FuncId{1, 2})
 	err := &TestError{}
-	co.End(3, err)
-	co.Start(a, []FuncId{})
-	co.Start(b, []FuncId{1})
-	co.Start(d, []FuncId{1, 2})
-	co.Start(z, []FuncId{})
+	co.GroupEnd(3, err)
+	co.GroupStart(a, []FuncId{})
+	co.GroupStart(b, []FuncId{1})
+	co.GroupStart(d, []FuncId{1, 2})
+	co.GroupStart(z, []FuncId{})
+	co.End()
 
 	exp := []*TestGroup{
 		&TestGroup{

@@ -5,14 +5,18 @@ import (
 )
 
 var (
-	NewCollector = func() Collector {
-		return &TreeCollector{}
+	NewCollector = func() collector {
+		return &treeCollector{}
 	}
 )
 
-type Collector interface {
-	Start(g *TestGroup, path []FuncId)
-	End(id FuncId, err *TestError)
+type CollectorBuilder func() collector
+
+type collector interface {
+	Start()
+	GroupStart(g *TestGroup, path []FuncId)
+	GroupEnd(id FuncId, err *TestError)
+	End()
 }
 
 type TestGroup struct {
@@ -33,18 +37,16 @@ type DescFunc func(description string, f func())
 func (t *G) Alias(name string) DescFunc {
 	return func(description string, f func()) {
 		id := getFuncId(f)
-		if t.collector != nil {
-			t.collector.Start(
-				&TestGroup{
-					Id:          id,
-					Description: name + " " + description,
-				},
-				append([]FuncId{}, t.cur.a...),
-			)
-		}
+		t.GroupStart(
+			&TestGroup{
+				Id:          id,
+				Description: name + " " + description,
+			},
+			append([]FuncId{}, t.cur.a...),
+		)
 
-		if t.Group(f) && t.collector != nil {
-			t.collector.End(id, nil)
+		if t.Group(f) {
+			t.GroupEnd(id, nil)
 		}
 	}
 }
@@ -57,17 +59,13 @@ func (t *G) Alias3(n1, n2, n3 string) (_, _, _ DescFunc) {
 	return t.Alias(n1), t.Alias(n2), t.Alias(n3)
 }
 
-type TreeCollector struct {
+type treeCollector struct {
 	Groups []*TestGroup
 	m      map[FuncId]*TestGroup
 	mu     sync.Mutex
 }
 
-func NewTreeCollector() *TreeCollector {
-	return &TreeCollector{m: make(map[FuncId]*TestGroup)}
-}
-
-func (c *TreeCollector) Start(g *TestGroup, path []FuncId) {
+func (c *treeCollector) GroupStart(g *TestGroup, path []FuncId) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.m[g.Id] != nil {
@@ -83,6 +81,13 @@ func (c *TreeCollector) Start(g *TestGroup, path []FuncId) {
 	c.m[g.Id] = g
 }
 
-func (c *TreeCollector) End(id FuncId, err *TestError) {
+func (c *treeCollector) GroupEnd(id FuncId, err *TestError) {
 	c.m[id].Error = err
+}
+
+func (c *treeCollector) Start() {
+	c.m = make(map[FuncId]*TestGroup)
+}
+
+func (c *treeCollector) End() {
 }
