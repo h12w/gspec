@@ -3,7 +3,7 @@ package gspec
 // The interface for G to call back
 type scheduler interface {
 	run(p path)
-	GroupListener
+	listener
 }
 
 // G contains minimal context variables needed to implement nested test group

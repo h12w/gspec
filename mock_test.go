@@ -75,3 +75,23 @@ func (f CollectFunc) start() {
 func (f CollectFunc) end() {
 }
 */
+
+func sortBytes(s string) string {
+	bs := []byte(s)
+	sort.Sort(Bytes(bs))
+	return string(bs)
+}
+
+type Bytes []byte
+
+func (bs Bytes) Len() int {
+	return len(bs)
+}
+
+func (bs Bytes) Swap(i, j int) {
+	bs[i], bs[j] = bs[j], bs[i]
+}
+
+func (bs Bytes) Less(i, j int) bool {
+	return bs[i] < bs[j]
+}

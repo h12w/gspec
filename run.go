@@ -5,23 +5,46 @@
 package gspec
 
 import (
+	"io"
+	"os"
 	"sync"
 )
 
-/*
-TODO:
-	new way to create runner with options
-	register listener
-*/
-
 type RootFunc func(g *G)
 
+// Run with default option
 func Run(f RootFunc) {
-	newConcurrentRunner(f, NewTextListener()).start()
+	(&Runner{}).Run(f)
 }
 
-func RunSeq(f RootFunc) {
-	newSequentialRunner(f, NewTextListener()).start()
+// Runner is a struct of options to configure how to run tests.
+type Runner struct {
+	Sequential bool
+	Output     io.Writer
+	Reporter   Reporter
+}
+
+func (r *Runner) Run(f RootFunc) {
+	r.setDefault()
+	r.setFlag() // flags have higher priority
+	if r.Sequential {
+		newSequentialRunner(f, r.Reporter).start()
+	} else {
+		newConcurrentRunner(f, r.Reporter).start()
+	}
+}
+
+func (r *Runner) setDefault() {
+	if r.Output == nil {
+		r.Output = os.Stdout
+	}
+	if r.Reporter == nil {
+		r.Reporter = NewTextReporter(r.Output)
+	}
+}
+
+// TODO:
+func (r *Runner) setFlag() {
 }
 
 type concurrentRunner struct {
@@ -29,7 +52,7 @@ type concurrentRunner struct {
 	wg sync.WaitGroup
 }
 
-func newConcurrentRunner(f RootFunc, l Listener) *concurrentRunner {
+func newConcurrentRunner(f RootFunc, l Reporter) *concurrentRunner {
 	r := &concurrentRunner{sequentialRunner: newSequentialRunner(f, l)}
 	r.self = r
 	return r
@@ -38,9 +61,9 @@ func newConcurrentRunner(f RootFunc, l Listener) *concurrentRunner {
 func (r *concurrentRunner) start() {
 	defer func() {
 		r.wg.Wait()
-		r.l.End(r.sequentialRunner.tc.groups)
+		r.treeListener.r.End(r.groups)
 	}()
-	r.l.Start()
+	r.treeListener.r.Start()
 	r.run(path{})
 }
 
@@ -54,23 +77,20 @@ func (r *concurrentRunner) run(p path) {
 
 type sequentialRunner struct {
 	f    RootFunc
-	l    Listener
-	tc   treeCollector
 	self scheduler
-	groupListeners
+	*treeListener
 }
 
-func newSequentialRunner(f RootFunc, l Listener) *sequentialRunner {
-	r := &sequentialRunner{f: f, l: l, tc: newTreeCollector()}
-	r.groupListeners.append(l, &r.tc)
+func newSequentialRunner(f RootFunc, reporter Reporter) *sequentialRunner {
+	r := &sequentialRunner{f, nil, newTreeListener(reporter)}
 	r.self = r
 	return r
 }
 
 func (r *sequentialRunner) start() {
-	r.l.Start()
+	r.treeListener.r.Start()
 	defer func() {
-		r.l.End(r.tc.groups)
+		r.treeListener.r.End(r.treeListener.groups)
 	}()
 	r.run(path{})
 }

@@ -157,7 +157,7 @@ The path has to be stored somewhare but the path should not be shared between
 test cases. Thus, scheduling related variables have to be passed into the
 goroutine function as an argument. e.g.
 
-    runner.Run(func(g *G) {
+    scheduler.Run(func(g *G) {
         g.Group(func() {
             g.Group(func() {
                 // test case 1
@@ -169,8 +169,8 @@ goroutine function as an argument. e.g.
     })
 
 where variable s of type S contains all the variables needed to control which
-test case to run, and runner is the scheduler that makes sure each test case run
-once concurrently (or sequentially).
+test case to run, and the scheduler that makes sure each test case run once
+concurrently (or sequentially).
 
 ###Test Specification
 GSpec should be able to generate a structured, readable plain text specification
@@ -197,9 +197,9 @@ get out of sync. Go does not support first class type, so it could be
 implemented by variables with zero value. (OPTIONAL)
 
 ####Listener
-A listener is an interface that collects the outputs from the tests, including
-the structure of nested test groups, test descriptions and the results of test
-running.
+A listener is an internal object embedded in the test scheduler that collects
+the outputs from the tests, reconstructing the tree structure of nested test
+groups with their descriptions and results of test running.
 
 The implementation of a listener must assume being called concurrently out of
 order. To reconstruct a tree structure, it will be easy if a parent node is
@@ -207,12 +207,13 @@ always collected before its children, so a listener should collect before the
 start of each test group. To collect the result of each test case, a listener
 also needs to collect at the end of each test group.
 
-###Reporting
-####Report progress
-A progresser shows the progress of testing.
+###Reporter
+There should be a public interface that reports the progess and the result of
+test. GSpec will contain a builtin reporter which is as simple as possible. More
+advaned reporters should be implemented in an extention package.
 
-####Report final result
-A reporter generates a complete report of all tests.
+The listener will call a reporter's method during the test and a reporter is
+responsible to render it.
 
 ###Failure
 GSpec should isolate each test case so that a fail on one test case does not
@@ -225,6 +226,7 @@ GSpec should call t.FailNow when an internal error occurs, e.g. Formatter error.
 ###Matchers
 
 ###Focus Mode
+Metadata for each group?
 
 ###Benchmark
 

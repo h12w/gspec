@@ -5,7 +5,9 @@
 package gspec
 
 import (
+	"bytes"
 	. "github.com/onsi/gomega"
+	"os"
 	"runtime"
 	"testing"
 	"time"
@@ -17,13 +19,12 @@ func init() {
 
 /*
 TODO:
-* TextFormatter
-* handle failure
+* report failure location
 * assert
 */
 
 /*
-Story: Dveloper write tests
+Story: A dveloper runs tests
 
 As a developer
 I want to write tests
@@ -38,7 +39,7 @@ Scenario: run a test defined in a closure
 */
 func TestRunClosureTest(t *testing.T) {
 	ch := NewSChan()
-	RunSeq(func(g *G) {
+	(&Runner{Sequential: true}).Run(func(g *G) {
 		do := g.Group
 		do(func() {
 			ch.Send("a")
@@ -168,8 +169,8 @@ func TestNestedTestingContext(t *testing.T) {
 Scenario: concurrent running tests
 	Given 5 identical time consuming test cases
 	When they are completed
-	Then the time to run all should be closer to 2 times of one test rather than 5 times
-		(2 times because the first test must return first then the rest tests can be discovered and run simultaneously)
+	Then the time to run all should be 2 to 3 times of one test rather than 5 times
+		(the first test must return first then the rest tests can be discovered and run simultaneously)
 */
 func TestConcurrentRunning(t *testing.T) {
 	delay := 10 * time.Millisecond
@@ -191,9 +192,113 @@ func TestConcurrentRunning(t *testing.T) {
 		})
 	})
 	d := time.Now().Sub(tm)
-	if d > 3*delay {
+	if d > time.Duration(2.4*float64(delay)) {
 		t.Fatalf("Tests are not run concurrently, duration: %v", d)
 	}
+}
+
+/*
+Story: Dveloper verify tests
+
+As a developer
+I want to run my tests
+So that I can verify the result of the tests
+*/
+
+/*
+Scenario: Plain text progress indicator
+	Given a nested test group with 5 leaves
+	When the tests finished without any error
+	Then I should see 5 dots: "....."
+*/
+func Test5Pass(t *testing.T) {
+	RegisterTestingT(t)
+	var buf bytes.Buffer
+	(&Runner{Output: &buf}).Run(func(g *G) {
+		do := g.Alias("")
+		do("a", func() {
+			do("a-b", func() {
+			})
+			do("a-c", func() {
+				do("a-c-d", func() {
+				})
+			})
+			do("a-e", func() {
+				do("a-e-f", func() {
+				})
+				do("a-e-g", func() {
+				})
+			})
+		})
+		do("h", func() {
+		})
+	})
+	Expect(buf.String()).To(Equal("....."))
+}
+
+/*
+Scenario: Plain text progress indicator
+	Given a nested test group with 5 leaves
+	When the tests finished but 1 of test panics
+	Then I should see 4 dots with 1 F: "..F.."
+*/
+func Test4Pass1Fail(t *testing.T) {
+	RegisterTestingT(t)
+	var buf bytes.Buffer
+	(&Runner{Output: &buf}).Run(func(g *G) {
+		do := g.Alias("")
+		do("a", func() {
+			do("a-b", func() {
+			})
+			do("a-c", func() {
+				do("a-c-d", func() {
+					panic("err: a-c-d")
+				})
+			})
+			do("a-e", func() {
+				do("a-e-f", func() {
+				})
+				do("a-e-g", func() {
+				})
+			})
+		})
+		do("h", func() {
+		})
+	})
+	Expect(sortBytes(buf.String())).To(Equal("....F"))
+}
+
+/*
+Scenario: Plain text progress indicator
+	Given a nested test group with 5 leaves
+	When the tests finished but 2 of test panics
+	Then I should see 3 dots with 2 F: "..F.."
+*/
+func Test3Pass2Fail(t *testing.T) {
+	RegisterTestingT(t)
+	var buf bytes.Buffer
+	(&Runner{Output: &buf}).Run(func(g *G) {
+		do := g.Alias("")
+		do("a", func() {
+			do("a-b", func() {
+			})
+			do("a-c", func() {
+				do("a-c-d", func() {
+					panic("err: a-c-d")
+				})
+			})
+			do("a-e", func() {
+				do("a-e-f", func() {
+				})
+				do("a-e-g", func() {
+					panic("err: a-e-g")
+				})
+			})
+		})
+		do("h", func() {
+		})
+	})
+	Expect(sortBytes(buf.String())).To(Equal("...FF"))
 }
 
 /*
@@ -243,9 +348,9 @@ Story: Internal Tests
 	Test internal types/functions
 */
 
-func TestTreeCollector(t *testing.T) {
+func TestTreeListener(t *testing.T) {
 	RegisterTestingT(t)
-	co := newTreeCollector()
+	co := newTreeListener(NewTextReporter(os.Stdout))
 	a := &TestGroup{
 		Id:          1,
 		Description: "a",
@@ -258,7 +363,7 @@ func TestTreeCollector(t *testing.T) {
 		Id:          3,
 		Description: "c",
 	}
-	cp := []FuncId{1, 2, 3}
+	cp := []FuncId{1, 2}
 	d := &TestGroup{
 		Id:          4,
 		Description: "d",
@@ -267,14 +372,14 @@ func TestTreeCollector(t *testing.T) {
 		Id:          5,
 		Description: "z",
 	}
-	co.GroupStart(a, []FuncId{1})
-	co.GroupStart(b, []FuncId{1, 2})
-	co.GroupStart(c, cp)
+	co.groupStart(a, []FuncId{})
+	co.groupStart(b, []FuncId{1})
+	co.groupStart(c, cp)
 	c.Error = &TestError{}
-	co.GroupStart(a, []FuncId{1})
-	co.GroupStart(b, []FuncId{1, 2})
-	co.GroupStart(d, []FuncId{1, 2, 4})
-	co.GroupStart(z, []FuncId{5})
+	co.groupStart(a, []FuncId{})
+	co.groupStart(b, []FuncId{1})
+	co.groupStart(d, []FuncId{1, 2})
+	co.groupStart(z, []FuncId{})
 
 	exp := []*TestGroup{
 		&TestGroup{
@@ -303,7 +408,7 @@ func TestTreeCollector(t *testing.T) {
 			Description: "z",
 		},
 	}
-	Expect(co.groups).To(Equal(exp), "TreeCollector fail to reconstruct correct tree")
+	Expect(co.groups).To(Equal(exp), "TreeListener fail to reconstruct correct tree")
 }
 
 func TestFuncUniqueId(t *testing.T) {
