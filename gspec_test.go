@@ -19,6 +19,7 @@ func init() {
 
 /*
 TODO:
+* new Reporter events
 * report failure location
 * assert
 */

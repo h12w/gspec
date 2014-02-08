@@ -9,20 +9,6 @@ type listener interface {
 	groupEnd(id FuncId, err *TestError)
 }
 
-type TestGroup struct {
-	Id          FuncId
-	Description string
-	Error       *TestError
-	//	Parent      *TestGroup
-	Children []*TestGroup
-}
-
-type TestError struct {
-	Err  interface{}
-	File string
-	Line int
-}
-
 type treeListener struct {
 	groups []*TestGroup
 	m      map[FuncId]*TestGroup

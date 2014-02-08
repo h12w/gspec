@@ -19,14 +19,16 @@ func NewScheduler(r Reporter) *Scheduler {
 	return &Scheduler{treeListener: newTreeListener(r)}
 }
 
-func (r *Scheduler) Start(sequential bool, f RootFunc) {
+func (r *Scheduler) Start(sequential bool, fs ...RootFunc) {
 	defer func() {
 		r.wg.Wait()
 	}()
-	if sequential {
-		seq{r}.run(f, path{})
-	} else {
-		con{r}.run(f, path{})
+	for _, f := range fs {
+		if sequential {
+			seq{r}.run(f, path{})
+		} else {
+			con{r}.run(f, path{})
+		}
 	}
 }
 
@@ -35,7 +37,7 @@ func (r *Scheduler) runSeq(f RootFunc, p path, self scheduler) {
 }
 
 func (r *Scheduler) runCon(f RootFunc, p path, self scheduler) {
-	r.wg.Add(1) // no need to lock
+	r.wg.Add(1)
 	go func() {
 		defer r.wg.Done()
 		r.runSeq(f, p, self)

@@ -38,9 +38,9 @@ GSpec should not break but extend existing features that "go test" provides:
 * "go test" command is the only way to run tests.
 * Besides concurency at the level of test functions, GSpec should support
   concurency at the level of each expectation.
-* GSpec should still be able to split tests to multiple test functions/files.
-* GSpec should still be able to print helpful and easily readable messages when
-  a test case fails.
+* GSpec should be able to split tests into multiple test functions/files.
+* GSpec should be able to print helpful and easily readable messages when a test
+  case fails.
 
 ###Test Case
 A test case needs running some code and verifying the result. Further, the code
@@ -58,7 +58,7 @@ Some setup/teardown code might be shared between tests, so there are 4 cases:
 * setup run once before all tests
 * teardown run once after all tests
 
-"go test" meed the requirement above by providing a way to define a test (test
+"go test" meet the requirement above by providing a way to define a test (test
 functions with specific signature). It is minimal yet flexible. It can support
 concurency at test function level easily. However, "go test" does nothing to
 help the developer with setup/teardown, devlopers have to figure out themselves.
@@ -73,20 +73,20 @@ BDD style frameworks like RSpec use closures to provide an ad hoc and natual
 way to specify test cases. Pros of this method include:
 
 * A natual short test description rather than a function name
-* Setup/teardown code can be nested to form multiple levels of test group
-* The tests form a readable and runnable spec
+* Setup/teardown code can be nested to form multiple levels of test groups
+* The tests form a readable and runnable specification
 
 GSpec should try to follow this way, though it is not obvious on how to
 implement concurrency at this stage (RSpec does not support concurrency itself).
 
 ###Nested Test Group
 Most of the test cases do not share a test context, but when they do, the
-context should be setup (teardown) before (after) each test to isolate tests
-from each other.
+context should be setup (teardown) before (after) each test to isolate test
+cases from each other.
 
-Thus, nested test group is a tree structure. Each leaf represents a test case
-and the path from the root node to the leaf represents the setup sequence of the
-test context for the test case. Reversely, the path from the leaf to the root
+Nested test group is a tree structure. Each leaf represents a test case and the
+path from the root node to the leaf represents the setup sequence of the test
+context for the test case. Reversely, the path from the leaf to the root
 represents the teardown sequence of the test context for the test case. e.g.
 
     a
@@ -97,7 +97,7 @@ represents the teardown sequence of the test context for the test case. e.g.
 The setup sequence should be: abc1 abc2, and the teardown sequence should be:
 c1ba c2ba. (The relative order between c1 and c2 is not important)
 
-One way of doing setup/teardown is hook function as what RSpec does (before,
+One way of doing setup/teardown is by hook functions as what RSpec does (before,
 after method with argument :each). An alternative way is to define the setup
 code directly in the closure and schedule it to run before each test case. As
 long as the scheduling logic does not introduce too much overhead and
@@ -136,7 +136,7 @@ even thousands of cores) in the foreseeable future, thus it requires one
 goroutine per test case to make the most of the hardware.
 
 When the test cases are organized in a tree of closures, there is no way to know
-the whole structure without actually running it. So the process has to be
+the whole structure without actually running it. The process has to be
 exploratory, starting goroutines on the fly.
 
 To support concurency, test cases should be completed isolated from each other.
@@ -148,7 +148,7 @@ level. Variables are allocated on call stack of its own gouroutine.
 
 The critical point is the state variables related to test scheduling. There has
 to be a way to guide the test along a path from the root down to a certain leaf.
-The path has to be stored somewhare and should not be shared between test cases.
+The path has to be stored somewhere and should not be shared between test cases.
 Thus, scheduling related variables have to be passed into the goroutine function
 (RootFunc) as an argument (g of type G). e.g.
 
@@ -173,9 +173,9 @@ concurrently (or sequentially).
 
 RESTRICTION: To support concurency, there must be one context variable of type G
 per goroutine. So the Group method cannot be simply defined as a global
-function, and a top-level function of type RootFunc is mandatary. GSpec has to
-exchange some simplicty for concurency. (This could also be compensated by
-defining aliases for the Group method).
+function, and a top-level function of type RootFunc is mandatary for writing
+tests. GSpec has to exchange some simplicty for concurency. (This could be
+compensated by defining aliases for the Group method).
 
 ###Test Gathering
 "go test" gathers test functions with specific function/file naming conventions.
@@ -212,7 +212,7 @@ implemented by variables with zero value. (OPTIONAL)
 ####Listener
 A listener is an internal object embedded in the test scheduler that collects
 the outputs from the tests, reconstructing the tree structure of nested test
-groups with their descriptions and results of test running.
+groups with their descriptions and results.
 
 The implementation of a listener must assume being called concurrently out of
 order. To reconstruct a tree structure, it would be easy if a parent node is
@@ -221,7 +221,7 @@ start of each test group. To collect the result of each test case, a listener
 also needs to collect at the end of each test group.
 
 ###Reporter
-A reporter is responsible to report the test progress and display the test
+A reporter is responsible for reporting the test progress and display the test
 result. It is defined as an public interface so that GSpec is able to use any
 customized reporter. The listener should call a reporter's method when needed.
 
@@ -232,18 +232,19 @@ GSpec should contain a builtin reporter:
 * In default mode, it should display nothing but the failure information.
 * In verbose mode, it should display an additional progress line (.F*).
 
-A reporter does not need locking, which should already been done by listener.
+If a reporter instance needs to serve multiple "go test" test functions, it must
+be locked when called (?).
 
 ###Failure
-When test code panics, "go test" just logs the error and terminates immediately.
+When test code panicks, "go test" prints the error and terminates immediately.
 GSpec should respect this design.
 
 When an expectation (assertion) fails, GSpec should record the error and
 continue running other test cases. t.Fail should be called to notify "go test"
 there are failures.
 
-GSpec itself could also have bugs and fail, when it happens, GSpec should panic
-immediately. (fail fast)
+GSpec itself could have internal bugs and fail, when it happens, GSpec should
+print the error message and terminate immediately. (fail fast)
 
 ###Timeout
 

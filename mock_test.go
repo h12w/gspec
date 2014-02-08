@@ -11,12 +11,12 @@ var (
 	globalScheduler = NewScheduler(NewTextReporter(ioutil.Discard))
 )
 
-func Run(f RootFunc) {
-	globalScheduler.Start(false, f)
+func Run(f ...RootFunc) {
+	globalScheduler.Start(false, f...)
 }
 
-func RunSeq(f RootFunc) {
-	globalScheduler.Start(true, f)
+func RunSeq(f ...RootFunc) {
+	globalScheduler.Start(true, f...)
 }
 
 type SChan struct {

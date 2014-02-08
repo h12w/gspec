@@ -5,9 +5,23 @@ import (
 	"io"
 )
 
+type TestGroup struct {
+	Id          FuncId
+	Description string
+	Error       *TestError
+	//	Parent      *TestGroup
+	Children []*TestGroup
+}
+
+type TestError struct {
+	Err  interface{}
+	File string
+	Line int
+}
+
 type Reporter interface {
-	Start()
-	End(groups []*TestGroup)
+	TopGroupStart(g *TestGroup)
+	TopGroupEnd(g *TestGroup)
 	Progress(g *TestGroup, s *Stats)
 }
 
@@ -28,11 +42,11 @@ func NewTextReporter(w io.Writer) *TextReporter {
 	return &TextReporter{w: w}
 }
 
-func (l *TextReporter) Start() {
+func (l *TextReporter) TopGroupStart(g *TestGroup) {
 	l.Stats = Stats{}
 }
 
-func (l *TextReporter) End(groups []*TestGroup) {
+func (l *TextReporter) TopGroupEnd(g *TestGroup) {
 	fmt.Fprintln(l.w, "")
 }
 
