@@ -33,6 +33,7 @@ func (l *TextReporter) Start() {
 }
 
 func (l *TextReporter) End(groups []*TestGroup) {
+	fmt.Fprintln(l.w, "")
 }
 
 func (l *TextReporter) Progress(g *TestGroup, s *Stats) {

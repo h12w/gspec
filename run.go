@@ -5,96 +5,55 @@
 package gspec
 
 import (
-	"io"
-	"os"
 	"sync"
 )
 
 type RootFunc func(g *G)
 
-// Run with default option
-func Run(f RootFunc) {
-	(&Runner{}).Run(f)
-}
-
-// Runner is a struct of options to configure how to run tests.
-type Runner struct {
-	Sequential bool
-	Output     io.Writer
-	Reporter   Reporter
-}
-
-func (r *Runner) Run(f RootFunc) {
-	r.setDefault()
-	r.setFlag() // flags have higher priority
-	if r.Sequential {
-		newSequentialRunner(f, r.Reporter).start()
-	} else {
-		newConcurrentRunner(f, r.Reporter).start()
-	}
-}
-
-func (r *Runner) setDefault() {
-	if r.Output == nil {
-		r.Output = os.Stdout
-	}
-	if r.Reporter == nil {
-		r.Reporter = NewTextReporter(r.Output)
-	}
-}
-
-// TODO:
-func (r *Runner) setFlag() {
-}
-
-type concurrentRunner struct {
-	*sequentialRunner
+type Scheduler struct {
 	wg sync.WaitGroup
-}
-
-func newConcurrentRunner(f RootFunc, l Reporter) *concurrentRunner {
-	r := &concurrentRunner{sequentialRunner: newSequentialRunner(f, l)}
-	r.self = r
-	return r
-}
-
-func (r *concurrentRunner) start() {
-	defer func() {
-		r.wg.Wait()
-		r.treeListener.r.End(r.groups)
-	}()
-	r.treeListener.r.Start()
-	r.run(path{})
-}
-
-func (r *concurrentRunner) run(p path) {
-	r.wg.Add(1) // no need to lock
-	go func() {
-		defer r.wg.Done()
-		r.sequentialRunner.run(p)
-	}()
-}
-
-type sequentialRunner struct {
-	f    RootFunc
-	self scheduler
 	*treeListener
 }
 
-func newSequentialRunner(f RootFunc, reporter Reporter) *sequentialRunner {
-	r := &sequentialRunner{f, nil, newTreeListener(reporter)}
-	r.self = r
-	return r
+func NewScheduler(r Reporter) *Scheduler {
+	return &Scheduler{treeListener: newTreeListener(r)}
 }
 
-func (r *sequentialRunner) start() {
-	r.treeListener.r.Start()
+func (r *Scheduler) Start(sequential bool, f RootFunc) {
 	defer func() {
-		r.treeListener.r.End(r.treeListener.groups)
+		r.wg.Wait()
 	}()
-	r.run(path{})
+	if sequential {
+		seq{r}.run(f, path{})
+	} else {
+		con{r}.run(f, path{})
+	}
 }
 
-func (r *sequentialRunner) run(p path) {
-	r.f(newG(p, r.self))
+func (r *Scheduler) runSeq(f RootFunc, p path, self scheduler) {
+	f(newG(f, p, self))
+}
+
+func (r *Scheduler) runCon(f RootFunc, p path, self scheduler) {
+	r.wg.Add(1) // no need to lock
+	go func() {
+		defer r.wg.Done()
+		r.runSeq(f, p, self)
+	}()
+}
+
+type con struct {
+	*Scheduler
+}
+
+func (r con) run(f RootFunc, p path) {
+	r.runCon(f, p, r)
+}
+
+type seq struct {
+	*Scheduler
+}
+
+func (r seq) run(f RootFunc, p path) {
+	r.runSeq(f, p, r)
 }

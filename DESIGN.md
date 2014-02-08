@@ -8,14 +8,10 @@ mind model of software.
 
 Design goals:
 
-* It should provide a natual way to write readable and runnable specifications.
-* It should be able to run tests concurrently so that the tests are expected to
-  run faster and faster on future hardware.
-* It should be minimal yet extensible. Core features are provided by composition
-  of orthogonal parts and advanced features are provided by external extensions.
-* It should be reliable itself by robust design and 100% test coverage.
-* It should respect the design of builtin go-test tool so that there will not
-  be any integration issues.
+* It should be natual to write readable and runnable specifications.
+* It should be an extension rather than replacement to "go test".
+* It should be reliable by robust design and 100% test coverage.
+* It should be minimal and extensible.
 
 Yet Another One?
 ----------------
@@ -24,12 +20,11 @@ http://code.google.com/p/go-wiki/wiki/Projects#Testing)
 
 * Automatic test is important, especially for a single developer who lacks time
   to test manually.
-* go-test only meets minimal requirement, it leaves a gap to fill in a way or
+* "go test" only meets minimal requirement, leaving a gap to fill in a way or
   another.
 * None of the existing frameworks fully satisfy all the goals above.
-* It is a good way to learn testing itself. e.g. What to test? How much to test?
-  How to test? How to name and orgnaize tests?
-* Writing a testing framework is not trivial but not hard either, and it is fun.
+* It is a good way to learn testing itself.
+* It is fun.
 
 Features
 --------
@@ -37,11 +32,15 @@ Features
 The following sections are organized in the sequence of design decisions, from
 major features to minor ones.
 
-###Extend go-test
-GSpec should extend rather than replace go-test. It means:
-* go-test command is the only way to run tests.
-* go-test command arguments are respected as much as possible.
-* Tests are written in or called from test functions.
+###Extend "go test"
+GSpec should not break but extend existing features that "go test" provides:
+
+* "go test" command is the only way to run tests.
+* Besides concurency at the level of test functions, GSpec should support
+  concurency at the level of each expectation.
+* GSpec should still be able to split tests to multiple test functions/files.
+* GSpec should still be able to print helpful and easily readable messages when
+  a test case fails.
 
 ###Test Case
 A test case needs running some code and verifying the result. Further, the code
@@ -59,13 +58,9 @@ Some setup/teardown code might be shared between tests, so there are 4 cases:
 * setup run once before all tests
 * teardown run once after all tests
 
-Besides tests themselves, there must be some mechanism to gather all the test
-cases together and run them (test runner).
-
-go-test meed the requirement above by providing a way to define a test (test
-functions with specific signature) and a mechanism to gather tests (specific
-function/file naming conventions). It is minimal yet flexible. It can support
-concurency at test function level easily. However, go-test does nothing to
+"go test" meed the requirement above by providing a way to define a test (test
+functions with specific signature). It is minimal yet flexible. It can support
+concurency at test function level easily. However, "go test" does nothing to
 help the developer with setup/teardown, devlopers have to figure out themselves.
 
 Traditional xUnit style testing frameworks implement each step above as virtual
@@ -79,9 +74,10 @@ way to specify test cases. Pros of this method include:
 
 * A natual short test description rather than a function name
 * Setup/teardown code can be nested to form multiple levels of test group
+* The tests form a readable and runnable spec
 
-GSpec will try to follow this way, though it is not obvious on how to implement
-concurrency at this stage.
+GSpec should try to follow this way, though it is not obvious on how to
+implement concurrency at this stage (RSpec does not support concurrency itself).
 
 ###Nested Test Group
 Most of the test cases do not share a test context, but when they do, the
@@ -98,8 +94,8 @@ represents the teardown sequence of the test context for the test case. e.g.
             c1
             c2
 
-The setup sequence will be: abc1 abc2, and the teardown sequence will be: c1ba
-c2ba. (The relative order between c1 and c2 is not important)
+The setup sequence should be: abc1 abc2, and the teardown sequence should be:
+c1ba c2ba. (The relative order between c1 and c2 is not important)
 
 One way of doing setup/teardown is hook function as what RSpec does (before,
 after method with argument :each). An alternative way is to define the setup
@@ -123,26 +119,25 @@ e.g.
     })
 
 A limitation of lacking a dedicated setup method is: when the setup panicks,
-there is no way to tell it is a leaf node or it still has children. It is a
-tolerable tradeoff.
+GSpec can only give the panicking postion but cannot tell it is a leaf node or
+it still has children. However, it is a tolerable tradeoff.
 
 It is rare to setup (teardown) a test context before (after) all tests without
 worrying about its state changing. In such rare cases, they can be handled
-separatedly at the start (end) of the go-test testing functions.
+separatedly at the start (end) of the "go test" testing functions.
 
 ###Concurrency
-Concurrency is a core feature of Go. go-test supports concurency at the level
-of test functions. With a testing framework with nested test group by
-closures, it is expected to have dozens (or even hundreds) of test cases written
+Concurrency is a core feature of Go. "go test" supports concurency at the level
+of test functions. With a testing framework with nested test group by closures,
+it is expected to have dozens (or even hundreds) of test cases written
 in one test function. On a quad-core CPU, you probably could just split test
 cases into four test functions, but CPU could easily get many cores (hundreds or
 even thousands of cores) in the foreseeable future, thus it requires one
 goroutine per test case to make the most of the hardware.
 
 When the test cases are organized in a tree of closures, there is no way to know
-the whole structure without actually running it. So it is not possible to run
-all test cases simultaneously, and the process has to be exploratory, starting
-goroutines on the fly.
+the whole structure without actually running it. So the process has to be
+exploratory, starting goroutines on the fly.
 
 To support concurency, test cases should be completed isolated from each other.
 No variables should be shared without careful synchronization.
@@ -153,9 +148,9 @@ level. Variables are allocated on call stack of its own gouroutine.
 
 The critical point is the state variables related to test scheduling. There has
 to be a way to guide the test along a path from the root down to a certain leaf.
-The path has to be stored somewhare but the path should not be shared between
-test cases. Thus, scheduling related variables have to be passed into the
-goroutine function as an argument. e.g.
+The path has to be stored somewhare and should not be shared between test cases.
+Thus, scheduling related variables have to be passed into the goroutine function
+(RootFunc) as an argument (g of type G). e.g.
 
     scheduler.Run(func(g *G) {
         g.Group(func() {
@@ -168,19 +163,37 @@ goroutine function as an argument. e.g.
         })
     })
 
-where variable s of type S contains all the variables needed to control which
-test case to run, and the scheduler that makes sure each test case run once
+where the RootFunc is defined as:
+
+    type RootFunc func(g *G)
+
+and variable g of type G contains all the variables needed to control which
+test case to run, and the scheduler makes sure each test case run once
 concurrently (or sequentially).
+
+RESTRICTION: To support concurency, there must be one context variable of type G
+per goroutine. So the Group method cannot be simply defined as a global
+function, and a top-level function of type RootFunc is mandatary. GSpec has to
+exchange some simplicty for concurency. (This could also be compensated by
+defining aliases for the Group method).
+
+###Test Gathering
+"go test" gathers test functions with specific function/file naming conventions.
+GSpec should also be able to gather tests across test functions/files.
+
+Unlike the group context G, the scheduler can be shared by all goroutines as
+long as carefully locked. So RootFuncs can be defined anywhere and are gathered
+by a singleton scheduler in any "go test" function(s).
+
+RESTRICTION: Test results cannot be generated as a whole after all tests finish.
+There is no finalization hook provided by "go test", so there is no way to know
+when all tests finish. The only possible way is to output the result for each
+RootFunc, but this may not necessarily affect test reporting.
 
 ###Test Specification
 GSpec should be able to generate a structured, readable plain text specification
 from the tests written. There should be a way to define and collect information
 for each level of test group.
-
-Note that a specification should be generated for each go-test function
-separately, because there is no direct way to call "generate" after all go-test
-functions return. (A timeout mechanism in a special test function may help, but
-it just does not worth it)
 
 ####Alias
 GSpec should be able to provide a convenient way to use customized alias names
@@ -202,33 +215,47 @@ the outputs from the tests, reconstructing the tree structure of nested test
 groups with their descriptions and results of test running.
 
 The implementation of a listener must assume being called concurrently out of
-order. To reconstruct a tree structure, it will be easy if a parent node is
+order. To reconstruct a tree structure, it would be easy if a parent node is
 always collected before its children, so a listener should collect before the
 start of each test group. To collect the result of each test case, a listener
 also needs to collect at the end of each test group.
 
 ###Reporter
-There should be a public interface that reports the progess and the result of
-test. GSpec will contain a builtin reporter which is as simple as possible. More
-advaned reporters should be implemented in an extention package.
+A reporter is responsible to report the test progress and display the test
+result. It is defined as an public interface so that GSpec is able to use any
+customized reporter. The listener should call a reporter's method when needed.
 
-The listener will call a reporter's method during the test and a reporter is
-responsible to render it.
+GSpec should contain a builtin reporter:
+* It should be as simple as possible, advanced reporters should be implemented
+  in an extention package (gspec/reporter?).
+* It is a plain text reporter, without colors.
+* In default mode, it should display nothing but the failure information.
+* In verbose mode, it should display an additional progress line (.F*).
+
+A reporter does not need locking, which should already been done by listener.
 
 ###Failure
-GSpec should isolate each test case so that a fail on one test case does not
-affect another, when any of the test case fails, t.Fail should be called.
+When test code panics, "go test" just logs the error and terminates immediately.
+GSpec should respect this design.
 
-GSpec should call t.FailNow when an internal error occurs, e.g. Formatter error.
+When an expectation (assertion) fails, GSpec should record the error and
+continue running other test cases. t.Fail should be called to notify "go test"
+there are failures.
+
+GSpec itself could also have bugs and fail, when it happens, GSpec should panic
+immediately. (fail fast)
 
 ###Timeout
 
 ###Matchers
 
 ###Focus Mode
-Metadata for each group?
+####Support metadata for each test group?
 
-###Benchmark
+####Filter by meta data including regular expressions
+
+###Benchmark & coverage
+What "go test" provides are good enough. Just don't break them.
 
 ###Options
 Options of GSpec should able to set hard coded or via CLI flags. Flag should

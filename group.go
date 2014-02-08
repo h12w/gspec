@@ -2,12 +2,13 @@ package gspec
 
 // The interface for G to call back
 type scheduler interface {
-	run(p path)
+	run(f RootFunc, p path)
 	listener
 }
 
-// G contains minimal context variables needed to implement nested test group
+// G contains minimal context needed to implement nested test group
 type G struct {
+	f         RootFunc
 	dst       path
 	cur       path
 	skipRest  bool
@@ -15,8 +16,8 @@ type G struct {
 	scheduler
 }
 
-func newG(p path, s scheduler) *G {
-	return &G{dst: p, scheduler: s}
+func newG(f RootFunc, p path, s scheduler) *G {
+	return &G{f: f, dst: p, scheduler: s}
 }
 
 func (t *G) group(id FuncId, f func()) {
@@ -25,7 +26,7 @@ func (t *G) group(id FuncId, f func()) {
 	if !t.cur.onPath(t.dst) {
 		return
 	} else if t.skipRest {
-		t.run(t.cur.clone())
+		t.run(t.f, t.cur.clone())
 		t.skipCount++
 		return
 	}

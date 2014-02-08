@@ -2,8 +2,22 @@ package gspec
 
 import (
 	"sort"
+	"strings"
 	"sync"
+	"io/ioutil"
 )
+
+var (
+	globalScheduler = NewScheduler(NewTextReporter(ioutil.Discard))
+)
+
+func Run(f RootFunc) {
+	globalScheduler.Start(false, f)
+}
+
+func RunSeq(f RootFunc) {
+	globalScheduler.Start(true, f)
+}
 
 type SChan struct {
 	ch chan string
@@ -77,7 +91,7 @@ func (f CollectFunc) end() {
 */
 
 func sortBytes(s string) string {
-	bs := []byte(s)
+	bs := []byte(strings.TrimSpace(s))
 	sort.Sort(Bytes(bs))
 	return string(bs)
 }

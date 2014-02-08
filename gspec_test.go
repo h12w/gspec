@@ -39,7 +39,7 @@ Scenario: run a test defined in a closure
 */
 func TestRunClosureTest(t *testing.T) {
 	ch := NewSChan()
-	(&Runner{Sequential: true}).Run(func(g *G) {
+	RunSeq(func(g *G) {
 		do := g.Group
 		do(func() {
 			ch.Send("a")
@@ -214,7 +214,7 @@ Scenario: Plain text progress indicator
 func Test5Pass(t *testing.T) {
 	RegisterTestingT(t)
 	var buf bytes.Buffer
-	(&Runner{Output: &buf}).Run(func(g *G) {
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(g *G) {
 		do := g.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -233,7 +233,8 @@ func Test5Pass(t *testing.T) {
 		do("h", func() {
 		})
 	})
-	Expect(buf.String()).To(Equal("....."))
+	out, _ := buf.ReadString('\n')
+	Expect(sortBytes(out)).To(Equal("....."))
 }
 
 /*
@@ -245,7 +246,7 @@ Scenario: Plain text progress indicator
 func Test4Pass1Fail(t *testing.T) {
 	RegisterTestingT(t)
 	var buf bytes.Buffer
-	(&Runner{Output: &buf}).Run(func(g *G) {
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(g *G) {
 		do := g.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -265,7 +266,8 @@ func Test4Pass1Fail(t *testing.T) {
 		do("h", func() {
 		})
 	})
-	Expect(sortBytes(buf.String())).To(Equal("....F"))
+	out, _ := buf.ReadString('\n')
+	Expect(sortBytes(out)).To(Equal("....F"))
 }
 
 /*
@@ -277,7 +279,7 @@ Scenario: Plain text progress indicator
 func Test3Pass2Fail(t *testing.T) {
 	RegisterTestingT(t)
 	var buf bytes.Buffer
-	(&Runner{Output: &buf}).Run(func(g *G) {
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(g *G) {
 		do := g.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -298,7 +300,8 @@ func Test3Pass2Fail(t *testing.T) {
 		do("h", func() {
 		})
 	})
-	Expect(sortBytes(buf.String())).To(Equal("...FF"))
+	out, _ := buf.ReadString('\n')
+	Expect(sortBytes(out)).To(Equal("...FF"))
 }
 
 /*

@@ -37,39 +37,45 @@ func newTreeListener(r Reporter) *treeListener {
 		r: r}
 }
 
-func (c *treeListener) groupStart(g *TestGroup, path []FuncId) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.m[g.Id] != nil {
+func (l *treeListener) setReporter(r Reporter) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.r = r
+}
+
+func (l *treeListener) groupStart(g *TestGroup, path []FuncId) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.m[g.Id] != nil {
 		return
 	}
-	c.Total++
+	l.Total++
 	if len(path) == 0 {
-		c.groups = append(c.groups, g)
+		l.groups = append(l.groups, g)
 	} else {
 		parentId := path[len(path)-1]
-		parent := c.m[parentId] // must exists
+		parent := l.m[parentId] // must exists
 		if len(parent.Children) == 0 {
-			c.Total--
+			l.Total--
 		}
 		parent.Children = append(parent.Children, g)
 		//	g.Parent = parent
 	}
-	c.m[g.Id] = g
-	c.progress(g)
+	l.m[g.Id] = g
+	l.progress(g)
 }
 
-func (c *treeListener) groupEnd(id FuncId, err *TestError) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	g := c.m[id]
+func (l *treeListener) groupEnd(id FuncId, err *TestError) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	g := l.m[id]
 	g.Error = err
 	if len(g.Children) == 0 {
-		c.Ended++
+		l.Ended++
 	}
-	c.progress(g)
+	l.progress(g)
 }
 
-func (c *treeListener) progress(g *TestGroup) {
-	c.r.Progress(g, &c.Stats)
+func (l *treeListener) progress(g *TestGroup) {
+	l.r.Progress(g, &l.Stats)
 }
