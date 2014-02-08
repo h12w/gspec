@@ -12,22 +12,24 @@ type listener interface {
 type treeListener struct {
 	groups []*TestGroup
 	m      map[FuncId]*TestGroup
-	r      Reporter
 	mu     sync.Mutex
+	Reporter
 	Stats
 }
 
 func newTreeListener(r Reporter) *treeListener {
 	return &treeListener{
 		m: make(map[FuncId]*TestGroup),
-		r: r}
+		Reporter: r}
 }
 
+/*
 func (l *treeListener) setReporter(r Reporter) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.r = r
+	l.Reporter = r
 }
+*/
 
 func (l *treeListener) groupStart(g *TestGroup, path []FuncId) {
 	l.mu.Lock()
@@ -63,5 +65,5 @@ func (l *treeListener) groupEnd(id FuncId, err *TestError) {
 }
 
 func (l *treeListener) progress(g *TestGroup) {
-	l.r.Progress(g, &l.Stats)
+	l.Progress(g, &l.Stats)
 }

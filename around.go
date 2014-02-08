@@ -2,12 +2,12 @@ package gspec
 
 type DescFunc func(description string, f func())
 
-func (t *G) Group(f func()) {
+func (t *groupContext) Group(f func()) {
 	alias := t.Alias("")
 	alias("", f)
 }
 
-func (t *G) Alias(name string) DescFunc {
+func (t *groupContext) Alias(name string) DescFunc {
 	if name != "" {
 		name += " "
 	}
@@ -25,11 +25,11 @@ func (t *G) Alias(name string) DescFunc {
 	}
 }
 
-func (t *G) Alias2(n1, n2 string) (_, _ DescFunc) {
+func (t *groupContext) Alias2(n1, n2 string) (_, _ DescFunc) {
 	return t.Alias(n1), t.Alias(n2)
 }
 
-func (t *G) Alias3(n1, n2, n3 string) (_, _, _ DescFunc) {
+func (t *groupContext) Alias3(n1, n2, n3 string) (_, _, _ DescFunc) {
 	return t.Alias(n1), t.Alias(n2), t.Alias(n3)
 }
 

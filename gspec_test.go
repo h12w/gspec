@@ -19,7 +19,6 @@ func init() {
 
 /*
 TODO:
-* new Reporter events
 * report failure location
 * assert
 */
@@ -40,7 +39,7 @@ Scenario: run a test defined in a closure
 */
 func TestRunClosureTest(t *testing.T) {
 	ch := NewSChan()
-	RunSeq(func(g *G) {
+	RunSeq(func(g G) {
 		do := g.Group
 		do(func() {
 			ch.Send("a")
@@ -59,7 +58,7 @@ Scenario: setup a common test context for two tests (before each)
 */
 func TestBeforeEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(g *G) {
+	Run(func(g G) {
 		do := g.Group
 		do(func() {
 			s := "s"
@@ -90,7 +89,7 @@ Scenario: teardown a common test context for two tests (after each)
 */
 func TestAfterEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(g *G) {
+	Run(func(g G) {
 		do := g.Group
 		do(func() {
 			s := ""
@@ -130,7 +129,7 @@ Scenario: nested testing group
 */
 func TestNestedTestingContext(t *testing.T) {
 	ch := NewSChan()
-	Run(func(g *G) {
+	Run(func(g G) {
 		do := g.Group
 		do(func() {
 			s := ""
@@ -176,7 +175,7 @@ Scenario: concurrent running tests
 func TestConcurrentRunning(t *testing.T) {
 	delay := 10 * time.Millisecond
 	tm := time.Now()
-	Run(func(g *G) {
+	Run(func(g G) {
 		do := g.Group
 		do(func() {
 			time.Sleep(delay)
@@ -215,7 +214,7 @@ Scenario: Plain text progress indicator
 func Test5Pass(t *testing.T) {
 	RegisterTestingT(t)
 	var buf bytes.Buffer
-	NewScheduler(NewTextReporter(&buf)).Start(false, func(g *G) {
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
 		do := g.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -247,7 +246,7 @@ Scenario: Plain text progress indicator
 func Test4Pass1Fail(t *testing.T) {
 	RegisterTestingT(t)
 	var buf bytes.Buffer
-	NewScheduler(NewTextReporter(&buf)).Start(false, func(g *G) {
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
 		do := g.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -280,7 +279,7 @@ Scenario: Plain text progress indicator
 func Test3Pass2Fail(t *testing.T) {
 	RegisterTestingT(t)
 	var buf bytes.Buffer
-	NewScheduler(NewTextReporter(&buf)).Start(false, func(g *G) {
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
 		do := g.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -333,7 +332,7 @@ func TestDescriptions(t *testing.T) {
 			ds = append(ds, g.Description)
 		})
 	}
-	Run(func(g *G) {
+	Run(func(g G) {
 		describe, context, it := g.Alias3("describe", "context", "it")
 		describe, it = g.Alias2("describe", "it")
 		describe("a", func() {

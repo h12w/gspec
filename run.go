@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-type RootFunc func(g *G)
+type RootFunc func(g G)
 
 type Scheduler struct {
 	wg sync.WaitGroup
@@ -22,7 +22,9 @@ func NewScheduler(r Reporter) *Scheduler {
 func (r *Scheduler) Start(sequential bool, fs ...RootFunc) {
 	defer func() {
 		r.wg.Wait()
+		r.Reporter.End(r.groups)
 	}()
+	r.Reporter.Start()
 	for _, f := range fs {
 		if sequential {
 			seq{r}.run(f, path{})

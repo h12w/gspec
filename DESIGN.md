@@ -150,9 +150,9 @@ The critical point is the state variables related to test scheduling. There has
 to be a way to guide the test along a path from the root down to a certain leaf.
 The path has to be stored somewhere and should not be shared between test cases.
 Thus, scheduling related variables have to be passed into the goroutine function
-(RootFunc) as an argument (g of type G). e.g.
+(RootFunc) as an argument (g of interface type G). e.g.
 
-    scheduler.Run(func(g *G) {
+    scheduler.Start(func(g G) {
         g.Group(func() {
             g.Group(func() {
                 // test case 1
@@ -165,17 +165,19 @@ Thus, scheduling related variables have to be passed into the goroutine function
 
 where the RootFunc is defined as:
 
-    type RootFunc func(g *G)
+    type RootFunc func(g G)
 
-and variable g of type G contains all the variables needed to control which
-test case to run, and the scheduler makes sure each test case run once
-concurrently (or sequentially).
+and variable g contains all the variables needed to control which test case to
+run, and the scheduler makes sure each test case run once concurrently
+(sequentially).
 
-RESTRICTION: To support concurency, there must be one context variable of type G
-per goroutine. So the Group method cannot be simply defined as a global
-function, and a top-level function of type RootFunc is mandatary for writing
-tests. GSpec has to exchange some simplicty for concurency. (This could be
-compensated by defining aliases for the Group method).
+RESTRICTION:
+* To support concurency, there must be one context variable of type G per
+  goroutine. So the Group method cannot be simply defined as a global function,
+  and a top-level function of type RootFunc is mandatary for writing tests.
+  GSpec has to exchange some simplicty for concurency (This could be compensated
+  by defining aliases for the Group method).
+* For loop should not be defined in any places excpet the closure of leaf node.
 
 ###Test Gathering
 "go test" gathers test functions with specific function/file naming conventions.
@@ -183,12 +185,14 @@ GSpec should also be able to gather tests across test functions/files.
 
 Unlike the group context G, the scheduler can be shared by all goroutines as
 long as carefully locked. So RootFuncs can be defined anywhere and are gathered
-by a singleton scheduler in any "go test" function(s).
+by a single scheduler in one "go test" function. This requires Scheduler.Start
+accepts multiple RootFuncs.
 
-RESTRICTION: Test results cannot be generated as a whole after all tests finish.
+RESTRICTION:
 There is no finalization hook provided by "go test", so there is no way to know
-when all tests finish. The only possible way is to output the result for each
-RootFunc, but this may not necessarily affect test reporting.
+when all test functions finish. The only possible way is to output the result
+for each test gathering (Scheduler.Start). So RootFuncs should be better
+gathered in a single "go test" function.
 
 ###Test Specification
 GSpec should be able to generate a structured, readable plain text specification
@@ -232,8 +236,15 @@ GSpec should contain a builtin reporter:
 * In default mode, it should display nothing but the failure information.
 * In verbose mode, it should display an additional progress line (.F*).
 
-If a reporter instance needs to serve multiple "go test" test functions, it must
-be locked when called (?).
+RESTRICTION:
+* If there is a single test scheduler in a single "go test" function, then a
+single reporter instance that serves it needs no locking. (Recommended)
+needed.
+* If there are multiple test schedulers, there should be a single reporeter
+instance to seve them all and it needs to be locked.
+* If there are multiple test schedulers and one reporter per scheduler, then
+"go test" functions should not be run concurrently.
+* Otherwise, test cases could be printed interwaved in console.
 
 ###Failure
 When test code panicks, "go test" prints the error and terminates immediately.
@@ -249,6 +260,13 @@ print the error message and terminate immediately. (fail fast)
 ###Timeout
 
 ###Matchers
+
+###Table-driven Testing
+There are 2 ways:
+* Define the for-loop in leaf node
+* Define the for-loop out side of RootFunc
+  A for-loop arround a higher order function that accepts the test variable and
+  returns a RootFunc.
 
 ###Focus Mode
 ####Support metadata for each test group?

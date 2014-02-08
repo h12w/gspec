@@ -20,8 +20,8 @@ type TestError struct {
 }
 
 type Reporter interface {
-	TopGroupStart(g *TestGroup)
-	TopGroupEnd(g *TestGroup)
+	Start()
+	End(groups []*TestGroup)
 	Progress(g *TestGroup, s *Stats)
 }
 
@@ -42,11 +42,11 @@ func NewTextReporter(w io.Writer) *TextReporter {
 	return &TextReporter{w: w}
 }
 
-func (l *TextReporter) TopGroupStart(g *TestGroup) {
+func (l *TextReporter) Start() {
 	l.Stats = Stats{}
 }
 
-func (l *TextReporter) TopGroupEnd(g *TestGroup) {
+func (l *TextReporter) End(groups []*TestGroup) {
 	fmt.Fprintln(l.w, "")
 }
 

@@ -1,10 +1,10 @@
 package gspec
 
 import (
+	"io/ioutil"
 	"sort"
 	"strings"
 	"sync"
-	"io/ioutil"
 )
 
 var (

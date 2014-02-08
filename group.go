@@ -1,13 +1,18 @@
 package gspec
 
-// The interface for G to call back
+type G interface {
+	Group(f func())
+	Alias(name string) DescFunc
+}
+
+// The interface for groupContext to call back
 type scheduler interface {
 	run(f RootFunc, p path)
 	listener
 }
 
-// G contains minimal context needed to implement nested test group
-type G struct {
+// groupContext contains minimal context needed to implement nested test group
+type groupContext struct {
 	f         RootFunc
 	dst       path
 	cur       path
@@ -16,11 +21,11 @@ type G struct {
 	scheduler
 }
 
-func newG(f RootFunc, p path, s scheduler) *G {
-	return &G{f: f, dst: p, scheduler: s}
+func newG(f RootFunc, p path, s scheduler) *groupContext {
+	return &groupContext{f: f, dst: p, scheduler: s}
 }
 
-func (t *G) group(id FuncId, f func()) {
+func (t *groupContext) group(id FuncId, f func()) {
 	t.cur.push(id)
 	defer t.cur.pop()
 	if !t.cur.onPath(t.dst) {
