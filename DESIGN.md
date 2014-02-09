@@ -284,6 +284,13 @@ have higher priority than hard coded value so that can be changed at runtime.
 
 ###Auto Test
 
+Usage Guidelines
+----------------
+* Write abstract specifications in text; write concrete examples in code.
+* Use given-when-then pattern to describe the context, input and expected
+  behavior of the software.
+* One expectation per test case.
+
 Existing Go Testing Frameworks
 ------------------------------
 ###xUnit Style
