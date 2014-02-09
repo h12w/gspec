@@ -10,5 +10,5 @@ install:
 script:
   - go test -covermode=count -coverprofile=profile.cov
   - export PATH=$PATH:$HOME/gopath/bin/
-  - goveralls -coverprofile=profile.cov -repotoken=ujwDbhKNAMHPWJD6wu1gHlH7vw6EnSPgA
+# - goveralls -coverprofile=profile.cov -repotoken=ujwDbhKNAMHPWJD6wu1gHlH7vw6EnSPgA
 
