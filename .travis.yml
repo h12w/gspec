@@ -2,6 +2,9 @@ language: go
 go:
 - 1.2
 
+notifications:
+  email: false
+
 before_install:
 - go get github.com/onsi/gomega
 - go get code.google.com/p/go.tools/cmd/cover
