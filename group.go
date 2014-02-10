@@ -1,17 +1,17 @@
 package gspec
 
+// G holds an internal object that contains minimal context needed to implement
+// nested test group.
 type G interface {
-	Group(f func())
 	Alias(name string) DescFunc
 }
 
-// The interface for groupContext to call back
+// The interface for groupContext to call back.
 type scheduler interface {
 	run(f RootFunc, p path)
 	listener
 }
 
-// groupContext contains minimal context needed to implement nested test group
 type groupContext struct {
 	f         RootFunc
 	dst       path
@@ -25,7 +25,7 @@ func newG(f RootFunc, p path, s scheduler) *groupContext {
 	return &groupContext{f: f, dst: p, scheduler: s}
 }
 
-func (t *groupContext) group(id FuncId, f func()) {
+func (t *groupContext) group(id FuncID, f func()) {
 	t.cur.push(id)
 	defer t.cur.pop()
 	if !t.cur.onPath(t.dst) {
@@ -43,14 +43,14 @@ func (t *groupContext) group(id FuncId, f func()) {
 }
 
 type path struct {
-	a []FuncId
+	a []FuncID
 }
 
-func (p *path) push(i FuncId) {
+func (p *path) push(i FuncID) {
 	p.a = append(p.a, i)
 }
 
-func (p *path) pop() (i FuncId) {
+func (p *path) pop() (i FuncID) {
 	if len(p.a) == 0 {
 		panic("call pop when path is empty.")
 	}
@@ -58,8 +58,8 @@ func (p *path) pop() (i FuncId) {
 	return
 }
 
-func (p *path) slice() []FuncId {
-	return append([]FuncId{}, p.a...)
+func (p *path) slice() []FuncID {
+	return append([]FuncID{}, p.a...)
 }
 
 func (p *path) clone() path {

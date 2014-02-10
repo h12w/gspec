@@ -8,24 +8,29 @@ import (
 	"sync"
 )
 
+// RootFunc is the type of the function called for each test case.
 type RootFunc func(g G)
 
+// A Scheduler schedules test running.
 type Scheduler struct {
 	wg sync.WaitGroup
 	*treeListener
 }
 
+// NewScheduler creates and intialize a new Scheduler using r as the test
+// reporter.
 func NewScheduler(r Reporter) *Scheduler {
 	return &Scheduler{treeListener: newTreeListener(r)}
 }
 
-func (r *Scheduler) Start(sequential bool, fs ...RootFunc) {
+// Start starts tests defined in funcs concurrently or sequentially.
+func (r *Scheduler) Start(sequential bool, funcs ...RootFunc) {
 	defer func() {
 		r.wg.Wait()
 		r.Reporter.End(r.groups)
 	}()
 	r.Reporter.Start()
-	for _, f := range fs {
+	for _, f := range funcs {
 		if sequential {
 			seq{r}.run(f, path{})
 		} else {

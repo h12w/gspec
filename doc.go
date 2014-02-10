@@ -3,8 +3,8 @@
 // license that can be found in the LICENSE file.
 
 /*
-GSpec is a Go testing framework that makes it easy to organize and verify the
-mind model of software.
+Package gspec is a Go testing framework that makes it easy to organize and
+verify the mind model of software.
 
 Design goals:
 

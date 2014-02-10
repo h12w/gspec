@@ -74,13 +74,13 @@ func (c *SChan) equal(ss []string) bool {
 }
 
 /*
-type CollectFunc func(g *TestGroup, path []FuncId)
+type CollectFunc func(g *TestGroup, path []FuncID)
 
-func (f CollectFunc) groupStart(g *TestGroup, path []FuncId) {
+func (f CollectFunc) groupStart(g *TestGroup, path []FuncID) {
 	f(g, path)
 }
 
-func (f CollectFunc) groupEnd(id FuncId, err *TestError) {
+func (f CollectFunc) groupEnd(id FuncID, err *TestError) {
 }
 
 func (f CollectFunc) start() {

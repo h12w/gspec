@@ -1,5 +1,7 @@
 package gspec
 
+// DescFunc is the type of the function to define a test group with a
+// descritpion and a closure.
 type DescFunc func(description string, f func())
 
 func (t *groupContext) Group(f func()) {
@@ -12,10 +14,10 @@ func (t *groupContext) Alias(name string) DescFunc {
 		name += " "
 	}
 	return func(description string, f func()) {
-		id := getFuncId(f)
+		id := getFuncID(f)
 		path := t.cur.slice()
 		g := &TestGroup{
-			Id:          id,
+			ID:          id,
 			Description: name + description,
 		}
 		t.group(id, func() {

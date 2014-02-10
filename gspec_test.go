@@ -31,6 +31,10 @@ I want to write tests
 So that I can get my test code run (sequentially or concurrently)
 */
 
+func aliasDo(g G) func(func()) {
+	return func(f func()) { g.Alias("")("", f) }
+}
+
 /*
 Scenario: run a test defined in a closure
 	Given a test defined in a closure
@@ -40,7 +44,7 @@ Scenario: run a test defined in a closure
 func TestRunClosureTest(t *testing.T) {
 	ch := NewSChan()
 	RunSeq(func(g G) {
-		do := g.Group
+		do := aliasDo(g)
 		do(func() {
 			ch.Send("a")
 		})
@@ -59,7 +63,7 @@ Scenario: setup a common test context for two tests (before each)
 func TestBeforeEach(t *testing.T) {
 	ch := NewSChan()
 	Run(func(g G) {
-		do := g.Group
+		do := aliasDo(g)
 		do(func() {
 			s := "s"
 			do(func() {
@@ -90,7 +94,7 @@ Scenario: teardown a common test context for two tests (after each)
 func TestAfterEach(t *testing.T) {
 	ch := NewSChan()
 	Run(func(g G) {
-		do := g.Group
+		do := aliasDo(g)
 		do(func() {
 			s := ""
 			defer func() {
@@ -130,7 +134,7 @@ Scenario: nested testing group
 func TestNestedTestingContext(t *testing.T) {
 	ch := NewSChan()
 	Run(func(g G) {
-		do := g.Group
+		do := aliasDo(g)
 		do(func() {
 			s := ""
 			defer func() {
@@ -176,7 +180,7 @@ func TestConcurrentRunning(t *testing.T) {
 	delay := 10 * time.Millisecond
 	tm := time.Now()
 	Run(func(g G) {
-		do := g.Group
+		do := aliasDo(g)
 		do(func() {
 			time.Sleep(delay)
 			do(func() {
@@ -328,7 +332,7 @@ func TestDescriptions(t *testing.T) {
 	RegisterTestingT(t)
 	ds := []string{}
 	NewCollector = func() collector {
-		return CollectFunc(func(g *TestGroup, path []FuncId) {
+		return CollectFunc(func(g *TestGroup, path []FuncID) {
 			ds = append(ds, g.Description)
 		})
 	}
@@ -355,51 +359,51 @@ func TestTreeListener(t *testing.T) {
 	RegisterTestingT(t)
 	co := newTreeListener(NewTextReporter(os.Stdout))
 	a := &TestGroup{
-		Id:          1,
+		ID:          1,
 		Description: "a",
 	}
 	b := &TestGroup{
-		Id:          2,
+		ID:          2,
 		Description: "b",
 	}
 	c := &TestGroup{
-		Id:          3,
+		ID:          3,
 		Description: "c",
 	}
-	cp := []FuncId{1, 2}
+	cp := []FuncID{1, 2}
 	d := &TestGroup{
-		Id:          4,
+		ID:          4,
 		Description: "d",
 	}
 	z := &TestGroup{
-		Id:          5,
+		ID:          5,
 		Description: "z",
 	}
-	co.groupStart(a, []FuncId{})
-	co.groupStart(b, []FuncId{1})
+	co.groupStart(a, []FuncID{})
+	co.groupStart(b, []FuncID{1})
 	co.groupStart(c, cp)
 	c.Error = &TestError{}
-	co.groupStart(a, []FuncId{})
-	co.groupStart(b, []FuncId{1})
-	co.groupStart(d, []FuncId{1, 2})
-	co.groupStart(z, []FuncId{})
+	co.groupStart(a, []FuncID{})
+	co.groupStart(b, []FuncID{1})
+	co.groupStart(d, []FuncID{1, 2})
+	co.groupStart(z, []FuncID{})
 
 	exp := []*TestGroup{
 		&TestGroup{
-			Id:          1,
+			ID:          1,
 			Description: "a",
 			Children: []*TestGroup{
 				&TestGroup{
-					Id:          2,
+					ID:          2,
 					Description: "b",
 					Children: []*TestGroup{
 						&TestGroup{
-							Id:          3,
+							ID:          3,
 							Description: "c",
 							Error:       c.Error,
 						},
 						&TestGroup{
-							Id:          4,
+							ID:          4,
 							Description: "d",
 						},
 					},
@@ -407,20 +411,20 @@ func TestTreeListener(t *testing.T) {
 			},
 		},
 		&TestGroup{
-			Id:          5,
+			ID:          5,
 			Description: "z",
 		},
 	}
 	Expect(co.groups).To(Equal(exp), "TreeListener fail to reconstruct correct tree")
 }
 
-func TestFuncUniqueId(t *testing.T) {
+func TestFuncUniqueID(t *testing.T) {
 	f1 := func() {}
 	f2 := func() {}
-	if getFuncId(f1) != getFuncId(f1) {
+	if getFuncID(f1) != getFuncID(f1) {
 		t.Fatalf("Does not return the same id for the same function.")
 	}
-	if getFuncId(f1) == getFuncId(f2) {
+	if getFuncID(f1) == getFuncID(f2) {
 		t.Fatalf("Return the same id for different functions.")
 	}
 }
@@ -430,12 +434,12 @@ func TestPath(t *testing.T) {
 	p := path{}
 	p.push(1)
 	p.push(2)
-	Expect(p.a).To(Equal([]FuncId{1, 2}), "path.push failed")
+	Expect(p.a).To(Equal([]FuncID{1, 2}), "path.push failed")
 	i := p.pop()
-	Expect(p.a).To(Equal([]FuncId{1}), "path.pop failed")
-	Expect(i).To(Equal(FuncId(2)), "path.pop failed")
+	Expect(p.a).To(Equal([]FuncID{1}), "path.pop failed")
+	Expect(i).To(Equal(FuncID(2)), "path.pop failed")
 	i = p.pop()
-	Expect(p.a).To(Equal([]FuncId{}), "path.pop failed")
+	Expect(p.a).To(Equal([]FuncID{}), "path.pop failed")
 	Expect(func() { p.pop() }).To(Panic(), "path.pop should panic when empty")
 }
 
