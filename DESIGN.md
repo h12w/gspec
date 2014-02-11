@@ -118,7 +118,7 @@ e.g.
         })
     })
 
-A limitation of lacking a dedicated setup method is: when the setup panicks,
+A limitation of lacking a dedicated setup method is: when the setup panics,
 GSpec can only give the panicking postion but cannot tell it is a leaf node or
 it still has children. However, it is a tolerable tradeoff.
 
@@ -246,20 +246,26 @@ instance to seve them all and it needs to be locked.
 "go test" functions should not be run concurrently.
 * Otherwise, test cases could be printed interwaved in console.
 
-###Failure
-When test code panicks, "go test" prints the error and terminates immediately.
-GSpec should respect this design.
-
-When an expectation (assertion) fails, GSpec should record the error and
-continue running other test cases. t.Fail should be called to notify "go test"
-there are failures.
+###Panicking
+When test code panics, "go test" prints the error and terminates immediately.
+GSpec should respect this design:
+* Simple way is just to repanicking in goroutine, which causes the process
+  terminates.
+* For a cleaner error message, print a better message and call os.Exit.
 
 GSpec itself could have internal bugs and fail, when it happens, GSpec should
-print the error message and terminate immediately. (fail fast)
+panic immediately. (fail fast)
+
+###Expectation
+When an expectation (assertion) fails, It should *not* panic. Instead, GSpec
+should provide a method to record the error and continue running other test
+cases. t.Fail should be called to notify "go test" there are failures.
+
+This also means that there should be only one expectation for a test case.
+
+Expectations should be provided as a separate package (gspec/expect).
 
 ###Timeout
-
-###Matchers
 
 ###Table-driven Testing
 There are 2 ways:
@@ -267,6 +273,8 @@ There are 2 ways:
 * Define the for-loop out side of RootFunc
   A for-loop arround a higher order function that accepts the test variable and
   returns a RootFunc.
+* Use for-loop to wrap a non-leaf node (TODO: need fixes, otherwise it will not
+  distinguish each run of the same closure).
 
 ###Focus Mode
 ####Support metadata for each test group?
@@ -281,6 +289,7 @@ Options of GSpec should able to set hard coded or via CLI flags. Flag should
 have higher priority than hard coded value so that can be changed at runtime.
 
 ###Mock
+Integration with gomock.
 
 ###Auto Test
 

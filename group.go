@@ -4,6 +4,7 @@ package gspec
 // nested test group.
 type G interface {
 	Alias(name string) DescFunc
+	Fail(err error)
 }
 
 // The interface for groupContext to call back.
@@ -18,6 +19,7 @@ type groupContext struct {
 	cur       path
 	skipRest  bool
 	skipCount int
+	err       error
 	scheduler
 }
 
@@ -39,6 +41,13 @@ func (t *groupContext) group(id FuncID, f func()) {
 	f()
 	if sc == t.skipCount { // true when f is a leaf node
 		t.skipRest = true
+	}
+}
+
+// Fail notify that the test case has failed with an error.
+func (t *groupContext) Fail(err error) {
+	if t.err != nil {
+		t.err = err // only keeps the first failure.
 	}
 }
 

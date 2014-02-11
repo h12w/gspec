@@ -6,11 +6,11 @@ package gspec
 
 import (
 	"bytes"
-	. "github.com/onsi/gomega"
 	"os"
 	"runtime"
 	"testing"
 	"time"
+	exp "github.com/hailiang/gspec/expectation"
 )
 
 func init() {
@@ -216,7 +216,7 @@ Scenario: Plain text progress indicator
 	Then I should see 5 dots: "....."
 */
 func Test5Pass(t *testing.T) {
-	RegisterTestingT(t)
+	expect := exp.AliasForT(t)
 	var buf bytes.Buffer
 	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
 		do := g.Alias("")
@@ -238,7 +238,7 @@ func Test5Pass(t *testing.T) {
 		})
 	})
 	out, _ := buf.ReadString('\n')
-	Expect(sortBytes(out)).To(Equal("....."))
+	expect(sortBytes(out)).Equal(".....")
 }
 
 /*
@@ -248,7 +248,7 @@ Scenario: Plain text progress indicator
 	Then I should see 4 dots with 1 F: "..F.."
 */
 func Test4Pass1Fail(t *testing.T) {
-	RegisterTestingT(t)
+	expect := exp.AliasForT(t)
 	var buf bytes.Buffer
 	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
 		do := g.Alias("")
@@ -271,7 +271,7 @@ func Test4Pass1Fail(t *testing.T) {
 		})
 	})
 	out, _ := buf.ReadString('\n')
-	Expect(sortBytes(out)).To(Equal("....F"))
+	expect(sortBytes(out)).Equal("....F")
 }
 
 /*
@@ -281,7 +281,7 @@ Scenario: Plain text progress indicator
 	Then I should see 3 dots with 2 F: "..F.."
 */
 func Test3Pass2Fail(t *testing.T) {
-	RegisterTestingT(t)
+	expect := exp.AliasForT(t)
 	var buf bytes.Buffer
 	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
 		do := g.Alias("")
@@ -305,7 +305,7 @@ func Test3Pass2Fail(t *testing.T) {
 		})
 	})
 	out, _ := buf.ReadString('\n')
-	Expect(sortBytes(out)).To(Equal("...FF"))
+	expect(sortBytes(out)).Equal("...FF")
 }
 
 /*
@@ -356,7 +356,7 @@ Story: Internal Tests
 */
 
 func TestTreeListener(t *testing.T) {
-	RegisterTestingT(t)
+	expect := exp.AliasForT(t)
 	co := newTreeListener(NewTextReporter(os.Stdout))
 	a := &TestGroup{
 		ID:          1,
@@ -415,7 +415,7 @@ func TestTreeListener(t *testing.T) {
 			Description: "z",
 		},
 	}
-	Expect(co.groups).To(Equal(exp), "TreeListener fail to reconstruct correct tree")
+	expect(co.groups).Equal(exp)//, "TreeListener fail to reconstruct correct tree"
 }
 
 func TestFuncUniqueID(t *testing.T) {
@@ -430,17 +430,17 @@ func TestFuncUniqueID(t *testing.T) {
 }
 
 func TestPath(t *testing.T) {
-	RegisterTestingT(t)
+	expect := exp.AliasForT(t)
 	p := path{}
 	p.push(1)
 	p.push(2)
-	Expect(p.a).To(Equal([]FuncID{1, 2}), "path.push failed")
+	expect(p.a).Equal([]FuncID{1, 2})//, "path.push failed")
 	i := p.pop()
-	Expect(p.a).To(Equal([]FuncID{1}), "path.pop failed")
-	Expect(i).To(Equal(FuncID(2)), "path.pop failed")
+	expect(p.a).Equal([]FuncID{1})//, "path.pop failed")
+	expect(i).Equal(FuncID(2))//, "path.pop failed")
 	i = p.pop()
-	Expect(p.a).To(Equal([]FuncID{}), "path.pop failed")
-	Expect(func() { p.pop() }).To(Panic(), "path.pop should panic when empty")
+	expect(p.a).Equal([]FuncID{})//, "path.pop failed")
+	expect(func() { p.pop() }).Panic()//, "path.pop should panic when empty")
 }
 
 func TestP(t *testing.T) {

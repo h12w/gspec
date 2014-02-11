@@ -4,11 +4,6 @@ package gspec
 // descritpion and a closure.
 type DescFunc func(description string, f func())
 
-func (t *groupContext) Group(f func()) {
-	alias := t.Alias("")
-	alias("", f)
-}
-
 func (t *groupContext) Alias(name string) DescFunc {
 	if name != "" {
 		name += " "
@@ -22,17 +17,16 @@ func (t *groupContext) Alias(name string) DescFunc {
 		}
 		t.group(id, func() {
 			t.groupStart(g, path)
-			t.groupEnd(id, capturePanic(f))
+			terr := capturePanic(f)
+			if terr == nil {
+				if t.err != nil {
+					terr = &TestError{Err: t.err} // TODO: fill other fields
+					t.err = nil
+				}
+			}
+			t.groupEnd(id, terr)
 		})
 	}
-}
-
-func (t *groupContext) Alias2(n1, n2 string) (_, _ DescFunc) {
-	return t.Alias(n1), t.Alias(n2)
-}
-
-func (t *groupContext) Alias3(n1, n2, n3 string) (_, _, _ DescFunc) {
-	return t.Alias(n1), t.Alias(n2), t.Alias(n3)
 }
 
 func capturePanic(f func()) (terr *TestError) {
@@ -43,6 +37,7 @@ func capturePanic(f func()) (terr *TestError) {
 				File: "",
 				Line: 0,
 			}
+			// TODO: print error, terminate all tests and exit
 		}
 	}()
 	f()

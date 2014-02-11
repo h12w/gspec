@@ -6,7 +6,6 @@ notifications:
   email: false
 
 before_install:
-- go get github.com/onsi/gomega
 - go get code.google.com/p/go.tools/cmd/cover
 - go get github.com/mattn/goveralls
 - go get code.google.com/p/go.tools/cmd/vet
@@ -17,7 +16,8 @@ env:
   - secure: NWJjfXUllkkusSLQujaUTHrwW6mRtNVa9y+wxog5X2zWv4/OckAXmA1B26RQ+hJs3ndGRn2V8XGq68N8L1XTD3VeSldmrlk4Y2eHU+EGkhd5+zS70GjeYr0RrxeiqhQ6QV0m4HcFM2iqi1DwUCQQcrln0XmJXZbJX3dQ4AV5YNQ=
 
 script:
-- go vet
+- go vet -n ./...
 - $HOME/gopath/bin/golint .
+# TODO: coverage inluding subpackages
 - go test -covermode=count -coverprofile=profile.cov
 - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -repotoken $REPO_TOKEN
