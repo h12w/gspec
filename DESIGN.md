@@ -3,13 +3,13 @@ Design of GSepc
 
 Introduction
 ------------
-GSpec is a Go testing framework that makes it easy to organize and verify the
-mind model of software.
+GSpec is a concurrent, minimal, extensible and reliable testing framework in Go
+that makes it easy to organize and verify the mind model of software.
 
 Design goals:
 
 * It should be natual to write readable and runnable specifications.
-* It should be an extension rather than replacement to "go test".
+* It should be an enhancement rather than replacement to "go test".
 * It should be reliable by robust design and 100% test coverage.
 * It should be minimal and extensible.
 
@@ -32,15 +32,14 @@ Features
 The following sections are organized in the sequence of design decisions, from
 major features to minor ones.
 
-###Extend "go test"
-GSpec should not break but extend existing features that "go test" provides:
+###Enhancing "go test"
+GSpec should not break but enhance existing features that "go test" provides:
 
 * "go test" command is the only way to run tests.
 * Besides concurency at the level of test functions, GSpec should support
   concurency at the level of each expectation.
-* GSpec should be able to split tests into multiple test functions/files.
-* GSpec should be able to print helpful and easily readable messages when a test
-  case fails.
+* GSpec should be able to separate tests into multiple test functions/files.
+* GSpec should be able to output readable and helpful error messages.
 
 ###Test Case
 A test case needs running some code and verifying the result. Further, the code
@@ -315,7 +314,7 @@ Existing Go Testing Frameworks
 * github.com/azer/mao
 * github.com/pranavraja/zen (forked from mao)
 
-###Matcher
+###Expectations (assertions)
 * github.com/onsi/gomega
 * launchpad.net/gocheck
 * github.com/stretchr/testify

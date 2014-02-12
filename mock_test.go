@@ -11,11 +11,11 @@ var (
 	globalScheduler = NewScheduler(NewTextReporter(ioutil.Discard))
 )
 
-func Run(f ...RootFunc) {
+func Run(f ...TestFunc) {
 	globalScheduler.Start(false, f...)
 }
 
-func RunSeq(f ...RootFunc) {
+func RunSeq(f ...TestFunc) {
 	globalScheduler.Start(true, f...)
 }
 

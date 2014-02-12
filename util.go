@@ -15,10 +15,12 @@ func p(v ...interface{}) error {
 }
 
 // FuncID is an ID unique for each function (closure)
-type FuncID uintptr
+type FuncID struct {
+	p uintptr
+}
 
 func getFuncID(f interface{}) FuncID {
-	return FuncID(reflect.ValueOf(f).Pointer())
+	return FuncID{reflect.ValueOf(f).Pointer()}
 }
 
 func imin(a, b int) int {

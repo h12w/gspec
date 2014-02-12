@@ -6,11 +6,11 @@ package gspec
 
 import (
 	"bytes"
+	exp "github.com/hailiang/gspec/expectation"
 	"os"
 	"runtime"
 	"testing"
 	"time"
-	exp "github.com/hailiang/gspec/expectation"
 )
 
 func init() {
@@ -20,7 +20,6 @@ func init() {
 /*
 TODO:
 * report failure location
-* assert
 */
 
 /*
@@ -31,8 +30,8 @@ I want to write tests
 So that I can get my test code run (sequentially or concurrently)
 */
 
-func aliasDo(g G) func(func()) {
-	return func(f func()) { g.Alias("")("", f) }
+func aliasDo(s S) func(func()) {
+	return func(f func()) { s.Alias("")("", f) }
 }
 
 /*
@@ -43,8 +42,8 @@ Scenario: run a test defined in a closure
 */
 func TestRunClosureTest(t *testing.T) {
 	ch := NewSChan()
-	RunSeq(func(g G) {
-		do := aliasDo(g)
+	RunSeq(func(s S) {
+		do := aliasDo(s)
 		do(func() {
 			ch.Send("a")
 		})
@@ -62,8 +61,8 @@ Scenario: setup a common test context for two tests (before each)
 */
 func TestBeforeEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(g G) {
-		do := aliasDo(g)
+	Run(func(s S) {
+		do := aliasDo(s)
 		do(func() {
 			s := "s"
 			do(func() {
@@ -93,8 +92,8 @@ Scenario: teardown a common test context for two tests (after each)
 */
 func TestAfterEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(g G) {
-		do := aliasDo(g)
+	Run(func(s S) {
+		do := aliasDo(s)
 		do(func() {
 			s := ""
 			defer func() {
@@ -133,8 +132,8 @@ Scenario: nested testing group
 */
 func TestNestedTestingContext(t *testing.T) {
 	ch := NewSChan()
-	Run(func(g G) {
-		do := aliasDo(g)
+	Run(func(s S) {
+		do := aliasDo(s)
 		do(func() {
 			s := ""
 			defer func() {
@@ -171,16 +170,16 @@ func TestNestedTestingContext(t *testing.T) {
 
 /*
 Scenario: concurrent running tests
-	Given 5 identical time consuming test cases
+	Given N (N > 2) identical time consuming test cases
 	When they are completed
-	Then the time to run all should be 2 to 3 times of one test rather than 5 times
+	Then the time to run all should be 2 to 3 times of one test rather than N times
 		(the first test must return first then the rest tests can be discovered and run simultaneously)
 */
 func TestConcurrentRunning(t *testing.T) {
 	delay := 10 * time.Millisecond
 	tm := time.Now()
-	Run(func(g G) {
-		do := aliasDo(g)
+	Run(func(s S) {
+		do := aliasDo(s)
 		do(func() {
 			time.Sleep(delay)
 			do(func() {
@@ -189,14 +188,16 @@ func TestConcurrentRunning(t *testing.T) {
 			})
 			do(func() {
 			})
-			do(func() {
-			})
-			do(func() {
-			})
+		})
+		do(func() {
+			time.Sleep(delay)
+		})
+		do(func() {
+			time.Sleep(delay)
 		})
 	})
 	d := time.Now().Sub(tm)
-	if d > time.Duration(2.4*float64(delay)) {
+	if d > time.Duration(2.3*float64(delay)) {
 		t.Fatalf("Tests are not run concurrently, duration: %v", d)
 	}
 }
@@ -218,8 +219,8 @@ Scenario: Plain text progress indicator
 func Test5Pass(t *testing.T) {
 	expect := exp.AliasForT(t)
 	var buf bytes.Buffer
-	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
-		do := g.Alias("")
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(s S) {
+		do := s.Alias("")
 		do("a", func() {
 			do("a-b", func() {
 			})
@@ -250,8 +251,8 @@ Scenario: Plain text progress indicator
 func Test4Pass1Fail(t *testing.T) {
 	expect := exp.AliasForT(t)
 	var buf bytes.Buffer
-	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
-		do := g.Alias("")
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(s S) {
+		do := s.Alias("")
 		do("a", func() {
 			do("a-b", func() {
 			})
@@ -283,8 +284,8 @@ Scenario: Plain text progress indicator
 func Test3Pass2Fail(t *testing.T) {
 	expect := exp.AliasForT(t)
 	var buf bytes.Buffer
-	NewScheduler(NewTextReporter(&buf)).Start(false, func(g G) {
-		do := g.Alias("")
+	NewScheduler(NewTextReporter(&buf)).Start(false, func(s S) {
+		do := s.Alias("")
 		do("a", func() {
 			do("a-b", func() {
 			})
@@ -336,7 +337,7 @@ func TestDescriptions(t *testing.T) {
 			ds = append(ds, g.Description)
 		})
 	}
-	Run(func(g G) {
+	Run(func(s S) {
 		describe, context, it := g.Alias3("describe", "context", "it")
 		describe, it = g.Alias2("describe", "it")
 		describe("a", func() {
@@ -359,51 +360,51 @@ func TestTreeListener(t *testing.T) {
 	expect := exp.AliasForT(t)
 	co := newTreeListener(NewTextReporter(os.Stdout))
 	a := &TestGroup{
-		ID:          1,
+		ID:          FuncID{1},
 		Description: "a",
 	}
 	b := &TestGroup{
-		ID:          2,
+		ID:          FuncID{2},
 		Description: "b",
 	}
 	c := &TestGroup{
-		ID:          3,
+		ID:          FuncID{3},
 		Description: "c",
 	}
-	cp := []FuncID{1, 2}
+	cp := []FuncID{{1}, {2}}
 	d := &TestGroup{
-		ID:          4,
+		ID:          FuncID{4},
 		Description: "d",
 	}
 	z := &TestGroup{
-		ID:          5,
+		ID:          FuncID{5},
 		Description: "z",
 	}
 	co.groupStart(a, []FuncID{})
-	co.groupStart(b, []FuncID{1})
+	co.groupStart(b, []FuncID{{1}})
 	co.groupStart(c, cp)
 	c.Error = &TestError{}
 	co.groupStart(a, []FuncID{})
-	co.groupStart(b, []FuncID{1})
-	co.groupStart(d, []FuncID{1, 2})
+	co.groupStart(b, []FuncID{{1}})
+	co.groupStart(d, []FuncID{{1}, {2}})
 	co.groupStart(z, []FuncID{})
 
 	exp := []*TestGroup{
 		&TestGroup{
-			ID:          1,
+			ID:          FuncID{1},
 			Description: "a",
 			Children: []*TestGroup{
 				&TestGroup{
-					ID:          2,
+					ID:          FuncID{2},
 					Description: "b",
 					Children: []*TestGroup{
 						&TestGroup{
-							ID:          3,
+							ID:          FuncID{3},
 							Description: "c",
 							Error:       c.Error,
 						},
 						&TestGroup{
-							ID:          4,
+							ID:          FuncID{4},
 							Description: "d",
 						},
 					},
@@ -411,11 +412,11 @@ func TestTreeListener(t *testing.T) {
 			},
 		},
 		&TestGroup{
-			ID:          5,
+			ID:          FuncID{5},
 			Description: "z",
 		},
 	}
-	expect(co.groups).Equal(exp)//, "TreeListener fail to reconstruct correct tree"
+	expect(co.groups).Equal(exp) //, "TreeListener fail to reconstruct correct tree"
 }
 
 func TestFuncUniqueID(t *testing.T) {
@@ -432,15 +433,15 @@ func TestFuncUniqueID(t *testing.T) {
 func TestPath(t *testing.T) {
 	expect := exp.AliasForT(t)
 	p := path{}
-	p.push(1)
-	p.push(2)
-	expect(p.a).Equal([]FuncID{1, 2})//, "path.push failed")
+	p.push(FuncID{1})
+	p.push(FuncID{2})
+	expect(p.a).Equal([]FuncID{{1}, {2}}) //, "path.push failed")
 	i := p.pop()
-	expect(p.a).Equal([]FuncID{1})//, "path.pop failed")
-	expect(i).Equal(FuncID(2))//, "path.pop failed")
+	expect(p.a).Equal([]FuncID{{1}}) //, "path.pop failed")
+	expect(i).Equal(FuncID{2})       //, "path.pop failed")
 	i = p.pop()
-	expect(p.a).Equal([]FuncID{})//, "path.pop failed")
-	expect(func() { p.pop() }).Panic()//, "path.pop should panic when empty")
+	expect(p.a).Equal([]FuncID{})      //, "path.pop failed")
+	expect(func() { p.pop() }).Panic() //, "path.pop should panic when empty")
 }
 
 func TestP(t *testing.T) {
