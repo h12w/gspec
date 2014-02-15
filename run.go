@@ -1,94 +1,90 @@
 package gspec
 
-import (
-	"sync"
-)
-
-type grouper interface {
-	group(id FuncID, f func())
-	current() []FuncID
-}
+import "sync"
 
 type runner struct {
-	f    TestFunc
-	wg   *sync.WaitGroup
-	newS func(grouper) S
+	f       TestFunc
+	wg      *sync.WaitGroup
+	newSpec func(*group) S
 }
 
-func (r runner) runCon(dst path) {
+func (r *runner) run(sequential bool) {
+	if sequential {
+		r.runSeq(path{})
+	} else {
+		r.runCon(path{})
+	}
+}
+
+func (r *runner) runCon(dst path) {
 	r.wg.Add(1)
 	go func() {
 		defer r.wg.Done()
-		r.f(r.newS(newGrouper(dst, r.runCon)))
+		r.runSpec(dst, r.runCon)
 	}()
 }
 
-func (r runner) runSeq(dst path) {
-	r.f(r.newS(newGrouper(dst, r.runSeq)))
+func (r *runner) runSeq(dst path) {
+	r.runSpec(dst, r.runSeq)
 }
 
-type grouperImpl struct {
-	dst       path
-	cur       path
-	skipRest  bool
-	skipCount int
-	run       runFunc
+func (r *runner) runSpec(dst path, run runFunc) {
+	r.f(r.newSpec(newGrouper(dst, run)))
+}
+
+type group struct {
+	dst    path
+	cur    idStack
+	done   bool
+	runNew runFunc
 }
 type runFunc func(path)
 
-func newGrouper(dst path, run runFunc) grouper {
-	return &grouperImpl{dst: dst, run: run}
+func newGrouper(dst path, run runFunc) *group {
+	return &group{dst: dst, runNew: run}
 }
 
-func (t *grouperImpl) group(id FuncID, f func()) {
+func (t *group) run(id funcID, f func()) {
 	t.cur.push(id)
 	defer t.cur.pop()
 	if !t.cur.onPath(t.dst) {
 		return
-	} else if t.skipRest {
-		t.run(t.cur.clone())
-		t.skipCount++
+	} else if t.done {
+		t.runNew(t.cur.clone())
 		return
 	}
-	sc := t.skipCount
 	f()
-	if sc == t.skipCount { // true when f is a leaf node
-		t.skipRest = true
+	t.done = true
+}
+
+func (t *group) current() path {
+	return t.cur.clone()
+}
+
+type idStack struct {
+	path
+}
+
+func (p *idStack) push(i funcID) {
+	p.path = append(p.path, i)
+}
+func (p *idStack) pop() (i funcID) {
+	if len(p.path) == 0 {
+		panic("call pop when idStack is empty.")
 	}
-}
-
-func (t *grouperImpl) current() []FuncID {
-	return t.cur.slice()
-}
-
-type path struct {
-	a []FuncID
-}
-
-func (p *path) push(i FuncID) {
-	p.a = append(p.a, i)
-}
-
-func (p *path) pop() (i FuncID) {
-	if len(p.a) == 0 {
-		panic("call pop when path is empty.")
-	}
-	p.a, i = p.a[:len(p.a)-1], p.a[len(p.a)-1]
+	p.path, i = p.path[:len(p.path)-1], p.path[len(p.path)-1]
 	return
 }
 
-func (p *path) slice() []FuncID {
-	return append([]FuncID{}, p.a...)
-}
+type path []funcID
 
-func (p *path) clone() path {
-	return path{p.slice()}
+func (p path) clone() path {
+	return append(path{}, p...)
 }
-
-func (p *path) onPath(dst path) bool {
+func (p path) onPath(dst path) bool {
 	// func id is unique, comparing the last should be enough
-	if last := imin(len(p.a), len(dst.a)) - 1; last >= 0 {
-		return p.a[last] == dst.a[last]
+	if last := imin(len(p), len(dst)) - 1; last >= 0 {
+		return p[last] == dst[last]
 	}
-	return true // initial path is empty
+	return true // initial idStack is empty
 }

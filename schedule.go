@@ -11,13 +11,13 @@ import (
 // A Scheduler schedules test running.
 type Scheduler struct {
 	wg sync.WaitGroup
-	*treeListener
+	*listener
 }
 
 // NewScheduler creates and intialize a new Scheduler using r as the test
 // reporter.
 func NewScheduler(r Reporter) *Scheduler {
-	return &Scheduler{treeListener: newTreeListener(r)}
+	return &Scheduler{listener: newListener(r)}
 }
 
 // Start starts tests defined in funcs concurrently or sequentially.
@@ -28,15 +28,10 @@ func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) {
 	}()
 	s.Reporter.Start()
 	for _, f := range funcs {
-		r := runner{f, &s.wg, s.newS}
-		if sequential {
-			r.runSeq(path{})
-		} else {
-			r.runCon(path{})
-		}
+		(&runner{f, &s.wg, s.newSpec}).run(sequential)
 	}
 }
 
-func (s *Scheduler) newS(g grouper) S {
-	return newS(g, s)
+func (s *Scheduler) newSpec(g *group) S {
+	return newSpec(g, s.listener)
 }

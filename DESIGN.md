@@ -294,9 +294,9 @@ Integration with gomock.
 
 Usage Guidelines
 ----------------
+* Write tests that matter.
+* Test simple abstractions rather than complex details.
 * Write abstract specifications in text; write concrete examples in code.
-* Use given-when-then pattern to describe the context, input and expected
-  behavior of the software.
 * One expectation per test case.
 
 Existing Go Testing Frameworks
@@ -317,10 +317,13 @@ Existing Go Testing Frameworks
 ###Expectations (assertions)
 * github.com/onsi/gomega
 * launchpad.net/gocheck
-* github.com/stretchr/testify
+* github.com/stretchr/testify/assert
 
 ###Mock
 * code.google.com/p/gomock
+* https://github.com/qur/withmock (gomock companion)
+* github.com/stretchr/testify/mock
+* github.com/jvshahid/mock4go
 
 Reference
 ---------

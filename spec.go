@@ -14,8 +14,8 @@ type S interface {
 
 // specImpl implements "S" interface.
 type specImpl struct {
-	grouper
-	listener
+	*group
+	*listener
 	err error
 }
 
@@ -23,7 +23,7 @@ type specImpl struct {
 // descritpion and a closure.
 type DescFunc func(description string, f func())
 
-func newS(g grouper, l listener) S {
+func newSpec(g *group, l *listener) S {
 	return &specImpl{g, l, nil}
 }
 
@@ -33,12 +33,11 @@ func (t *specImpl) Alias(name string) DescFunc {
 	}
 	return func(description string, f func()) {
 		id := getFuncID(f)
-		path := t.current()
+		path := append(t.current(), id)
 		g := &TestGroup{
-			ID:          id,
 			Description: name + description,
 		}
-		t.group(id, func() {
+		t.run(id, func() {
 			t.groupStart(g, path)
 			terr := capturePanic(f)
 			if terr == nil {
@@ -47,7 +46,7 @@ func (t *specImpl) Alias(name string) DescFunc {
 					t.err = nil
 				}
 			}
-			t.groupEnd(id, terr)
+			t.groupEnd(terr, id)
 		})
 	}
 }

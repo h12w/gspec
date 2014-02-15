@@ -8,11 +8,9 @@ import (
 
 // A TestGroup contains a test group's related data.
 type TestGroup struct {
-	ID          FuncID
 	Description string
 	Error       *TestError
-	//	Parent      *TestGroup
-	Children []*TestGroup
+	Children    []*TestGroup
 }
 
 // TestError contains the error information of a finished test group.
