@@ -20,4 +20,5 @@ script:
 - $HOME/gopath/bin/golint .
 # TODO: coverage inluding subpackages
 - go test -covermode=count -coverprofile=profile.cov
+- echo $TRAVIS_JOB_ID
 - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci
