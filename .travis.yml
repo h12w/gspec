@@ -7,7 +7,7 @@ notifications:
 
 before_install:
 - go get code.google.com/p/go.tools/cmd/cover
-- go get github.com/mattn/goveralls
+- go get github.com/hailiang/goveralls
 - go get code.google.com/p/go.tools/cmd/vet
 - go get github.com/golang/lint/golint
 
