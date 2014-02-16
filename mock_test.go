@@ -1,11 +1,22 @@
 package gspec
 
 import (
+	"encoding/json"
+	exp "github.com/hailiang/gspec/expectation"
 	"io/ioutil"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
 )
+
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	exp.Sprint = func(v interface{}) string {
+		buf, _ := json.MarshalIndent(v, "    ", "  ")
+		return string(buf)
+	}
+}
 
 var (
 	globalScheduler = NewScheduler(NewTextReporter(ioutil.Discard))
@@ -73,23 +84,6 @@ func (c *SChan) equal(ss []string) bool {
 	return true
 }
 
-/*
-type CollectFunc func(g *TestGroup, path []FuncID)
-
-func (f CollectFunc) groupStart(g *TestGroup, path []FuncID) {
-	f(g, path)
-}
-
-func (f CollectFunc) groupEnd(id FuncID, err *TestError) {
-}
-
-func (f CollectFunc) start() {
-}
-
-func (f CollectFunc) end() {
-}
-*/
-
 func sortBytes(s string) string {
 	bs := []byte(strings.TrimSpace(s))
 	sort.Sort(Bytes(bs))
@@ -108,4 +102,29 @@ func (bs Bytes) Swap(i, j int) {
 
 func (bs Bytes) Less(i, j int) bool {
 	return bs[i] < bs[j]
+}
+
+type MockReporter struct {
+	mu     sync.Mutex
+	groups []*TestGroup
+}
+
+func (l *MockReporter) Start() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+}
+
+func (l *MockReporter) End(groups []*TestGroup) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.groups == nil {
+		l.groups = groups
+	} else {
+		panic("End should be only called once.")
+	}
+}
+
+func (l *MockReporter) Progress(g *TestGroup, s *Stats) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
 }

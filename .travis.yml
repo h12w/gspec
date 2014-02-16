@@ -11,14 +11,9 @@ before_install:
 - go get code.google.com/p/go.tools/cmd/vet
 - go get github.com/golang/lint/golint
 
-env:
-  global:
-  - secure: NWJjfXUllkkusSLQujaUTHrwW6mRtNVa9y+wxog5X2zWv4/OckAXmA1B26RQ+hJs3ndGRn2V8XGq68N8L1XTD3VeSldmrlk4Y2eHU+EGkhd5+zS70GjeYr0RrxeiqhQ6QV0m4HcFM2iqi1DwUCQQcrln0XmJXZbJX3dQ4AV5YNQ=
-
 script:
 - go vet -n ./...
 - $HOME/gopath/bin/golint .
 # TODO: coverage inluding subpackages
 - go test -covermode=count -coverprofile=profile.cov
-- echo $TRAVIS_JOB_ID
 - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci

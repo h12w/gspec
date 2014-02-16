@@ -32,43 +32,10 @@ func (t *specImpl) Alias(name string) DescFunc {
 		name += " "
 	}
 	return func(description string, f func()) {
-		id := getFuncID(f)
-		path := append(t.current(), id)
-		g := &TestGroup{
-			Description: name + description,
-		}
-		t.run(id, func() {
-			t.groupStart(g, path)
-			terr := capturePanic(f)
-			if terr == nil {
-				if t.err != nil {
-					terr = &TestError{Err: t.err} // TODO: fill other fields
-					t.err = nil
-				}
-			}
-			t.groupEnd(terr, id)
+		t.visit(getFuncID(f), func() {
+			t.groupStart(&TestGroup{Description: name + description}, t.current())
+			terr := t.run(f)
+			t.groupEnd(terr, getFuncID(f))
 		})
 	}
-}
-
-// Fail notify that the test case has failed with an error.
-func (t *specImpl) Fail(err error) {
-	if t.err != nil {
-		t.err = err // only keeps the first failure.
-	}
-}
-
-func capturePanic(f func()) (terr *TestError) {
-	defer func() {
-		if err := recover(); err != nil {
-			terr = &TestError{
-				Err:  err,
-				File: "",
-				Line: 0,
-			}
-			// TODO: print error, terminate all tests and exit
-		}
-	}()
-	f()
-	return
 }

@@ -1,6 +1,7 @@
 package gspec
 
 import (
+	exp "github.com/hailiang/gspec/expectation"
 	"testing"
 	"time"
 )
@@ -183,4 +184,23 @@ func TestConcurrentRunning(t *testing.T) {
 	if d > time.Duration(2.3*float64(delay)) {
 		t.Fatalf("Tests are not run concurrently, duration: %v", d)
 	}
+}
+
+/*
+Story: Internal Tests
+	Test internal types/functions
+*/
+
+func TestPath(t *testing.T) {
+	expect := exp.AliasForT(t)
+	p := idStack{}
+	p.push(funcID{1})
+	p.push(funcID{2})
+	expect(p.path).Equal(path{{1}, {2}}) //, "path.push failed")
+	i := p.pop()
+	expect(p.path).Equal(path{{1}}) //, "path.pop failed")
+	expect(i).Equal(funcID{2})      //, "path.pop failed")
+	i = p.pop()
+	expect(p.path).Equal(path{})       //, "path.pop failed")
+	expect(func() { p.pop() }).Panic() //, "path.pop should panic when empty")
 }

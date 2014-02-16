@@ -44,7 +44,7 @@ func newGrouper(dst path, run runFunc) *group {
 	return &group{dst: dst, runNew: run}
 }
 
-func (t *group) run(id funcID, f func()) {
+func (t *group) visit(id funcID, f func()) {
 	t.cur.push(id)
 	defer t.cur.pop()
 	if !t.cur.onPath(t.dst) {
@@ -53,8 +53,8 @@ func (t *group) run(id funcID, f func()) {
 		t.runNew(t.cur.clone())
 		return
 	}
+	defer func() { t.done = true }()
 	f()
-	t.done = true
 }
 
 func (t *group) current() path {

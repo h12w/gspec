@@ -5,6 +5,15 @@ import (
 	"reflect"
 )
 
+var (
+	// Sprint is used by checker to format actual and expected variables to
+	// strings. It has a default implementation and can be replaced with an
+	// external function.
+	Sprint = func(v interface{}) string {
+		return fmt.Sprintf("%#v", v)
+	}
+)
+
 // Checker is the type of function that checks between actual and expected value
 // then returns an Error if the expectation fails.
 type Checker func(actual, expected interface{}) *Error
@@ -17,7 +26,8 @@ func Equal(actual, expected interface{}) *Error {
 	if fmt.Sprint(actual) == fmt.Sprint(expected) {
 		return nil
 	}
-	return &Error{fmt.Sprintf("Expect %v = %v.", actual, expected)}
+	return &Error{fmt.Sprintf("\nExpect\n    %s\nequals\n    %s\n",
+		Sprint(actual), Sprint(expected))}
 }
 
 // Panic checks if a function panics.
