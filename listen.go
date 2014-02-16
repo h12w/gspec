@@ -1,3 +1,7 @@
+// Copyright 2014, Hǎiliàng Wáng. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package gspec
 
 import (
@@ -49,7 +53,7 @@ func (l *listener) groupStart(g *TestGroup, path path) {
 	l.progress(g)
 }
 
-func (l *listener) groupEnd(err *TestError, id funcID) {
+func (l *listener) groupEnd(err error, id funcID) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	g := l.m[id]

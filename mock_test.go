@@ -1,7 +1,12 @@
+// Copyright 2014, Hǎiliàng Wáng. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package gspec
 
 import (
 	"encoding/json"
+	"github.com/davecgh/go-spew/spew"
 	exp "github.com/hailiang/gspec/expectation"
 	"io/ioutil"
 	"runtime"
@@ -12,10 +17,17 @@ import (
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	exp.Sprint = func(v interface{}) string {
-		buf, _ := json.MarshalIndent(v, "    ", "  ")
-		return string(buf)
-	}
+	exp.Sprint = dumpPrint
+}
+
+func dumpPrint(v interface{}) string {
+	spew.Config.Indent = "    "
+	return spew.Sdump(v)
+}
+
+func jsonPrint(v interface{}) string {
+	buf, _ := json.MarshalIndent(v, "    ", "  ")
+	return string(buf)
 }
 
 var (

@@ -1,5 +1,7 @@
 package expectation
 
+import "fmt"
+
 // Actual provides checking methods for an actual value in an expectation.
 type Actual struct {
 	v    interface{}
@@ -35,12 +37,14 @@ func Alias(fail func(*Error)) ExpectFunc {
 
 // T is a subset of testing.T used in this package.
 type T interface {
-	Error(...interface{})
+	Fail()
 }
 
 // AliasForT registers T as the fail handler and returns an ExpectFunc.
 func AliasForT(t T) ExpectFunc {
 	return Alias(func(err *Error) {
-		t.Error(err.Msg)
+		fmt.Println(decorate(err.Msg, 4))
+		t.Fail()
 	})
 }
+

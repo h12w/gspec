@@ -1,3 +1,7 @@
+// Copyright 2014, Hǎiliàng Wáng. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package gspec
 
 import (
@@ -9,15 +13,8 @@ import (
 // A TestGroup contains a test group's related data.
 type TestGroup struct {
 	Description string
-	Error       *TestError
+	Error       error
 	Children    []*TestGroup
-}
-
-// TestError contains the error information of a finished test group.
-type TestError struct {
-	Err  interface{}
-	File string
-	Line int
 }
 
 // Reporter is a interface to accept events from tests running.

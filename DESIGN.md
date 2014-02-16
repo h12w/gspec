@@ -226,8 +226,40 @@ also needs to collect at the end of each test group.
 ###Reporter
 A reporter is responsible for reporting the test progress and display the test
 result. It is defined as an public interface so that GSpec is able to use any
-customized reporter. The listener should call a reporter's method when needed.
+customized reporter.
 
+####Helpful messages
+A reporter should provide messages that help the developer to find and fix
+issues.
+
+* Complete: the information provided should be complete to minimize further
+  investigation as much as possible.
+* Clean: unrelavent noise should be reduced as much as possible.
+* Structured: the information could be provided as a structured object instead
+  of a string to provide more capability of customized reportring. (OPTIONAL)
+
+####Test case failure
+When an expectation (assertion) fails, It should *not* panic. Instead, GSpec
+should provide a method (S.Fail) to record the error and continue running other
+test cases. t.Fail should be called to notify "go test" there are failures.
+
+This also means that there should be only one expectation for a test case.
+
+Expectations should be provided as a separate package (gspec/expect).
+
+NOTE: the S.Fail method should allow to be called from another goroutine.
+
+####Fatal error
+When test code panics, "go test" prints the error and terminates immediately.
+GSpec should respect this design:
+* Simple way is just to repanicking in goroutine, which causes the process
+  terminates.
+* For a cleaner error message, print a better message and call os.Exit.
+
+GSpec itself could have internal bugs and fail, when it happens, GSpec should
+panic immediately. (fail fast)
+
+####Builtin reporter
 GSpec should contain a builtin reporter:
 * It should be as simple as possible, advanced reporters should be implemented
   in an extention package (gspec/reporter?).
@@ -244,25 +276,6 @@ instance to seve them all and it needs to be locked.
 * If there are multiple test schedulers and one reporter per scheduler, then
 "go test" functions should not be run concurrently.
 * Otherwise, test cases could be printed interwaved in console.
-
-###Panicking
-When test code panics, "go test" prints the error and terminates immediately.
-GSpec should respect this design:
-* Simple way is just to repanicking in goroutine, which causes the process
-  terminates.
-* For a cleaner error message, print a better message and call os.Exit.
-
-GSpec itself could have internal bugs and fail, when it happens, GSpec should
-panic immediately. (fail fast)
-
-###Expectation
-When an expectation (assertion) fails, It should *not* panic. Instead, GSpec
-should provide a method to record the error and continue running other test
-cases. t.Fail should be called to notify "go test" there are failures.
-
-This also means that there should be only one expectation for a test case.
-
-Expectations should be provided as a separate package (gspec/expect).
 
 ###Timeout
 

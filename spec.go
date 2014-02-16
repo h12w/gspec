@@ -1,4 +1,12 @@
+// Copyright 2014, Hǎiliàng Wáng. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package gspec
+
+import (
+	"sync"
+)
 
 // TestFunc is the type of the function prepared to run in a goroutine for each
 // test case.
@@ -17,6 +25,7 @@ type specImpl struct {
 	*group
 	*listener
 	err error
+	mu  sync.Mutex
 }
 
 // DescFunc is the type of the function to define a test group with a
@@ -24,7 +33,7 @@ type specImpl struct {
 type DescFunc func(description string, f func())
 
 func newSpec(g *group, l *listener) S {
-	return &specImpl{g, l, nil}
+	return &specImpl{group: g, listener: l}
 }
 
 func (t *specImpl) Alias(name string) DescFunc {

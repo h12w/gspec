@@ -1,27 +1,40 @@
+// Copyright 2014, Hǎiliàng Wáng. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package gspec
 
-func (t *specImpl) run(f func()) *TestError {
-	return capturePanic(f)
-}
+import (
+	"errors"
+	"fmt"
+)
 
-// Fail notify that the test case has failed with an error.
-func (t *specImpl) Fail(err error) {
-	if t.err != nil {
-		t.err = err // only keeps the first failure.
-	}
-}
-
-func capturePanic(f func()) (terr *TestError) {
+func (t *specImpl) run(f func()) (err error) {
 	defer func() {
-		if err := recover(); err != nil {
-			terr = &TestError{
-				Err:  err,
-				File: "",
-				Line: 0,
+		if e := recover(); e != nil {
+			switch v := e.(type) {
+			case string:
+				err = errors.New(v)
+			case error:
+				err = v
+			default:
+				err = fmt.Errorf("%v", v)
 			}
 			// TODO: print error, terminate all tests and exit
 		}
 	}()
 	f()
+	if t.err != nil {
+		err = t.err
+	}
 	return
+}
+
+// Fail notify that the test case has failed with an error.
+func (t *specImpl) Fail(err error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.err == nil {
+		t.err = err // only keeps the first failure.
+	}
 }
