@@ -1,3 +1,7 @@
+// Copyright 2014, Hǎiliàng Wáng. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package expectation
 
 import (
@@ -34,7 +38,7 @@ func Equal(actual, expected interface{}) *Error {
 func Panic(actual, expected interface{}) (ret *Error) {
 	f, ok := actual.(func())
 	if !ok {
-		panic(`Panic checker expects an actual value of type "func()"`)
+		ret = &Error{"the argument of Panic has to be a function of type func()."}
 	}
 	defer func() {
 		if err := recover(); err == nil {

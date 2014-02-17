@@ -1,3 +1,7 @@
+// Copyright 2014, Hǎiliàng Wáng. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package expectation
 
 import "fmt"
@@ -5,7 +9,7 @@ import "fmt"
 // Actual provides checking methods for an actual value in an expectation.
 type Actual struct {
 	v    interface{}
-	fail func(*Error)
+	fail func(error)
 }
 
 // To is a general method for checking an expectation.
@@ -15,21 +19,12 @@ func (a *Actual) To(check Checker, expected interface{}) {
 	}
 }
 
-// An Error is returned when the expectation fails.
-type Error struct {
-	Msg string
-}
-
-func (e *Error) Error() string {
-	return e.Msg
-}
-
 // ExpectFunc is the type of function that returns an Actual object given an
 // actual value.
 type ExpectFunc func(actual interface{}) *Actual
 
 // Alias registers a fail function and returns an ExpectFunc.
-func Alias(fail func(*Error)) ExpectFunc {
+func Alias(fail func(error)) ExpectFunc {
 	return func(actual interface{}) *Actual {
 		return &Actual{actual, fail}
 	}
@@ -42,9 +37,8 @@ type T interface {
 
 // AliasForT registers T as the fail handler and returns an ExpectFunc.
 func AliasForT(t T) ExpectFunc {
-	return Alias(func(err *Error) {
-		fmt.Println(decorate(err.Msg, 4))
+	return Alias(func(err error) {
+		fmt.Println(decorate(err.Error(), 4))
 		t.Fail()
 	})
 }
-

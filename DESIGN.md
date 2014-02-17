@@ -1,4 +1,4 @@
-Design of GSepc
+Design of GSpec
 ===============
 
 Introduction
