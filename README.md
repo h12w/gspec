@@ -18,5 +18,7 @@ Goals:
 
 Design Documents
 ----------------
+
 [Core](DESIGN.md)
+
 [Expectations](expectation/DESIGN.md)
