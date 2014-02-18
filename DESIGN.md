@@ -1,6 +1,32 @@
 Design of GSpec
 ===============
 
+- [Design of GSpec](#design-of-gspec)
+	- [Introduction](#introduction)
+	- [Yet Another One?](#yet-another-one)
+	- [Features](#features)
+		- [Enhancing "go test"](#enhancing-go-test)
+		- [Test Case](#test-case)
+		- [Nested Test Group](#nested-test-group)
+		- [Concurrency](#concurrency)
+		- [Test Gathering](#test-gathering)
+		- [Test Specification](#test-specification)
+		- [Reporter](#reporter)
+		- [Timeout](#timeout)
+		- [Table-driven Testing](#table-driven-testing)
+		- [Focus Mode](#focus-mode)
+		- [Benchmark & coverage](#benchmark--coverage)
+		- [Options](#options)
+		- [Mock](#mock)
+		- [Auto Test](#auto-test)
+	- [Usage Guidelines](#usage-guidelines)
+	- [Existing Go Testing Frameworks](#existing-go-testing-frameworks)
+		- [xUnit Style](#xunit-style)
+		- [BDD Style](#bdd-style)
+		- [Expectations (assertions)](#expectations-assertions)
+		- [Mock](#mock-1)
+	- [Reference](#reference)
+
 Introduction
 ------------
 GSpec is a concurrent, minimal, extensible and reliable testing framework in Go
