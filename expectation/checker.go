@@ -6,43 +6,34 @@ package expectation
 
 import (
 	"fmt"
+	"github.com/hailiang/gspec/errors"
 	"reflect"
-)
-
-var (
-	// Sprint is used by checker to format actual and expected variables to
-	// strings. It has a default implementation and can be replaced with an
-	// external function.
-	Sprint = func(v interface{}) string {
-		return fmt.Sprintf("%#v", v)
-	}
 )
 
 // Checker is the type of function that checks between actual and expected value
 // then returns an Error if the expectation fails.
-type Checker func(actual, expected interface{}) *Error
+type Checker func(actual, expected interface{}) error
 
 // Equal checks for the equality of contents and is tolerant of type differences.
-func Equal(actual, expected interface{}) *Error {
+func Equal(actual, expected interface{}) error {
 	if reflect.DeepEqual(actual, expected) {
 		return nil
 	}
 	if fmt.Sprint(actual) == fmt.Sprint(expected) {
 		return nil
 	}
-	return &Error{fmt.Sprintf("\nExpect\n    %s\nequals\n    %s\n",
-		Sprint(actual), Sprint(expected))}
+	return errors.Compare(actual, expected, " to equal ")
 }
 
 // Panic checks if a function panics.
-func Panic(actual, expected interface{}) (ret *Error) {
+func Panic(actual, expected interface{}) (ret error) {
 	f, ok := actual.(func())
 	if !ok {
-		ret = &Error{"the argument of Panic has to be a function of type func()."}
+		ret = errors.Expect("the argument of Panic has to be a function of type func().")
 	}
 	defer func() {
 		if err := recover(); err == nil {
-			ret = &Error{"Expect panicking but not occurred."}
+			ret = errors.Expect("panicking")
 		}
 	}()
 	f()

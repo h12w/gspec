@@ -4,7 +4,9 @@
 
 package expectation
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Actual provides checking methods for an actual value in an expectation.
 type Actual struct {
@@ -38,7 +40,7 @@ type T interface {
 // AliasForT registers T as the fail handler and returns an ExpectFunc.
 func AliasForT(t T) ExpectFunc {
 	return Alias(func(err error) {
-		fmt.Println(decorate(err.Error(), 4))
+		fmt.Println(err.Error())
 		t.Fail()
 	})
 }

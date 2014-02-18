@@ -7,7 +7,7 @@ package gspec
 import (
 	"encoding/json"
 	"github.com/davecgh/go-spew/spew"
-	exp "github.com/hailiang/gspec/expectation"
+	"github.com/hailiang/gspec/errors"
 	"io/ioutil"
 	"runtime"
 	"sort"
@@ -17,12 +17,12 @@ import (
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	exp.Sprint = dumpPrint
+	errors.Sprint = dumpPrint
 }
 
 func dumpPrint(v interface{}) string {
 	spew.Config.Indent = "    "
-	return spew.Sdump(v)
+	return "\n" + spew.Sdump(v)
 }
 
 func jsonPrint(v interface{}) string {

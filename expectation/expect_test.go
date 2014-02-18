@@ -5,6 +5,7 @@
 package expectation
 
 import (
+	"github.com/hailiang/gspec/errors"
 	"testing"
 )
 
@@ -36,11 +37,11 @@ func TestEqual(t *testing.T) {
 
 func TestExpectTo(t *testing.T) {
 	m, expect := mockExpect()
-	expect(nil).To(func(actual, expected interface{}) *Error {
-		return &Error{"x"}
+	expect(nil).To(func(actual, expected interface{}) error {
+		return errors.Expect("x")
 	}, nil)
-	if m.msg() != "x" {
-		t.Errorf("Expect error message %v to be x", m.msg())
+	if e, ok := m.Error(); !ok || e.Text != "x" {
+		t.Errorf("Expect error message %v to be x", e.Text)
 	}
 }
 
@@ -56,9 +57,7 @@ func mockExpect() (*expectMock, ExpectFunc) {
 	return m, expect
 }
 
-func (m *expectMock) msg() string {
-	if m.err != nil {
-		return m.err.Error()
-	}
-	return ""
+func (m *expectMock) Error() (*errors.ExpectError, bool) {
+	e, ok := m.err.(*errors.ExpectError)
+	return e, ok
 }
