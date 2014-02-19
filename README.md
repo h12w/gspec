@@ -28,9 +28,10 @@ Usage
 -----
 
     import (
+        exp "github.com/hailiang/gspec/expect"
         "github.com/hailiang/gspec"
         "github.com/hailiang/gspec/suite"
-        exp "github.com/hailiang/gspec/expect"
+        "testing"
     )
 
     var _ = suite.Add(func(s gspec.S) {
@@ -50,3 +51,7 @@ Usage
 
         // more tests here.
     })
+
+    func TestAll(t *testing.T) {
+        suite.Run(t, false)
+    }
