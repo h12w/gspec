@@ -33,7 +33,7 @@ Usage
         exp "github.com/hailiang/gspec/expect"
     )
 
-    _ = suite.Add(func(s gspec.S) {
+    var _ = suite.Add(func(s gspec.S) {
         describe, when, it := s.Alias("describe"), s.Alias("when"), s.Alias("it")
         expect := exp.Alias()
 
