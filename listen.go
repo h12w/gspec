@@ -38,7 +38,7 @@ func (l *listener) groupStart(g *TestGroup, path path) {
 		return
 	}
 	l.Total++
-	if len(path) == 1 {
+	if len(path) == 1 { // root node
 		l.groups = append(l.groups, g)
 	} else {
 		parentID := path[len(path)-2]

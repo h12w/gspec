@@ -102,6 +102,33 @@ func TestAfterEach(t *testing.T) {
 }
 
 /*
+Scenario: Table driven test
+	Given test cases defined in a for loop
+	When executed
+	Each test case get run once
+*/
+func TestTableDriven(t *testing.T) {
+	ch := NewSChan()
+	Run(func(s S) {
+		do := aliasDo(s)
+		loop := s.Loop
+		do(func() {
+			for i := 0; i < 5; i++ {
+				loop(i, "", func() {
+					do(func() {
+						s := string('a' + i)
+						ch.Send(s)
+					})
+				})
+			}
+		})
+	})
+	if exp := []string{"a", "b", "c", "d", "e"}; !ch.EqualSorted(exp) {
+		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
+	}
+}
+
+/*
 Scenario: nested testing group
 	Given a nested testing group defined by closures like pseudo code below:
 
@@ -198,12 +225,12 @@ Story: Internal Tests
 func TestPath(t *testing.T) {
 	expect := exp.AliasForT(t)
 	p := idStack{}
-	p.push(funcID{1})
-	p.push(funcID{2})
-	expect(p.path).Equal(path{{1}, {2}}) //, "path.push failed")
+	p.push(funcID{p: 1})
+	p.push(funcID{p: 2})
+	expect(p.path).Equal(path{{p: 1}, {p: 2}}) //, "path.push failed")
 	i := p.pop()
-	expect(p.path).Equal(path{{1}}) //, "path.pop failed")
-	expect(i).Equal(funcID{2})      //, "path.pop failed")
+	expect(p.path).Equal(path{{p: 1}}) //, "path.pop failed")
+	expect(i).Equal(funcID{p: 2})      //, "path.pop failed")
 	i = p.pop()
 	expect(p.path).Equal(path{})       //, "path.pop failed")
 	expect(func() { p.pop() }).Panic() //, "path.pop should panic when empty")

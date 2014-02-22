@@ -17,6 +17,7 @@ type TestFunc func(S)
 // goroutine.
 type S interface {
 	Alias(name string) DescFunc
+	Loop(i int, descritpion string, f func())
 	Fail(err error)
 }
 
@@ -24,6 +25,7 @@ type S interface {
 type specImpl struct {
 	*group
 	*listener
+	ver int
 	err error
 	mu  sync.Mutex
 }
@@ -43,8 +45,19 @@ func (t *specImpl) Alias(name string) DescFunc {
 	return func(description string, f func()) {
 		t.visit(getFuncID(f), func() {
 			t.groupStart(&TestGroup{Description: name + description}, t.current())
-			terr := t.run(f)
-			t.groupEnd(terr, getFuncID(f))
+			err := t.run(f)
+			t.groupEnd(err, getFuncID(f))
 		})
 	}
+}
+
+func (t *specImpl) Loop(i int, description string, f func()) {
+	t.ver = i
+	id := getFuncID(f).version(t.ver)
+	t.visit(id, func() {
+		t.groupStart(&TestGroup{Description: description}, t.current())
+		err := t.run(f)
+		t.groupEnd(err, id)
+	})
+	t.ver = 0
 }

@@ -6,6 +6,7 @@ package gspec
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hailiang/gspec/errors"
 	"io/ioutil"
@@ -17,7 +18,7 @@ import (
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	errors.Sprint = dumpPrint
+	errors.Sprint = jsonPrint
 }
 
 func dumpPrint(v interface{}) string {
@@ -27,7 +28,12 @@ func dumpPrint(v interface{}) string {
 
 func jsonPrint(v interface{}) string {
 	buf, _ := json.MarshalIndent(v, "    ", "  ")
-	return string(buf)
+	return "\n" + string(buf)
+}
+
+func xmlPrint(v interface{}) string {
+	buf, _ := xml.MarshalIndent(v, "    ", "    ")
+	return "\n" + string(buf) + "\n"
 }
 
 var (

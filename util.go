@@ -16,11 +16,16 @@ func p(v ...interface{}) error {
 
 // funcID is an ID unique for each function (closure)
 type funcID struct {
-	p uintptr
+	p   uintptr // pointer value of function
+	ver int     // allow one function run multiple times with unique ID each time
 }
 
 func getFuncID(f interface{}) funcID {
-	return funcID{reflect.ValueOf(f).Pointer()}
+	return funcID{reflect.ValueOf(f).Pointer(), 0}
+}
+
+func (id funcID) version(ver int) funcID {
+	return funcID{id.p, ver}
 }
 
 func imin(a, b int) int {

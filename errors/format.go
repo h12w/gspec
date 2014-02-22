@@ -21,11 +21,13 @@ var (
 	}
 )
 
+// Pos represents a position in the source file.
 type Pos struct {
 	File string
 	Line int
 }
 
+// GetPos get the current position of execution.
 func GetPos(skip int) *Pos {
 	_, file, line, _ := runtime.Caller(skip)
 	if file == "" {
@@ -37,11 +39,12 @@ func GetPos(skip int) *Pos {
 	return &Pos{file, line}
 }
 
+// BasePath returns the base path of the source file.
 func (pos *Pos) BasePath() string {
 	return path.Base(pos.File)
 }
 
-// decorate prefixes the string with the file and line of the call site
+// Decorate prefixes the string with the file and line of the call site
 // and inserts the final newline if needed and indentation tabs for formatting.
 func (pos *Pos) Decorate(s string) string {
 	var buf bytes.Buffer
