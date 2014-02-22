@@ -11,12 +11,14 @@ supports both BDD style and table driven testing.
 
 (under development).
 
-Goals:
+Highlights:
 
-* It should be natual to write readable and runnable specifications.
-* It should be an enhancement rather than replacement to "go test".
-* It should be reliable by robust design and 100% test coverage.
-* It should be minimal and extensible.
+* Concurrent: one goroutine per test case (sequential running also supported).
+* Natual:     Both BDD style and table driven style supported, use the one that fits the test scenario.
+* Reliabile:  the design is minimal and orthogonal and 100% test coverage.
+* Separable:  the expectation (assertion) package can be used alone.
+* Extensible: customizable expectations and test reporters.
+* Compatible: "go test" is the only way.
 
 Design Documents
 ----------------
