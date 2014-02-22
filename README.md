@@ -14,11 +14,11 @@ supports both BDD style and table driven testing.
 Highlights:
 
 * Concurrent: one goroutine per test case (sequential running also supported).
-* Natual:     Both BDD style and table driven style supported, use the one that fits the test scenario.
-* Reliabile:  the design is minimal and orthogonal and 100% test coverage.
+* Natual:     Both BDD style and table driven style supported. Just use the one that fits your test scenario.
+* Reliabile:  the design is minimal and orthogonal; the code is tested under 100% coverage.
 * Separable:  the expectation (assertion) package can be used alone.
-* Extensible: customizable expectations and test reporters.
-* Compatible: "go test" is the only way.
+* Extensible: fully customizable expectations and test reporters.
+* Compatible: "go test" is enough.
 
 Design Documents
 ----------------
