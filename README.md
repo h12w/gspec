@@ -16,8 +16,9 @@ Highlights:
 * Concurrent: one goroutine per test case (sequential running also supported).
 * Natual:     Both BDD style and table driven style supported. Just use the one that fits your test scenario.
 * Reliabile:  the design is minimal and orthogonal; the code is tested under 100% coverage.
-* Separable:  the expectation (assertion) package can be used alone.
 * Extensible: fully customizable expectations and test reporters.
+* Separable:  the expectation (assertion) package can be used alone.
+* Succinct:   the core implementation is less than 500 lines of code.
 * Compatible: "go test" is enough.
 
 Design Documents
@@ -30,31 +31,33 @@ Design Documents
 Usage
 -----
 
-    import (
-        exp "github.com/hailiang/gspec/expect"
-        "github.com/hailiang/gspec"
-        "github.com/hailiang/gspec/suite"
-        "testing"
-    )
+```go
+import (
+    exp "github.com/hailiang/gspec/expect"
+    "github.com/hailiang/gspec"
+    "github.com/hailiang/gspec/suite"
+    "testing"
+)
 
-    var _ = suite.Add(func(s gspec.S) {
-        describe, when, it := s.Alias("describe"), s.Alias("when"), s.Alias("it")
-        expect := exp.Alias(s.Fail)
+var _ = suite.Add(func(s gspec.S) {
+    describe, when, it := s.Alias("describe"), s.Alias("when"), s.Alias("it")
+    expect := exp.Alias(s.Fail)
 
-        describe("an integer", func() {
-            i := 2
-            when("it is incremented by 1", func() {
-                i++
-                it("should has a value of original value plus 1", func() {
-                    expect(i).Equals(3)
-                })
+    describe("an integer", func() {
+        i := 2
+        when("it is incremented by 1", func() {
+            i++
+            it("should has a value of original value plus 1", func() {
+                expect(i).Equals(3)
             })
-            // more scenarios here.
         })
-
-        // more tests here.
+        // more scenarios here.
     })
 
-    func TestAll(t *testing.T) {
-        suite.Run(t, false)
-    }
+    // more tests here.
+})
+
+func TestAll(t *testing.T) {
+    suite.Run(t, false)
+}
+```

@@ -22,14 +22,6 @@ func newListener(r Reporter) *listener {
 		Reporter: r}
 }
 
-/*
-func (l *listener) setReporter(r Reporter) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.Reporter = r
-}
-*/
-
 func (l *listener) groupStart(g *TestGroup, path path) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
