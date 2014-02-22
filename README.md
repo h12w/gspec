@@ -6,7 +6,8 @@ GSpec
 [![GoDoc](https://godoc.org/github.com/hailiang/gspec?status.png)](https://godoc.org/github.com/hailiang/gspec)
 
 GSpec is a concurrent, minimal, extensible and reliable testing framework in Go
-that makes it easy to organize and verify the mind model of software.
+that makes it easy to organize and verify the mind model of software. It
+supports both BDD style and table driven testing.
 
 (under development).
 
@@ -36,7 +37,7 @@ Usage
 
     var _ = suite.Add(func(s gspec.S) {
         describe, when, it := s.Alias("describe"), s.Alias("when"), s.Alias("it")
-        expect := exp.Alias()
+        expect := exp.Alias(s.Fail)
 
         describe("an integer", func() {
             i := 2
