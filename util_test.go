@@ -11,10 +11,10 @@ import (
 func TestFuncUniqueID(t *testing.T) {
 	f1 := func() {}
 	f2 := func() {}
-	if getFuncID(f1) != getFuncID(f1) {
+	if getFuncAddress(f1) != getFuncAddress(f1) {
 		t.Fatalf("Does not return the same id for the same function.")
 	}
-	if getFuncID(f1) == getFuncID(f2) {
+	if getFuncAddress(f1) == getFuncAddress(f2) {
 		t.Fatalf("Return the same id for different functions.")
 	}
 }

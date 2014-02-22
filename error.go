@@ -32,9 +32,17 @@ func (t *specImpl) run(f func()) (err error) {
 
 // Fail notify that the test case has failed with an error.
 func (t *specImpl) Fail(err error) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.lock()
+	defer t.unlock()
 	if t.err == nil {
 		t.err = err // only keeps the first failure.
 	}
+}
+
+func (t *specImpl) lock() {
+	t.mu.Lock()
+}
+
+func (t *specImpl) unlock() {
+	t.mu.Unlock()
 }

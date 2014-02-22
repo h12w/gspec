@@ -17,17 +17,16 @@ type TestFunc func(S)
 // goroutine.
 type S interface {
 	Alias(name string) DescFunc
-	Loop(i int, descritpion string, f func())
 	Fail(err error)
 }
 
 // specImpl implements "S" interface.
 type specImpl struct {
 	*group
-	*listener
-	ver int
-	err error
-	mu  sync.Mutex
+	funcCounter
+	listener *listener
+	err      error
+	mu       sync.Mutex
 }
 
 // DescFunc is the type of the function to define a test group with a
@@ -35,7 +34,11 @@ type specImpl struct {
 type DescFunc func(description string, f func())
 
 func newSpec(g *group, l *listener) S {
-	return &specImpl{group: g, listener: l}
+	return &specImpl{
+		group:       g,
+		funcCounter: newFuncCounter(),
+		listener:    l,
+	}
 }
 
 func (t *specImpl) Alias(name string) DescFunc {
@@ -43,21 +46,11 @@ func (t *specImpl) Alias(name string) DescFunc {
 		name += " "
 	}
 	return func(description string, f func()) {
-		t.visit(getFuncID(f), func() {
-			t.groupStart(&TestGroup{Description: name + description}, t.current())
+		id := t.funcID(f)
+		t.visit(id, func() {
+			t.listener.groupStart(&TestGroup{Description: name + description}, t.current())
 			err := t.run(f)
-			t.groupEnd(err, getFuncID(f))
+			t.listener.groupEnd(err, id)
 		})
 	}
-}
-
-func (t *specImpl) Loop(i int, description string, f func()) {
-	t.ver = i
-	id := getFuncID(f).version(t.ver)
-	t.visit(id, func() {
-		t.groupStart(&TestGroup{Description: description}, t.current())
-		err := t.run(f)
-		t.groupEnd(err, id)
-	})
-	t.ver = 0
 }

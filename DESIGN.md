@@ -58,34 +58,41 @@ The following sections are organized in the sequence of design decisions, from
 major features to minor ones.
 
 ###Enhancing "go test"
-GSpec should not break but enhance existing features that "go test" provides:
+GSpec should not break any features that "go test" support, only enhancing them.
 
-* "go test" command is the only way to run tests.
-* Besides concurency at the level of test functions, GSpec should support
-  concurency at the level of each expectation.
-* GSpec should be able to separate tests into multiple test functions/files.
-* GSpec should be able to output readable and helpful error messages.
+####"go test" command
+* "go test" command is the only way to run GSpec tests.
+* GSpec should try to be consistent with test flags that "go test" have.
+
+####Concurrency
+Besides concurency at the level of test functions, GSpec should support 
+concurency at the level of each expectation.
+
+####Table driven tests
+Though table driven tests are recommended by "go test" if possible. GSpec should
+also support table driven test cases.
+
+####Test organization
+GSpec should be able to separate tests into multiple test functions/files.
 
 ###Test Case
 A test case needs running some code and verifying the result. Further, the code
-run by a test case can be usually seperated into 4 steps:
+run by a test case can be usually seperated into 3 steps:
 
 * setup a test context
-* perform an action
-* verify the result
+* perform an action and verify the result
 * teardown the test context (optional)
 
-Some setup/teardown code might be shared between tests, so there are 4 cases:
+####Shared setup/teardown (BDD style)
+Sometimes setup/teardown is shared between test cases, so there are 4 situations:
 
 * setup before each test
 * teardown after each test
 * setup run once before all tests
 * teardown run once after all tests
 
-"go test" meet the requirement above by providing a way to define a test (test
-functions with specific signature). It is minimal yet flexible. It can support
-concurency at test function level easily. However, "go test" does nothing to
-help the developer with setup/teardown, devlopers have to figure out themselves.
+"go test" does nothing to help the developer with setup/teardown, devlopers have
+to figure out themselves.
 
 Traditional xUnit style testing frameworks implement each step above as virtual
 methods in a base class or interface. They do provide a complete solution,
@@ -102,6 +109,14 @@ way to specify test cases. Pros of this method include:
 
 GSpec should try to follow this way, though it is not obvious on how to
 implement concurrency at this stage (RSpec does not support concurrency itself).
+
+####Shared test (Table driven style)
+Sometimes test logic is shared between test cases but setup code varies. The
+test context and expected result can be organized in a table, known as table
+driven tests.
+
+GSpec should also support table driven tests, allowing table driven tests to be
+embedded in BDD style test group, or vice versa.
 
 ###Nested Test Group
 Most of the test cases do not share a test context, but when they do, the
@@ -149,6 +164,27 @@ it still has children. However, it is a tolerable tradeoff.
 It is rare to setup (teardown) a test context before (after) all tests without
 worrying about its state changing. In such rare cases, they can be handled
 separatedly at the start (end) of the "go test" testing functions.
+
+IMPLEMENTATION:
+To implement the tree traversing logic, the path is composed of unique function
+IDs, which could be implemented as the address of the function.
+
+###Table-driven Testing
+GSpec should allow table driven tests and group functions nested in arbitrary
+ways. e.g.
+
+    group(func() {
+        for i, testCase := range table {
+            group(func() {
+                // test case i
+            })
+        }
+    })
+
+IMPLEMENTATION:
+The main challenge of table driven test is: the same closure could be run
+multiple times within the loop, and the address only cannot distinguish these
+multiple runs. However, this can be solved by a map counter.
 
 ###Concurrency
 Concurrency is a core feature of Go. "go test" supports concurency at the level
@@ -303,15 +339,6 @@ instance to seve them all and it needs to be locked.
 * Otherwise, test cases could be printed interwaved in console.
 
 ###Timeout
-
-###Table-driven Testing
-There are 2 ways:
-* Define the for-loop in leaf node
-* Define the for-loop out side of RootFunc
-  A for-loop arround a higher order function that accepts the test variable and
-  returns a RootFunc.
-* Use for-loop to wrap a non-leaf node (TODO: need fixes, otherwise it will not
-  distinguish each run of the same closure).
 
 ###Focus Mode
 ####Support metadata for each test group?

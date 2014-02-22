@@ -110,20 +110,25 @@ Scenario: Table driven test
 func TestTableDriven(t *testing.T) {
 	ch := NewSChan()
 	Run(func(s S) {
-		do := aliasDo(s)
-		loop := s.Loop
-		do(func() {
-			for i := 0; i < 5; i++ {
-				loop(i, "", func() {
-					do(func() {
+		do := s.Alias("")
+		do("outer", func() {
+			for i := 0; i < 3; i++ {
+				do("loop a,b,c", func() {
+					do("inner", func() {
 						s := string('a' + i)
+						ch.Send(s)
+					})
+				})
+				do("loop d,e,f", func() {
+					do("inner", func() {
+						s := string('d' + i)
 						ch.Send(s)
 					})
 				})
 			}
 		})
 	})
-	if exp := []string{"a", "b", "c", "d", "e"}; !ch.EqualSorted(exp) {
+	if exp := []string{"a", "b", "c", "d", "e", "f"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
 	}
 }
