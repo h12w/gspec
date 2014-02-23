@@ -33,10 +33,11 @@ Usage
 
 ```go
 import (
-    exp "github.com/hailiang/gspec/expect"
+    "testing"
+
+    exp "github.com/hailiang/gspec/expectation"
     "github.com/hailiang/gspec"
     "github.com/hailiang/gspec/suite"
-    "testing"
 )
 
 var _ = suite.Add(func(s gspec.S) {
@@ -48,7 +49,7 @@ var _ = suite.Add(func(s gspec.S) {
         when("it is incremented by 1", func() {
             i++
             it("should has a value of original value plus 1", func() {
-                expect(i).Equals(3)
+                expect(i).Equal(3)
             })
         })
         // more scenarios here.

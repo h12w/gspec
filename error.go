@@ -9,6 +9,11 @@ import (
 	"fmt"
 )
 
+// T is an interface that allows a testing.T to be passed to GSpec.
+type T interface {
+	Fail()
+}
+
 func (t *specImpl) run(f func()) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
@@ -32,17 +37,9 @@ func (t *specImpl) run(f func()) (err error) {
 
 // Fail notify that the test case has failed with an error.
 func (t *specImpl) Fail(err error) {
-	t.lock()
-	defer t.unlock()
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	if t.err == nil {
 		t.err = err // only keeps the first failure.
 	}
-}
-
-func (t *specImpl) lock() {
-	t.mu.Lock()
-}
-
-func (t *specImpl) unlock() {
-	t.mu.Unlock()
 }

@@ -7,13 +7,14 @@ package gspec
 import (
 	"encoding/json"
 	"encoding/xml"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/hailiang/gspec/errors"
 	"io/ioutil"
 	"runtime"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/hailiang/gspec/errors"
 )
 
 func init() {
@@ -37,7 +38,7 @@ func xmlPrint(v interface{}) string {
 }
 
 var (
-	globalScheduler = NewScheduler(NewTextReporter(ioutil.Discard))
+	globalScheduler = NewScheduler(nil, NewTextReporter(ioutil.Discard))
 )
 
 func Run(f ...TestFunc) {
@@ -145,4 +146,12 @@ func (l *MockReporter) End(groups []*TestGroup) {
 func (l *MockReporter) Progress(g *TestGroup, s *Stats) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+}
+
+type MockT struct {
+	s string
+}
+
+func (m *MockT) Fail() {
+	m.s += "Fail."
 }

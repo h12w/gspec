@@ -8,6 +8,8 @@ import (
 	"fmt"
 )
 
+const skip = 5
+
 // ExpectError is the base type of an expectation error.
 type ExpectError struct {
 	Pos  *Pos
@@ -16,7 +18,7 @@ type ExpectError struct {
 
 // Expect returns a new ExpectError object.
 func Expect(text string) error {
-	return &ExpectError{GetPos(3), text}
+	return &ExpectError{GetPos(skip), text}
 }
 
 func (e *ExpectError) str(msg string) string {
@@ -36,7 +38,7 @@ type CompareError struct {
 
 // Compare returns a new CompareError object.
 func Compare(actual, expected interface{}, verb string) error {
-	return &CompareError{ExpectError{GetPos(3), verb}, actual, expected}
+	return &CompareError{ExpectError{GetPos(skip), verb}, actual, expected}
 }
 
 func (e *CompareError) verb() string {

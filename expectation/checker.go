@@ -6,8 +6,9 @@ package expectation
 
 import (
 	"fmt"
-	"github.com/hailiang/gspec/errors"
 	"reflect"
+
+	"github.com/hailiang/gspec/errors"
 )
 
 // Checker is the type of function that checks between actual and expected value

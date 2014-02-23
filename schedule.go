@@ -10,14 +10,17 @@ import (
 
 // A Scheduler schedules test running.
 type Scheduler struct {
-	wg sync.WaitGroup
+	broadcaster
 	*listener
+	wg sync.WaitGroup
 }
 
 // NewScheduler creates and intialize a new Scheduler using r as the test
 // reporter.
-func NewScheduler(r Reporter) *Scheduler {
-	return &Scheduler{listener: newListener(r)}
+func NewScheduler(t T, reporters ...Reporter) *Scheduler {
+	s := &Scheduler{broadcaster: newBroadcaster(t, reporters)}
+	s.listener = newListener(&s.broadcaster)
+	return s
 }
 
 // Start starts tests defined in funcs concurrently or sequentially.

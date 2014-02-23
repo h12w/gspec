@@ -5,9 +5,10 @@
 package gspec
 
 import (
-	exp "github.com/hailiang/gspec/expectation"
 	"testing"
 	"time"
+
+	exp "github.com/hailiang/gspec/expectation"
 )
 
 /*
@@ -228,7 +229,7 @@ Story: Internal Tests
 */
 
 func TestPath(t *testing.T) {
-	expect := exp.AliasForT(t)
+	expect := exp.Alias(exp.TFail(t))
 	p := idStack{}
 	p.push(funcID{p: 1})
 	p.push(funcID{p: 2})

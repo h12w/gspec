@@ -5,8 +5,9 @@
 package gspec
 
 import (
-	exp "github.com/hailiang/gspec/expectation"
 	"testing"
+
+	exp "github.com/hailiang/gspec/expectation"
 )
 
 /*
@@ -25,9 +26,9 @@ Scenario: Attach customized alias name and description for each test group metho
 	Then the alias name and description are combined and passed to the reporter
 */
 func TestDescribeTests(t *testing.T) {
-	expect := exp.AliasForT(t)
+	expect := exp.Alias(exp.TFail(t))
 	r := &MockReporter{}
-	NewScheduler(r).Start(false, func(s S) {
+	NewScheduler(t, r).Start(false, func(s S) {
 		describe, context, it := s.Alias("describe"), s.Alias("context"), s.Alias("it")
 		describe("a", func() {
 			context("b", func() {

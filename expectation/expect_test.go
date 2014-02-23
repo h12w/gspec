@@ -5,8 +5,9 @@
 package expectation
 
 import (
-	"github.com/hailiang/gspec/errors"
 	"testing"
+
+	"github.com/hailiang/gspec/errors"
 )
 
 type testCase struct {

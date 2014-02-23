@@ -8,10 +8,13 @@ import (
 	"fmt"
 )
 
+// FailFunc is the function type that is used to notify expectation failures.
+type FailFunc func(error)
+
 // Actual provides checking methods for an actual value in an expectation.
 type Actual struct {
 	v    interface{}
-	fail func(error)
+	fail FailFunc
 }
 
 // To is a general method for checking an expectation.
@@ -26,7 +29,7 @@ func (a *Actual) To(check Checker, expected interface{}) {
 type ExpectFunc func(actual interface{}) *Actual
 
 // Alias registers a fail function and returns an ExpectFunc.
-func Alias(fail func(error)) ExpectFunc {
+func Alias(fail FailFunc) ExpectFunc {
 	return func(actual interface{}) *Actual {
 		return &Actual{actual, fail}
 	}
@@ -35,12 +38,21 @@ func Alias(fail func(error)) ExpectFunc {
 // T is a subset of testing.T used in this package.
 type T interface {
 	Fail()
+	FailNow()
 }
 
-// AliasForT registers T as the fail handler and returns an ExpectFunc.
-func AliasForT(t T) ExpectFunc {
-	return Alias(func(err error) {
-		fmt.Println(err.Error())
+// TFail return the FailFunc for testing.T.Fail
+func TFail(t T) FailFunc {
+	return func(err error) {
 		t.Fail()
-	})
+		fmt.Println(err.Error())
+	}
+}
+
+// TFailNow return the FailFunc for testing.T.FailNow
+func TFailNow(t T) FailFunc {
+	return func(err error) {
+		t.FailNow()
+		fmt.Println(err.Error())
+	}
 }

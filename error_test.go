@@ -7,8 +7,9 @@ package gspec
 import (
 	"bytes"
 	"errors"
-	exp "github.com/hailiang/gspec/expectation"
 	"testing"
+
+	exp "github.com/hailiang/gspec/expectation"
 )
 
 /*
@@ -26,9 +27,9 @@ Scenario: test case fails
 	Then the error will be recorded and sent to the reporter
 */
 func TestCaseFails(t *testing.T) {
-	expect := exp.AliasForT(t)
+	expect := exp.Alias(exp.TFail(t))
 	r := &MockReporter{}
-	NewScheduler(r).Start(false, func(s S) {
+	NewScheduler(&MockT{}, r).Start(false, func(s S) {
 		do := aliasDo(s)
 		do(func() {
 			s.Fail(errors.New("err a"))
@@ -48,9 +49,9 @@ Scenario: Plain text progress indicator
 	Then I should see 2 dots with 3 F: "F.F.F"
 */
 func Test3Pass2Fail(t *testing.T) {
-	expect := exp.AliasForT(t)
+	expect := exp.Alias(exp.TFail(t))
 	var buf bytes.Buffer
-	NewScheduler(NewTextReporter(&buf)).Start(false, func(s S) {
+	NewScheduler(&MockT{}, NewTextProgresser(&buf)).Start(false, func(s S) {
 		do := s.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -74,4 +75,23 @@ func Test3Pass2Fail(t *testing.T) {
 	})
 	out, _ := buf.ReadString('\n')
 	expect(sortBytes(out)).Equal("..FFF")
+}
+
+/*
+Scenario: notify testing.T
+	Given a Fail method of S
+	When it is called
+	Then testing.T.Fail should be called
+*/
+func TestNotifyT(t *testing.T) {
+	expect := exp.Alias(exp.TFail(t))
+	mt := &MockT{}
+	r := &MockReporter{}
+	NewScheduler(mt, r).Start(false, func(s S) {
+		do := aliasDo(s)
+		do(func() {
+			s.Fail(errors.New(""))
+		})
+	})
+	expect(mt.s).Equal("Fail.")
 }

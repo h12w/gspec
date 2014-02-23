@@ -6,9 +6,10 @@ package gspec
 
 import (
 	"errors"
-	exp "github.com/hailiang/gspec/expectation"
 	"os"
 	"testing"
+
+	exp "github.com/hailiang/gspec/expectation"
 )
 
 /*
@@ -17,7 +18,7 @@ Story: Internal Tests
 */
 
 func TestTreeListener(t *testing.T) {
-	expect := exp.AliasForT(t)
+	expect := exp.Alias(exp.TFail(t))
 	co := newListener(NewTextReporter(os.Stdout))
 	a := &TestGroup{
 		Description: "a",
