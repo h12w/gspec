@@ -17,6 +17,12 @@ Story: Internal Tests
 	Test internal types/functions
 */
 
+/*
+Scenario: reconstruct nested test group to a tree
+	Given a treeListener
+	When it's groupStart method is called like real tests running
+	Then it is able to reconstruct the tree structure
+*/
 func TestTreeListener(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	co := newListener(NewTextReporter(os.Stdout))
@@ -45,13 +51,13 @@ func TestTreeListener(t *testing.T) {
 	co.groupStart(d, path{{p: 1}, {p: 2}, {p: 4}})
 	co.groupStart(z, path{{p: 5}})
 
-	exp := []*TestGroup{
+	exp := TestGroups{
 		&TestGroup{
 			Description: "a",
-			Children: []*TestGroup{
+			Children: TestGroups{
 				&TestGroup{
 					Description: "b",
-					Children: []*TestGroup{
+					Children: TestGroups{
 						&TestGroup{
 							Description: "c",
 							Error:       c.Error,

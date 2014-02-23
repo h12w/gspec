@@ -5,6 +5,7 @@
 package gspec
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -23,4 +24,9 @@ func TestP(t *testing.T) {
 	if err := p(""); err != nil {
 		t.Fatalf("fmt.Println return err %v", err)
 	}
+}
+
+func p(v ...interface{}) error {
+	_, err := fmt.Println(v...)
+	return err
 }

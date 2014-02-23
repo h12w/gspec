@@ -35,7 +35,7 @@ func TestCaseFails(t *testing.T) {
 			s.Fail(errors.New("err a"))
 		})
 	})
-	expect(r.groups).Equal([]*TestGroup{
+	expect(r.groups).Equal(TestGroups{
 		{
 			Error: errors.New("err a"),
 		},
@@ -74,6 +74,8 @@ func Test3Pass2Fail(t *testing.T) {
 		})
 	})
 	out, _ := buf.ReadString('\n')
+	expect(out).HasPrefix("Start:")
+	out, _ = buf.ReadString('\n')
 	expect(sortBytes(out)).Equal("..FFF")
 }
 

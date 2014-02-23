@@ -9,7 +9,7 @@ import (
 )
 
 type listener struct {
-	groups []*TestGroup
+	groups TestGroups
 	m      map[funcID]*TestGroup
 	mu     sync.Mutex
 	Reporter
@@ -39,7 +39,6 @@ func (l *listener) groupStart(g *TestGroup, path path) {
 			l.Total--
 		}
 		parent.Children = append(parent.Children, g)
-		//	g.Parent = parent
 	}
 	l.m[id] = g
 	l.progress(g)

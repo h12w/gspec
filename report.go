@@ -10,23 +10,10 @@ import (
 	"sync"
 )
 
-// A TestGroup contains a test group's related data.
-type TestGroup struct {
-	Description string
-	Error       error
-	Children    []*TestGroup
-}
-
-// Stats contains statistics of tests running.
-type Stats struct {
-	Total int
-	Ended int
-}
-
 // Reporter is a interface to accept events from tests running.
 type Reporter interface {
 	Start()
-	End(groups []*TestGroup)
+	End(groups TestGroups)
 	Progress(g *TestGroup, s *Stats)
 }
 
@@ -49,6 +36,11 @@ type broadcaster struct {
 	mu sync.Mutex
 }
 
+// T is an interface that allows a testing.T to be passed to GSpec.
+type T interface {
+	Fail()
+}
+
 func newBroadcaster(t T, reporters []Reporter) broadcaster {
 	return broadcaster{t: t, a: reporters}
 }
@@ -61,7 +53,7 @@ func (b *broadcaster) Start() {
 	}
 }
 
-func (b *broadcaster) End(groups []*TestGroup) {
+func (b *broadcaster) End(groups TestGroups) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for _, r := range b.a {
@@ -86,17 +78,24 @@ type textReporter struct {
 	w io.Writer
 }
 
-func (l *textReporter) Start() {
-}
-
-func (l *textReporter) End(groups []*TestGroup) {
-	fmt.Fprintln(l.w, "")
+func (l *textReporter) End(groups TestGroups) {
+	for _, g := range groups {
+		g.For(func(path TestGroups) {
+			last := path[len(path)-1]
+			if last.Error != nil {
+				path.Write(l.w)
+			}
+		})
+	}
 }
 
 type textProgresser struct {
-	dummyReporter
 	Stats
 	w io.Writer
+}
+
+func (p *textProgresser) Start() {
+	fmt.Fprintln(p.w, "Start:")
 }
 
 func (p *textProgresser) Progress(g *TestGroup, s *Stats) {
@@ -110,8 +109,12 @@ func (p *textProgresser) Progress(g *TestGroup, s *Stats) {
 	p.Stats = *s
 }
 
+func (p *textProgresser) End(groups TestGroups) {
+	fmt.Fprintln(p.w, "\nEnd.")
+}
+
 type dummyReporter struct{}
 
 func (dummyReporter) Start()                      {}
-func (dummyReporter) End([]*TestGroup)            {}
+func (dummyReporter) End(TestGroups)              {}
 func (dummyReporter) Progress(*TestGroup, *Stats) {}

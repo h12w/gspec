@@ -5,14 +5,8 @@
 package gspec
 
 import (
-	"fmt"
 	"reflect"
 )
-
-func p(v ...interface{}) error {
-	_, err := fmt.Println(v...)
-	return err
-}
 
 // funcID is an ID unique for each function
 type funcID struct {

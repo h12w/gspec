@@ -29,7 +29,7 @@ func dumpPrint(v interface{}) string {
 
 func jsonPrint(v interface{}) string {
 	buf, _ := json.MarshalIndent(v, "    ", "  ")
-	return "\n" + string(buf)
+	return "\n    " + string(buf) + "\n"
 }
 
 func xmlPrint(v interface{}) string {
@@ -125,7 +125,7 @@ func (bs Bytes) Less(i, j int) bool {
 
 type MockReporter struct {
 	mu     sync.Mutex
-	groups []*TestGroup
+	groups TestGroups
 }
 
 func (l *MockReporter) Start() {
@@ -133,7 +133,7 @@ func (l *MockReporter) Start() {
 	defer l.mu.Unlock()
 }
 
-func (l *MockReporter) End(groups []*TestGroup) {
+func (l *MockReporter) End(groups TestGroups) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.groups == nil {

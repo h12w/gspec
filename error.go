@@ -7,14 +7,33 @@ package gspec
 import (
 	"errors"
 	"fmt"
+	"sync"
 )
 
-// T is an interface that allows a testing.T to be passed to GSpec.
-type T interface {
-	Fail()
+type testError struct {
+	err error
+	mu  sync.Mutex
 }
 
-func (t *specImpl) run(f func()) (err error) {
+func (t *testError) set(err error) {
+	if t.err == nil {
+		t.err = err // only keeps the first failure.
+	}
+}
+
+func (t *testError) get() error {
+	defer func() { t.err = nil }()
+	return t.err
+}
+
+// Fail notify that the test case has failed with an error.
+func (t *testError) Fail(err error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.set(err)
+}
+
+func (t *testError) run(f func()) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			switch v := e.(type) {
@@ -29,17 +48,6 @@ func (t *specImpl) run(f func()) (err error) {
 		}
 	}()
 	f()
-	if t.err != nil {
-		err = t.err
-	}
+	err = t.get()
 	return
-}
-
-// Fail notify that the test case has failed with an error.
-func (t *specImpl) Fail(err error) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if t.err == nil {
-		t.err = err // only keeps the first failure.
-	}
 }

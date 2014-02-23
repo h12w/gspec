@@ -228,16 +228,16 @@ Story: Internal Tests
 	Test internal types/functions
 */
 
-func TestPath(t *testing.T) {
+func TestIDStack(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	p := idStack{}
 	p.push(funcID{p: 1})
 	p.push(funcID{p: 2})
-	expect(p.path).Equal(path{{p: 1}, {p: 2}}) //, "path.push failed")
+	expect(p.path).Equal(path{{p: 1}, {p: 2}})
 	i := p.pop()
-	expect(p.path).Equal(path{{p: 1}}) //, "path.pop failed")
-	expect(i).Equal(funcID{p: 2})      //, "path.pop failed")
+	expect(p.path).Equal(path{{p: 1}})
+	expect(i).Equal(funcID{p: 2})
 	i = p.pop()
-	expect(p.path).Equal(path{})       //, "path.pop failed")
-	expect(func() { p.pop() }).Panic() //, "path.pop should panic when empty")
+	expect(p.path).Equal(path{})
+	expect(func() { p.pop() }).Panic()
 }

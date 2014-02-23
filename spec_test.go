@@ -37,13 +37,13 @@ func TestDescribeTests(t *testing.T) {
 			})
 		})
 	})
-	expect(r.groups).Equal([]*TestGroup{
+	expect(r.groups).Equal(TestGroups{
 		{
 			Description: "describe a",
-			Children: []*TestGroup{
+			Children: TestGroups{
 				{
 					Description: "context b",
-					Children: []*TestGroup{
+					Children: TestGroups{
 						{Description: "it c"},
 					},
 				},

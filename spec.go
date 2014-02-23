@@ -4,10 +4,6 @@
 
 package gspec
 
-import (
-	"sync"
-)
-
 // TestFunc is the type of the function prepared to run in a goroutine for each
 // test case.
 type TestFunc func(S)
@@ -23,10 +19,9 @@ type S interface {
 // specImpl implements "S" interface.
 type specImpl struct {
 	*group
+	*listener
 	funcCounter
-	listener *listener
-	err      error
-	mu       sync.Mutex
+	testError
 }
 
 // DescFunc is the type of the function to define a test group with a
@@ -36,8 +31,8 @@ type DescFunc func(description string, f func())
 func newSpec(g *group, l *listener) S {
 	return &specImpl{
 		group:       g,
-		funcCounter: newFuncCounter(),
 		listener:    l,
+		funcCounter: newFuncCounter(),
 	}
 }
 
@@ -48,9 +43,9 @@ func (t *specImpl) Alias(name string) DescFunc {
 	return func(description string, f func()) {
 		id := t.funcID(f)
 		t.visit(id, func() {
-			t.listener.groupStart(&TestGroup{Description: name + description}, t.current())
+			t.groupStart(&TestGroup{Description: name + description}, t.current())
 			err := t.run(f)
-			t.listener.groupEnd(err, id)
+			t.groupEnd(err, id)
 		})
 	}
 }
