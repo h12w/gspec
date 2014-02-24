@@ -17,7 +17,7 @@ Highlights:
 * Natual:     BDD and table driven style are integrated natually. Use either one or both to fit your test scenario.
 * Reliabile:  the design is minimal and orthogonal; the code is tested under 100% coverage.
 * Extensible: Customizable BDD cue words, expectations and test reporters.
-* Separable:  the expectation (assertion) package can be used alone.
+* Separable:  the expectation package is completely separated from the core.
 * Compatible: "go test" is enough to run GSpec tests (However, it does not depend on "testing" package).
 * Succinct:   the core implementation is less than 500 lines of code.
 

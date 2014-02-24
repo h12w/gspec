@@ -6,13 +6,9 @@ package gspec
 
 import (
 	"sync"
-)
 
-// T is an interface that allows a testing.T to be passed to GSpec.
-type T interface {
-	Fail()
-	Parallel()
-}
+	ext "github.com/hailiang/gspec/extension"
+)
 
 // A Scheduler schedules test running.
 type Scheduler struct {
@@ -23,7 +19,7 @@ type Scheduler struct {
 
 // NewScheduler creates and intialize a new Scheduler using r as the test
 // reporter.
-func NewScheduler(t T, reporters ...Reporter) *Scheduler {
+func NewScheduler(t ext.T, reporters ...ext.Reporter) *Scheduler {
 	s := &Scheduler{broadcaster: newBroadcaster(t, reporters)}
 	s.listener = newListener(&s.broadcaster)
 	return s
@@ -46,4 +42,42 @@ func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) {
 
 func (s *Scheduler) newSpec(g *group) S {
 	return newSpec(g, s.listener)
+}
+
+// broadcaster syncs, receives and broadcasts all messages via Reporter interface
+type broadcaster struct {
+	t  ext.T
+	a  []ext.Reporter
+	mu sync.Mutex
+}
+
+func newBroadcaster(t ext.T, reporters []ext.Reporter) broadcaster {
+	return broadcaster{t: t, a: reporters}
+}
+
+func (b *broadcaster) Start() {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	for _, r := range b.a {
+		r.Start()
+	}
+}
+
+func (b *broadcaster) End(groups ext.TestGroups) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	for _, r := range b.a {
+		r.End(groups)
+	}
+}
+
+func (b *broadcaster) Progress(g *ext.TestGroup, stats *ext.Stats) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if g.Error != nil {
+		b.t.Fail()
+	}
+	for _, r := range b.a {
+		r.Progress(g, stats)
+	}
 }

@@ -22,7 +22,7 @@ func Expect(text string) error {
 }
 
 func (e *ExpectError) str(msg string) string {
-	return e.Pos.Decorate(fmt.Sprintf("expect %s.", msg))
+	return e.Pos.Decorate(fmt.Sprintf("expect %s.", msg), "")
 }
 
 // Error implements error interface.
@@ -47,5 +47,8 @@ func (e *CompareError) verb() string {
 
 // Error implements error interface.
 func (e *CompareError) Error() string {
-	return e.str(fmt.Sprintf("%v %s %v", e.Actual, e.verb(), e.Expected))
+	return e.str(fmt.Sprintf("%s %s %s",
+		Sprint(e.Actual),
+		e.verb(),
+		Sprint(e.Expected)))
 }

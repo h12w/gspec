@@ -46,20 +46,18 @@ func (pos *Pos) BasePath() string {
 
 // Decorate prefixes the string with the file and line of the call site
 // and inserts the final newline if needed and indentation tabs for formatting.
-func (pos *Pos) Decorate(s string) string {
+func (pos *Pos) Decorate(s, indent string) string {
 	var buf bytes.Buffer
 	// Every line is indented at least one tab.
-	buf.WriteByte('\t')
+	buf.WriteString(indent)
 	fmt.Fprintf(&buf, "%s:%d: ", pos.BasePath(), pos.Line)
 
-	for i, line := range toLines(s) {
-		if i > 0 {
-			// Second and subsequent lines are indented an extra tab.
-			buf.WriteString("\n\t\t")
-		}
-		buf.WriteString(line)
+	if strings.Contains(s, "\n") {
+		buf.WriteByte('\n')
+		buf.WriteString(Indent(s, "\t"))
+	} else {
+		buf.WriteString(s)
 	}
-	buf.WriteByte('\n')
 	return buf.String()
 }
 
@@ -69,4 +67,16 @@ func toLines(s string) []string {
 		lines = lines[:l-1]
 	}
 	return lines
+}
+
+// Indent splits s to lines and indent each line with argument indent.
+func Indent(s, indent string) string {
+	var buf bytes.Buffer
+	lines := toLines(s)
+	for _, line := range lines {
+		buf.WriteString(indent)
+		buf.WriteString(line)
+		buf.WriteByte('\n')
+	}
+	return buf.String()
 }

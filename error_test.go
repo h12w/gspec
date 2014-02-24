@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	exp "github.com/hailiang/gspec/expectation"
+	. "github.com/hailiang/gspec/extension"
+	. "github.com/hailiang/gspec/reporter"
 )
 
 /*
@@ -74,8 +76,9 @@ func Test3Pass2Fail(t *testing.T) {
 		})
 	})
 	out, _ := buf.ReadString('\n')
-	expect(out).HasPrefix("Start:")
-	out, _ = buf.ReadString('\n')
+	expect(out).HasPrefix("^")
+	expect(out).HasSuffix("$\n")
+	out = out[1 : len(out)-2]
 	expect(sortBytes(out)).Equal("..FFF")
 }
 

@@ -15,6 +15,8 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hailiang/gspec/errors"
+	. "github.com/hailiang/gspec/extension"
+	. "github.com/hailiang/gspec/reporter"
 )
 
 func init() {

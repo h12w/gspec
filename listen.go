@@ -6,23 +6,25 @@ package gspec
 
 import (
 	"sync"
+
+	ext "github.com/hailiang/gspec/extension"
 )
 
 type listener struct {
-	groups TestGroups
-	m      map[funcID]*TestGroup
+	groups ext.TestGroups
+	m      map[funcID]*ext.TestGroup
 	mu     sync.Mutex
-	Reporter
-	Stats
+	ext.Reporter
+	ext.Stats
 }
 
-func newListener(r Reporter) *listener {
+func newListener(r ext.Reporter) *listener {
 	return &listener{
-		m:        make(map[funcID]*TestGroup),
+		m:        make(map[funcID]*ext.TestGroup),
 		Reporter: r}
 }
 
-func (l *listener) groupStart(g *TestGroup, path path) {
+func (l *listener) groupStart(g *ext.TestGroup, path path) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	id := path[len(path)-1]
@@ -55,6 +57,6 @@ func (l *listener) groupEnd(err error, id funcID) {
 	l.progress(g)
 }
 
-func (l *listener) progress(g *TestGroup) {
+func (l *listener) progress(g *ext.TestGroup) {
 	l.Progress(g, &l.Stats)
 }

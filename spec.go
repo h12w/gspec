@@ -4,6 +4,10 @@
 
 package gspec
 
+import (
+	ext "github.com/hailiang/gspec/extension"
+)
+
 // TestFunc is the type of the function prepared to run in a goroutine for each
 // test case.
 type TestFunc func(S)
@@ -43,7 +47,7 @@ func (t *specImpl) Alias(name string) DescFunc {
 	return func(description string, f func()) {
 		id := t.funcID(f)
 		t.visit(id, func() {
-			t.groupStart(&TestGroup{Description: name + description}, t.current())
+			t.groupStart(&ext.TestGroup{Description: name + description}, t.current())
 			err := t.run(f)
 			t.groupEnd(err, id)
 		})

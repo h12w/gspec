@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	exp "github.com/hailiang/gspec/expectation"
+	. "github.com/hailiang/gspec/extension"
+	. "github.com/hailiang/gspec/reporter"
 )
 
 /*
