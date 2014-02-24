@@ -7,27 +7,29 @@ package suite
 import (
 	"os"
 
-	"github.com/hailiang/gspec"
+	"github.com/hailiang/gspec/core"
+	ext "github.com/hailiang/gspec/extension"
+	"github.com/hailiang/gspec/reporter"
 )
 
 var (
 	// Reporters are the test reporters used during the test.
-	Reporters = []gspec.Reporter{
-		gspec.NewTextProgresser(os.Stdout),
-		gspec.NewTextReporter(os.Stdout),
+	Reporters = []ext.Reporter{
+		reporter.NewTextProgresser(os.Stdout),
+		reporter.NewTextReporter(os.Stdout),
 	}
-	testFunctions []gspec.TestFunc
+	testFunctions []core.TestFunc
 )
 
 // Add GSpec test functions to the global test suite.
 // Return value has no meaning, allowing it to be called in global scope.
-func Add(fs ...gspec.TestFunc) int {
+func Add(fs ...core.TestFunc) int {
 	testFunctions = append(testFunctions, fs...)
 	return 0
 }
 
 // Run all tests in the global test suite.
-func Run(t gspec.T, sequential bool) {
-	s := gspec.NewScheduler(t, Reporters...)
+func Run(t core.T, sequential bool) {
+	s := core.NewScheduler(t, Reporters...)
 	s.Start(sequential, testFunctions...)
 }

@@ -13,4 +13,4 @@ Design goals:
 	- It should be reliable by robust design and 100% test coverage.
 	- It should be minimal and extensible.
 */
-package gspec
+package core

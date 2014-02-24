@@ -21,12 +21,24 @@ Highlights:
 * Compatible: "go test" is enough to run GSpec tests (However, it does not depend on "testing" package).
 * Succinct:   the core implementation is less than 500 lines of code.
 
-Design Documents
-----------------
+Design
+------
 
 [Core](DESIGN.md)
 
 [Expectations](expectation/DESIGN.md)
+
+Separable
+---------
+The subpackages are organized with minimal coupling.
+```
+extension   <- 
+core        <- extension
+errors      <- 
+expectation <- errors
+reporter    <- extension, errors
+suite       <- core, exntension, reporter
+```
 
 Examples
 --------

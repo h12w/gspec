@@ -16,5 +16,6 @@ script:
 - go vet -n ./...
 - $HOME/gopath/bin/golint .
 # TODO: coverage inluding subpackages
+- cd core
 - go test -covermode=count -coverprofile=profile.cov
 - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci
