@@ -8,6 +8,12 @@ import (
 	"sync"
 )
 
+// T is an interface that allows a testing.T to be passed to GSpec.
+type T interface {
+	Fail()
+	Parallel()
+}
+
 // A Scheduler schedules test running.
 type Scheduler struct {
 	broadcaster
@@ -29,6 +35,9 @@ func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) {
 		s.wg.Wait()
 		s.Reporter.End(s.groups)
 	}()
+	if !sequential {
+		s.t.Parallel() // signal "go test" to allow concurrent testing.
+	}
 	s.Reporter.Start()
 	for _, f := range funcs {
 		(&runner{f, &s.wg, s.newSpec}).run(sequential)

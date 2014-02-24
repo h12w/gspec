@@ -36,11 +36,6 @@ type broadcaster struct {
 	mu sync.Mutex
 }
 
-// T is an interface that allows a testing.T to be passed to GSpec.
-type T interface {
-	Fail()
-}
-
 func newBroadcaster(t T, reporters []Reporter) broadcaster {
 	return broadcaster{t: t, a: reporters}
 }

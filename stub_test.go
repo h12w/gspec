@@ -38,7 +38,7 @@ func xmlPrint(v interface{}) string {
 }
 
 var (
-	globalScheduler = NewScheduler(nil, NewTextReporter(ioutil.Discard))
+	globalScheduler = NewScheduler(&TStub{}, NewTextReporter(ioutil.Discard))
 )
 
 func Run(f ...TestFunc) {
@@ -123,17 +123,17 @@ func (bs Bytes) Less(i, j int) bool {
 	return bs[i] < bs[j]
 }
 
-type MockReporter struct {
+type ReporterStub struct {
 	mu     sync.Mutex
 	groups TestGroups
 }
 
-func (l *MockReporter) Start() {
+func (l *ReporterStub) Start() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 }
 
-func (l *MockReporter) End(groups TestGroups) {
+func (l *ReporterStub) End(groups TestGroups) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.groups == nil {
@@ -143,15 +143,18 @@ func (l *MockReporter) End(groups TestGroups) {
 	}
 }
 
-func (l *MockReporter) Progress(g *TestGroup, s *Stats) {
+func (l *ReporterStub) Progress(g *TestGroup, s *Stats) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 }
 
-type MockT struct {
+type TStub struct {
 	s string
 }
 
-func (m *MockT) Fail() {
+func (m *TStub) Fail() {
 	m.s += "Fail."
+}
+
+func (m *TStub) Parallel() {
 }

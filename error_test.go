@@ -28,8 +28,8 @@ Scenario: test case fails
 */
 func TestCaseFails(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
-	r := &MockReporter{}
-	NewScheduler(&MockT{}, r).Start(false, func(s S) {
+	r := &ReporterStub{}
+	NewScheduler(&TStub{}, r).Start(false, func(s S) {
 		do := aliasDo(s)
 		do(func() {
 			s.Fail(errors.New("err a"))
@@ -51,7 +51,7 @@ Scenario: Plain text progress indicator
 func Test3Pass2Fail(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	var buf bytes.Buffer
-	NewScheduler(&MockT{}, NewTextProgresser(&buf)).Start(false, func(s S) {
+	NewScheduler(&TStub{}, NewTextProgresser(&buf)).Start(false, func(s S) {
 		do := s.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -87,8 +87,8 @@ Scenario: notify testing.T
 */
 func TestNotifyT(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
-	mt := &MockT{}
-	r := &MockReporter{}
+	mt := &TStub{}
+	r := &ReporterStub{}
 	NewScheduler(mt, r).Start(false, func(s S) {
 		do := aliasDo(s)
 		do(func() {

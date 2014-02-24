@@ -52,18 +52,3 @@ func (gs TestGroups) Write(w io.Writer) {
 		}
 	}
 }
-
-type groupStack struct {
-	a TestGroups
-}
-
-func (s *groupStack) push(g *TestGroup) {
-	s.a = append(s.a, g)
-}
-func (s *groupStack) pop() (g *TestGroup) {
-	if len(s.a) == 0 {
-		panic("call pop when groupStack is empty.")
-	}
-	s.a, g = s.a[:len(s.a)-1], s.a[len(s.a)-1]
-	return
-}

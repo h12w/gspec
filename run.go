@@ -65,21 +65,6 @@ func (t *group) current() path {
 	return t.cur.clone()
 }
 
-type idStack struct {
-	path
-}
-
-func (p *idStack) push(i funcID) {
-	p.path = append(p.path, i)
-}
-func (p *idStack) pop() (i funcID) {
-	if len(p.path) == 0 {
-		panic("call pop when idStack is empty.")
-	}
-	p.path, i = p.path[:len(p.path)-1], p.path[len(p.path)-1]
-	return
-}
-
 type path []funcID
 
 func (p path) clone() path {

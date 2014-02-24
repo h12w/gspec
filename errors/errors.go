@@ -47,5 +47,5 @@ func (e *CompareError) verb() string {
 
 // Error implements error interface.
 func (e *CompareError) Error() string {
-	return e.str(Sprint(e.Actual) + e.verb() + Sprint(e.Expected))
+	return e.str(fmt.Sprintf("%v %s %v", e.Actual, e.verb(), e.Expected))
 }

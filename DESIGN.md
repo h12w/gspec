@@ -16,14 +16,14 @@ Design of GSpec
 	- [Focus Mode](#focus-mode)
 	- [Benchmark & coverage](#benchmark--coverage)
 	- [Options](#options)
-	- [Mock](#mock)
+	- [Test Double](#test-double)
 	- [Auto Test](#auto-test)
 - [Usage Guidelines](#usage-guidelines)
 - [Existing Go Testing Frameworks](#existing-go-testing-frameworks)
 	- [xUnit Style](#xunit-style)
 	- [BDD Style](#bdd-style)
 	- [Expectations (assertions)](#expectations-assertions)
-	- [Mock](#mock-1)
+	- [Mock](#mock)
 - [Reference](#reference)
 
 Introduction
@@ -339,8 +339,10 @@ instance to seve them all and it needs to be locked.
 * Otherwise, test cases could be printed interwaved in console.
 
 ###Timeout
+(TODO)
 
 ###Focus Mode
+(TODO)
 ####Support metadata for each test group?
 
 ####Filter by meta data including regular expressions
@@ -352,15 +354,17 @@ What "go test" provides are good enough. Just don't break them.
 Options of GSpec should able to set hard coded or via CLI flags. Flag should
 have higher priority than hard coded value so that can be changed at runtime.
 
-###Mock
-Integration with gomock.
+###Test Double
+(TODO)
 
 ###Auto Test
+(TODO)
 
 Usage Guidelines
 ----------------
 * Write tests that matter.
 * Test simple abstractions rather than complex details.
+    * Avoid mocking when possible.
 * Write abstract specifications in text; write concrete examples in code.
 * One expectation per test case.
 

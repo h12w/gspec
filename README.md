@@ -14,12 +14,12 @@ supports both BDD style and table driven testing.
 Highlights:
 
 * Concurrent: one goroutine per test case (sequential running also supported).
-* Natual:     Both BDD style and table driven style supported. Just use the one that fits your test scenario.
+* Natual:     BDD and table driven style are integrated natually. Use either one or both to fit your test scenario.
 * Reliabile:  the design is minimal and orthogonal; the code is tested under 100% coverage.
-* Extensible: fully customizable expectations and test reporters.
+* Extensible: Customizable BDD cue words, expectations and test reporters.
 * Separable:  the expectation (assertion) package can be used alone.
+* Compatible: "go test" is enough to run GSpec tests (However, it does not depend on "testing" package).
 * Succinct:   the core implementation is less than 500 lines of code.
-* Compatible: "go test" is enough.
 
 Design Documents
 ----------------
@@ -28,37 +28,43 @@ Design Documents
 
 [Expectations](expectation/DESIGN.md)
 
-Usage
------
+Examples
+--------
+###Concurrent
 
 ```go
 import (
-    "testing"
+	"testing"
 
-    exp "github.com/hailiang/gspec/expectation"
-    "github.com/hailiang/gspec"
-    "github.com/hailiang/gspec/suite"
+	"github.com/hailiang/gspec"
+	exp "github.com/hailiang/gspec/expectation"
+	"github.com/hailiang/gspec/suite"
 )
 
 var _ = suite.Add(func(s gspec.S) {
-    describe, when, it := s.Alias("describe"), s.Alias("when"), s.Alias("it")
-    expect := exp.Alias(s.Fail)
+	describe, given, when, it := s.Alias("describe"), s.Alias("given"), s.Alias("when"), s.Alias("it")
+	expect := exp.Alias(s.Fail)
 
-    describe("an integer", func() {
-        i := 2
-        when("it is incremented by 1", func() {
-            i++
-            it("should has a value of original value plus 1", func() {
-                expect(i).Equal(3)
-            })
-        })
-        // more scenarios here.
-    })
+	describe("an integer i", func() {
+		i := 2
+		given("another integer j", func() {
+			j := 3
+			when("j is added to i", func() {
+				i += j
+				it("should become the sum of original i and j", func() {
+					expect(i).Equal(5)
+				})
+			})
+		        // more scenarios here.
+		})
 
-    // more tests here.
+		// more scenarios here.
+	})
+
+	// more tests here.
 })
 
 func TestAll(t *testing.T) {
-    suite.Run(t, false)
+	suite.Run(t, false)
 }
 ```
