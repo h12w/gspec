@@ -7,7 +7,9 @@ package reporter
 import (
 	"fmt"
 	"io"
+	"strings"
 
+	"github.com/hailiang/gspec/errors"
 	ext "github.com/hailiang/gspec/extension"
 )
 
@@ -34,7 +36,7 @@ func (l *textReporter) End(groups ext.TestGroups) {
 		g.For(func(path ext.TestGroups) {
 			last := path[len(path)-1]
 			if last.Error != nil {
-				path.Write(l.w)
+				writeTestGroups(l.w, path)
 			}
 		})
 	}
@@ -69,3 +71,14 @@ type dummyReporter struct{}
 func (dummyReporter) Start()                              {}
 func (dummyReporter) End(ext.TestGroups)                  {}
 func (dummyReporter) Progress(*ext.TestGroup, *ext.Stats) {}
+
+// Write writes TestGroups from root to leaf.
+func writeTestGroups(w io.Writer, gs ext.TestGroups) {
+	for i, g := range gs {
+		indent := strings.Repeat("  ", i)
+		fmt.Fprintln(w, indent+g.Description)
+		if g.Error != nil {
+			fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
+		}
+	}
+}

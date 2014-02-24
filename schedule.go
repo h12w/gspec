@@ -10,6 +10,12 @@ import (
 	ext "github.com/hailiang/gspec/extension"
 )
 
+// T is an interface that allows a testing.T to be passed to GSpec.
+type T interface {
+	Fail()
+	Parallel()
+}
+
 // A Scheduler schedules test running.
 type Scheduler struct {
 	broadcaster
@@ -19,7 +25,7 @@ type Scheduler struct {
 
 // NewScheduler creates and intialize a new Scheduler using r as the test
 // reporter.
-func NewScheduler(t ext.T, reporters ...ext.Reporter) *Scheduler {
+func NewScheduler(t T, reporters ...ext.Reporter) *Scheduler {
 	s := &Scheduler{broadcaster: newBroadcaster(t, reporters)}
 	s.listener = newListener(&s.broadcaster)
 	return s
@@ -46,12 +52,12 @@ func (s *Scheduler) newSpec(g *group) S {
 
 // broadcaster syncs, receives and broadcasts all messages via Reporter interface
 type broadcaster struct {
-	t  ext.T
+	t  T
 	a  []ext.Reporter
 	mu sync.Mutex
 }
 
-func newBroadcaster(t ext.T, reporters []ext.Reporter) broadcaster {
+func newBroadcaster(t T, reporters []ext.Reporter) broadcaster {
 	return broadcaster{t: t, a: reporters}
 }
 
