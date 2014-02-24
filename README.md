@@ -17,7 +17,7 @@ Highlights:
 * Natual:     BDD and table driven style are integrated natually. Use either one or both to fit your test scenario.
 * Reliabile:  the design is minimal and orthogonal; the code is tested under 100% coverage.
 * Extensible: Customizable BDD cue words, expectations and test reporters.
-* Separable:  the expectation package is completely separated from the core.
+* Separable:  subpackages are organized with minimal coupling.
 * Compatible: "go test" is enough to run GSpec tests (However, it does not depend on "testing" package).
 * Succinct:   the core implementation is less than 500 lines of code.
 
@@ -28,18 +28,6 @@ Design
 
 [Expectations](expectation/DESIGN.md)
 
-Separable
----------
-The subpackages are organized with minimal coupling.
-```
-extension   <- 
-core        <- extension
-errors      <- 
-expectation <- errors
-reporter    <- extension, errors
-suite       <- core, exntension, reporter
-```
-
 Examples
 --------
 ###Concurrent
@@ -48,12 +36,12 @@ Examples
 import (
 	"testing"
 
-	"github.com/hailiang/gspec"
+	"github.com/hailiang/gspec/core"
 	exp "github.com/hailiang/gspec/expectation"
 	"github.com/hailiang/gspec/suite"
 )
 
-var _ = suite.Add(func(s gspec.S) {
+var _ = suite.Add(func(s core.S) {
 	describe, given, when, it := s.Alias("describe"), s.Alias("given"), s.Alias("when"), s.Alias("it")
 	expect := exp.Alias(s.Fail)
 
@@ -80,3 +68,22 @@ func TestAll(t *testing.T) {
 	suite.Run(t, false)
 }
 ```
+
+Separable
+---------
+The subpackages are organized with minimal coupling.
+
+1. core and expectation does not know each other. 
+2. core and reporter communicate via the interface defined in extension.
+3. core receives and transfers errors to reporter without knowing their exact types.
+
+```
+extension   <- 
+core        <- extension
+errors      <- 
+expectation <- errors
+reporter    <- extension, errors
+suite       <- core, exntension, reporter
+```
+
+
