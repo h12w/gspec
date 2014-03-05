@@ -7,6 +7,8 @@ package core
 import (
 	"fmt"
 	"testing"
+
+	exp "github.com/hailiang/gspec/expectation"
 )
 
 func TestFuncUniqueID(t *testing.T) {
@@ -18,6 +20,23 @@ func TestFuncUniqueID(t *testing.T) {
 	if getFuncAddress(f1) == getFuncAddress(f2) {
 		t.Fatalf("Return the same id for different functions.")
 	}
+}
+
+func TestFuncIDString(t *testing.T) {
+	expect := exp.Alias(exp.TFail(t))
+	expect((&funcID{0x12AB, 0}).String()).Equal("12AB")
+	expect((&funcID{0x12AB, 3}).String()).Equal("12AB-3")
+
+	id, err := parseFuncID("EF98")
+	expect(err).Equal(nil)
+	expect(id).Equal(funcID{0xEF98, 0})
+	id, err = parseFuncID("98EF-5")
+	expect(err).Equal(nil)
+	expect(id).Equal(funcID{0x98EF, 5})
+
+	id, err = parseFuncID("XYZ")
+	expect(err).NotEqual(nil)
+	expect(id).Equal(funcID{})
 }
 
 func TestP(t *testing.T) {

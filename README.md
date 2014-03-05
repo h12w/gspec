@@ -30,8 +30,6 @@ Design
 
 Examples
 --------
-###Concurrent
-
 ```go
 import (
 	"testing"
@@ -52,12 +50,16 @@ var _ = suite.Add(func(s core.S) {
 			when("j is added to i", func() {
 				i += j
 				it("should become the sum of original i and j", func() {
-					expect(i).Equal(5)
+					expect(i).Equal(4)
 				})
 			})
-		        // more scenarios here.
+			when("j is minused from i", func() {
+				i -= j
+				it("should become the difference of j minus i", func() {
+					expect(i).Equal(4)
+				})
+			})
 		})
-
 		// more scenarios here.
 	})
 
@@ -68,6 +70,9 @@ func TestAll(t *testing.T) {
 	suite.Run(t, false)
 }
 ```
+
+Concurrent
+----------
 
 Separable
 ---------

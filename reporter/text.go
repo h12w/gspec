@@ -79,6 +79,7 @@ func writeTestGroups(w io.Writer, gs ext.TestGroups) {
 		fmt.Fprintln(w, indent+g.Description)
 		if g.Error != nil {
 			fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
+			fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
 		}
 	}
 }

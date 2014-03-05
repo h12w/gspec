@@ -4,7 +4,10 @@
 
 package core
 
-import "sync"
+import (
+	"strings"
+	"sync"
+)
 
 type runner struct {
 	f       TestFunc
@@ -12,11 +15,11 @@ type runner struct {
 	newSpec func(*group) S
 }
 
-func (r *runner) run(sequential bool) {
+func (r *runner) run(sequential bool, dst path) {
 	if sequential {
-		r.runSeq(path{})
+		r.runSeq(dst)
 	} else {
-		r.runCon(path{})
+		r.runCon(dst)
 	}
 }
 
@@ -70,10 +73,41 @@ type path []funcID
 func (p path) clone() path {
 	return append(path{}, p...)
 }
+
 func (p path) onPath(dst path) bool {
 	// func id is unique, comparing the last should be enough
 	if last := imin(len(p), len(dst)) - 1; last >= 0 {
 		return p[last] == dst[last]
 	}
 	return true // initial idStack is empty
+}
+
+func (p path) String() string {
+	ss := make([]string, len(p))
+	for i := range ss {
+		ss[i] = p[i].String()
+	}
+	return strings.Join(ss, "/")
+}
+
+func (p *path) Set(s string) (err error) {
+	ss := strings.Split(s, "/")
+	*p = make(path, len(ss))
+	for i := range ss {
+		(*p)[i], err = parseFuncID(ss[i])
+		if err != nil {
+			*p = nil
+			return
+		}
+	}
+	return
+}
+
+func (p path) valid() bool {
+	for _, id := range p {
+		if !id.valid() {
+			return false
+		}
+	}
+	return true
 }

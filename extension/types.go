@@ -13,6 +13,7 @@ type Reporter interface {
 
 // A TestGroup contains a test group's related data.
 type TestGroup struct {
+	ID          string
 	Description string
 	Error       error
 	Children    TestGroups

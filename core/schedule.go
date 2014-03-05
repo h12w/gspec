@@ -18,32 +18,41 @@ type T interface {
 
 // A Scheduler schedules test running.
 type Scheduler struct {
-	broadcaster
+	*broadcaster
 	*listener
+	*config
 	wg sync.WaitGroup
 }
 
 // NewScheduler creates and intialize a new Scheduler using r as the test
 // reporter.
 func NewScheduler(t T, reporters ...ext.Reporter) *Scheduler {
-	s := &Scheduler{broadcaster: newBroadcaster(t, reporters)}
-	s.listener = newListener(&s.broadcaster)
+	s := &Scheduler{
+		broadcaster: newBroadcaster(t, reporters),
+		config:      &globalConfig,
+	}
+	s.listener = newListener(s.broadcaster)
 	return s
 }
 
 // Start starts tests defined in funcs concurrently or sequentially.
-func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) {
+func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) error {
 	defer func() {
 		s.wg.Wait()
 		s.Reporter.End(s.groups)
 	}()
+	dst, err := s.dst()
+	if err != nil {
+		return err
+	}
 	if !sequential {
 		s.t.Parallel() // signal "go test" to allow concurrent testing.
 	}
 	s.Reporter.Start()
 	for _, f := range funcs {
-		(&runner{f, &s.wg, s.newSpec}).run(sequential)
+		(&runner{f, &s.wg, s.newSpec}).run(sequential, dst)
 	}
+	return nil
 }
 
 func (s *Scheduler) newSpec(g *group) S {
@@ -57,8 +66,8 @@ type broadcaster struct {
 	mu sync.Mutex
 }
 
-func newBroadcaster(t T, reporters []ext.Reporter) broadcaster {
-	return broadcaster{t: t, a: reporters}
+func newBroadcaster(t T, reporters []ext.Reporter) *broadcaster {
+	return &broadcaster{t: t, a: reporters}
 }
 
 func (b *broadcaster) Start() {

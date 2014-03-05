@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	exp "github.com/hailiang/gspec/expectation"
-	. "github.com/hailiang/gspec/extension"
 	. "github.com/hailiang/gspec/reporter"
 )
 
@@ -37,11 +36,10 @@ func TestCaseFails(t *testing.T) {
 			s.Fail(errors.New("err a"))
 		})
 	})
-	expect(r.groups).Equal(TestGroups{
-		{
-			Error: errors.New("err a"),
-		},
-	})
+	expect(len(r.groups)).Equal(1)
+	if len(r.groups) == 1 {
+		expect(r.groups[0].Error).Equal(errors.New("err a"))
+	}
 }
 
 /*
@@ -60,15 +58,15 @@ func Test3Pass2Fail(t *testing.T) {
 			})
 			do("a-c", func() {
 				do("a-c-d", func() {
-					panic("err: a-c-d")
+					s.Fail(errors.New("err: a-c-d"))
 				})
 			})
 			do("a-e", func() {
 				do("a-e-f", func() {
-					panic(errors.New("err: a-e-f"))
+					s.Fail(errors.New("err: a-e-f"))
 				})
 				do("a-e-g", func() {
-					panic(123)
+					s.Fail(errors.New("123"))
 				})
 			})
 		})

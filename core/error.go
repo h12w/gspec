@@ -5,8 +5,8 @@
 package core
 
 import (
-	"errors"
-	"fmt"
+	//	"errors"
+	//	"fmt"
 	"sync"
 )
 
@@ -34,19 +34,21 @@ func (t *testError) Fail(err error) {
 }
 
 func (t *testError) run(f func()) (err error) {
-	defer func() {
-		if e := recover(); e != nil {
-			switch v := e.(type) {
-			case string:
-				err = errors.New(v)
-			case error:
-				err = v
-			default:
-				err = fmt.Errorf("%v", v)
+	/*
+		defer func() {
+			if e := recover(); e != nil {
+				switch v := e.(type) {
+				case string:
+					err = errors.New(v)
+				case error:
+					err = v
+				default:
+					err = fmt.Errorf("%v", v)
+				}
+				// TODO: print error, terminate all tests and exit
 			}
-			// TODO: print error, terminate all tests and exit
-		}
-	}()
+		}()
+	*/
 	f()
 	err = t.get()
 	return

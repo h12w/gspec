@@ -338,8 +338,10 @@ instance to seve them all and it needs to be locked.
 "go test" functions should not be run concurrently.
 * Otherwise, test cases could be printed interwaved in console.
 
-###Timeout
+###Test Time
 (TODO)
+####Timeout
+####Find slow tests
 
 ###Focus Mode
 (TODO)

@@ -160,3 +160,13 @@ func (m *TStub) Fail() {
 
 func (m *TStub) Parallel() {
 }
+
+func clearIDForTest(gs TestGroups) {
+	for i := range gs {
+		gs[i].For(func(gs TestGroups) {
+			for j := range gs {
+				gs[j].ID = ""
+			}
+		})
+	}
+}

@@ -26,6 +26,14 @@ func Equal(actual, expected interface{}) error {
 	return errors.Compare(actual, expected, "to equal")
 }
 
+// NotEqual is the reverse of Equal.
+func NotEqual(actual, expected interface{}) error {
+	if Equal(actual, expected) != nil {
+		return nil
+	}
+	return errors.Compare(actual, expected, "not to equal")
+}
+
 // Panic checks if a function panics.
 func Panic(actual, expected interface{}) (ret error) {
 	f, ok := actual.(func())
@@ -44,6 +52,11 @@ func Panic(actual, expected interface{}) (ret error) {
 // Equal is the fluent method for checker Equal.
 func (a *Actual) Equal(expected interface{}) {
 	a.To(Equal, expected)
+}
+
+// NotEqual is the fluent method for checker NotEqual.
+func (a *Actual) NotEqual(expected interface{}) {
+	a.To(NotEqual, expected)
 }
 
 // Panic is the fluent method for checker Panic.

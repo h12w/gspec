@@ -5,7 +5,9 @@
 package core
 
 import (
+	"fmt"
 	"reflect"
+	"runtime"
 )
 
 // funcID is an ID unique for each function
@@ -14,8 +16,35 @@ type funcID struct {
 	count int     // allow one function run multiple times with unique ID each time
 }
 
+func (id funcID) valid() bool {
+	return isValidFuncAddress(id.p)
+}
+
+func (id funcID) String() string {
+	if id.count == 0 {
+		return fmt.Sprintf("%X", id.p)
+	}
+	return fmt.Sprintf("%X-%d", id.p, id.count)
+}
+
+func parseFuncID(s string) (id funcID, _ error) {
+	n, err := fmt.Sscanf(s, "%X-%d", &id.p, &id.count)
+	if n == 2 {
+		return id, nil
+	}
+	n, err = fmt.Sscanf(s, "%X", &id.p)
+	if n == 1 {
+		return id, nil
+	}
+	return id, err
+}
+
 func getFuncAddress(f interface{}) uintptr {
 	return reflect.ValueOf(f).Pointer()
+}
+
+func isValidFuncAddress(p uintptr) bool {
+	return runtime.FuncForPC(p) != nil
 }
 
 type funcCounter map[uintptr]int

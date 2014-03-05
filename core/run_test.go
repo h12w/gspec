@@ -7,6 +7,8 @@ package core
 import (
 	"testing"
 	"time"
+
+	exp "github.com/hailiang/gspec/expectation"
 )
 
 /*
@@ -219,4 +221,34 @@ func TestConcurrentRunning(t *testing.T) {
 	if d > time.Duration(2.3*float64(delay)) {
 		t.Fatalf("Tests are not run concurrently, duration: %v", d)
 	}
+}
+
+func TestPathSerialization(t *testing.T) {
+	expect := exp.Alias(exp.TFailNow(t))
+
+	var p path
+	p.Set("AB/CD/EF-2")
+	expect(len(p)).Equal(3)
+	expect(p[0]).Equal(funcID{0xAB, 0})
+	expect(p[1]).Equal(funcID{0xCD, 0})
+	expect(p[2]).Equal(funcID{0xEF, 2})
+
+	err := p.Set("UVW")
+	expect(err).NotEqual(nil)
+
+	p = path{
+		{0x12, 0},
+		{0x34, 1},
+		{0x56, 2},
+	}
+	expect(p.String()).Equal("12/34-1/56-2")
+	expect(p.valid()).Equal(false)
+
+	expect(p.String()).Equal("12/34-1/56-2")
+	expect(p.valid()).Equal(false)
+
+	p = path{
+		{getFuncAddress(func() {}), 0},
+	}
+	expect(p.valid()).Equal(true)
 }
