@@ -42,6 +42,7 @@ func (r *runner) runSpec(dst path, run runFunc) {
 type group struct {
 	dst    path
 	cur    idStack
+	next   funcID
 	done   bool
 	runNew runFunc
 }
@@ -51,9 +52,14 @@ func newGrouper(dst path, run runFunc) *group {
 	return &group{dst: dst, runNew: run}
 }
 
-func (t *group) visit(id funcID, f func()) {
+func (t *group) visit(f func()) {
+	id := t.next
 	t.cur.push(id)
-	defer t.cur.pop()
+	t.next = 0
+	defer func() {
+		t.next = t.cur.pop()
+		t.next++
+	}()
 	if !t.cur.onPath(t.dst) {
 		return
 	} else if t.done {
@@ -77,7 +83,12 @@ func (p path) clone() path {
 func (p path) onPath(dst path) bool {
 	// func id is unique, comparing the last should be enough
 	if last := imin(len(p), len(dst)) - 1; last >= 0 {
-		return p[last] == dst[last]
+		for i := 0; i <= last; i++ {
+			if p[i] != dst[i] {
+				return false
+			}
+		}
+		//		return p[last] == dst[last]
 	}
 	return true // initial idStack is empty
 }
@@ -101,13 +112,4 @@ func (p *path) Set(s string) (err error) {
 		}
 	}
 	return
-}
-
-func (p path) valid() bool {
-	for _, id := range p {
-		if !id.valid() {
-			return false
-		}
-	}
-	return true
 }

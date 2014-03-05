@@ -12,7 +12,7 @@ import (
 
 type listener struct {
 	groups ext.TestGroups
-	m      map[funcID]*ext.TestGroup
+	m      map[string]*ext.TestGroup
 	mu     sync.Mutex
 	ext.Reporter
 	ext.Stats
@@ -20,14 +20,14 @@ type listener struct {
 
 func newListener(r ext.Reporter) *listener {
 	return &listener{
-		m:        make(map[funcID]*ext.TestGroup),
+		m:        make(map[string]*ext.TestGroup),
 		Reporter: r}
 }
 
 func (l *listener) groupStart(g *ext.TestGroup, path path) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	id := path[len(path)-1]
+	id := path.String()
 	if l.m[id] != nil {
 		return
 	}
@@ -35,7 +35,7 @@ func (l *listener) groupStart(g *ext.TestGroup, path path) {
 	if len(path) == 1 { // root node
 		l.groups = append(l.groups, g)
 	} else {
-		parentID := path[len(path)-2]
+		parentID := path[:len(path)-1].String()
 		parent := l.m[parentID] // must exists
 		if len(parent.Children) == 0 {
 			l.Total--
@@ -46,9 +46,10 @@ func (l *listener) groupStart(g *ext.TestGroup, path path) {
 	l.progress(g)
 }
 
-func (l *listener) groupEnd(err error, id funcID) {
+func (l *listener) groupEnd(err error, path path) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	id := path.String()
 	g := l.m[id]
 	g.Error = err
 	if len(g.Children) == 0 {

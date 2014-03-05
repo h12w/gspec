@@ -24,7 +24,6 @@ type S interface {
 type specImpl struct {
 	*group
 	*listener
-	funcCounter
 	testError
 }
 
@@ -34,9 +33,8 @@ type DescFunc func(description string, f func())
 
 func newSpec(g *group, l *listener) S {
 	return &specImpl{
-		group:       g,
-		listener:    l,
-		funcCounter: newFuncCounter(),
+		group:    g,
+		listener: l,
 	}
 }
 
@@ -45,11 +43,10 @@ func (t *specImpl) Alias(name string) DescFunc {
 		name += " "
 	}
 	return func(description string, f func()) {
-		id := t.funcID(f)
-		t.visit(id, func() {
+		t.visit(func() {
 			t.groupStart(&ext.TestGroup{ID: t.dst.String(), Description: name + description}, t.current())
 			err := t.run(f)
-			t.groupEnd(err, id)
+			t.groupEnd(err, t.current())
 		})
 	}
 }

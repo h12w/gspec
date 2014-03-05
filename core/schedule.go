@@ -41,17 +41,17 @@ func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) error {
 		s.wg.Wait()
 		s.Reporter.End(s.groups)
 	}()
-	dst, err := s.dst()
-	if err != nil {
-		return err
-	}
 	if !sequential {
 		s.t.Parallel() // signal "go test" to allow concurrent testing.
 	}
 	s.Reporter.Start()
-	for _, f := range funcs {
-		(&runner{f, &s.wg, s.newSpec}).run(sequential, dst)
-	}
+
+	(&runner{func(s S) {
+		for _, f := range funcs {
+			f(s)
+		}
+	}, &s.wg, s.newSpec}).run(sequential, s.focus)
+
 	return nil
 }
 

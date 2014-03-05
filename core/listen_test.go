@@ -37,21 +37,21 @@ func TestTreeListener(t *testing.T) {
 	c := &TestGroup{
 		Description: "c",
 	}
-	cp := path{{p: 1}, {p: 2}, {p: 3}}
+	cp := path{1, 2, 3}
 	d := &TestGroup{
 		Description: "d",
 	}
 	z := &TestGroup{
 		Description: "z",
 	}
-	co.groupStart(a, path{{p: 1}})
-	co.groupStart(b, path{{p: 1}, {p: 2}})
+	co.groupStart(a, path{1})
+	co.groupStart(b, path{1, 2})
 	co.groupStart(c, cp)
 	c.Error = errors.New("c err")
-	co.groupStart(a, path{{p: 1}})
-	co.groupStart(b, path{{p: 1}, {p: 2}})
-	co.groupStart(d, path{{p: 1}, {p: 2}, {p: 4}})
-	co.groupStart(z, path{{p: 5}})
+	co.groupStart(a, path{1})
+	co.groupStart(b, path{1, 2})
+	co.groupStart(d, path{1, 2, 4})
+	co.groupStart(z, path{5})
 
 	exp := TestGroups{
 		&TestGroup{

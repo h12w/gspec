@@ -1,35 +1,75 @@
 package core
 
 import (
-	"io/ioutil"
 	"testing"
-
-	exp "github.com/hailiang/gspec/expectation"
-	. "github.com/hailiang/gspec/reporter"
 )
 
-func TestFocus(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
-	c := config{focus: path{funcID{0x12, 0}}}
-	_, err := c.dst()
-	expect(err).NotEqual(nil)
+/*
+Scenario: run a specified test case
+	Given a series of test cases
+	When the focus argument is set to a specific path
+	Then only the corresponding test case is executed
+*/
 
-	f := func() {}
-	p := getFuncAddress(f)
-	c = config{focus: path{funcID{p, 0}}}
-	dst, err := c.dst()
-	expect(err).Equal(nil)
-	expect(dst).Equal(path{funcID{p, 0}})
+func focusFuncs(ch *SChan) []TestFunc {
+	return []TestFunc{
+		func(s S) {
+			do := aliasDo(s)
+			do(func() {
+				ch.Send("a")
+			})
+			do(func() {
+				ch.Send("b")
+			})
+		},
+		func(s S) {
+			do := aliasDo(s)
+			do(func() {
+				ch.Send("c")
+			})
+			do(func() {
+				ch.Send("d")
+			})
+		},
+	}
 }
 
-func TestGlobalFocus(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
-	globalConfig.focus = path{funcID{0x12, 0}}
-	defer func() {
-		globalConfig.focus = path{}
-	}()
+func TestRunFocusA(t *testing.T) {
+	globalConfig.focus = path{0}
+	ch := NewSChan()
+	Run(focusFuncs(ch)...)
+	if exp := []string{"a"}; !ch.EqualSorted(exp) {
+		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
+	}
+	globalConfig.focus = path{}
+}
 
-	s := NewScheduler(&TStub{}, NewTextReporter(ioutil.Discard))
-	err := s.Start(true, func(S) {})
-	expect(err).NotEqual(nil)
+func TestRunFocusB(t *testing.T) {
+	globalConfig.focus = path{1}
+	ch := NewSChan()
+	Run(focusFuncs(ch)...)
+	if exp := []string{"b"}; !ch.EqualSorted(exp) {
+		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
+	}
+	globalConfig.focus = path{}
+}
+
+func TestRunFocusC(t *testing.T) {
+	globalConfig.focus = path{2}
+	ch := NewSChan()
+	Run(focusFuncs(ch)...)
+	if exp := []string{"c"}; !ch.EqualSorted(exp) {
+		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
+	}
+	globalConfig.focus = path{}
+}
+
+func TestRunFocusD(t *testing.T) {
+	globalConfig.focus = path{3}
+	ch := NewSChan()
+	Run(focusFuncs(ch)...)
+	if exp := []string{"d"}; !ch.EqualSorted(exp) {
+		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
+	}
+	globalConfig.focus = path{}
 }

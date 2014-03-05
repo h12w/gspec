@@ -18,12 +18,12 @@ Story: Internal Tests
 func TestIDStack(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	p := idStack{}
-	p.push(funcID{p: 1})
-	p.push(funcID{p: 2})
-	expect(p.path).Equal(path{{p: 1}, {p: 2}})
+	p.push(funcID(1))
+	p.push(funcID(2))
+	expect(p.path).Equal(path{1, 2})
 	i := p.pop()
-	expect(p.path).Equal(path{{p: 1}})
-	expect(i).Equal(funcID{p: 2})
+	expect(p.path).Equal(path{1})
+	expect(i).Equal(funcID(2))
 	i = p.pop()
 	expect(p.path).Equal(path{})
 	expect(func() { p.pop() }).Panic()
