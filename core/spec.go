@@ -44,7 +44,7 @@ func (t *specImpl) Alias(name string) DescFunc {
 	}
 	return func(description string, f func()) {
 		t.visit(func() {
-			t.groupStart(&ext.TestGroup{ID: t.dst.String(), Description: name + description}, t.current())
+			t.groupStart(&ext.TestGroup{ID: t.current().String(), Description: name + description}, t.current())
 			err := t.run(f)
 			t.groupEnd(err, t.current())
 		})

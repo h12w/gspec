@@ -47,8 +47,17 @@ func (e *CompareError) verb() string {
 
 // Error implements error interface.
 func (e *CompareError) Error() string {
-	return e.str(fmt.Sprintf("%s %s %s",
-		Sprint(e.Actual),
-		e.verb(),
-		Sprint(e.Expected)))
+	actual := Sprint(e.Actual)
+	expect := Sprint(e.Expected)
+	format := "%s %s %s"
+	if endWithBreak(actual) {
+		format = "%s%s%s"
+		actual = Indent(actual, "    ")
+		expect = Indent(expect, "    ")
+	}
+	return e.str(fmt.Sprintf(format, actual, e.verb(), expect))
+}
+
+func endWithBreak(s string) bool {
+	return len(s) > 0 && s[len(s)-1] == '\n'
 }
