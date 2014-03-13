@@ -13,6 +13,8 @@ import (
 	ext "github.com/hailiang/gspec/extension"
 )
 
+const gspecPath = "github.com/hailiang/gspec"
+
 // NewTextReporter creates and initialize a new text reporter using w to write
 // the output.
 func NewTextReporter(w io.Writer) ext.Reporter {
@@ -78,8 +80,30 @@ func writeTestGroups(w io.Writer, gs ext.TestGroups) {
 		indent := strings.Repeat("  ", i)
 		fmt.Fprintln(w, indent+g.Description)
 		if g.Error != nil {
-			fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
-			fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+			if panicError, ok := g.Error.(*ext.PanicError); ok {
+				writePanicError(w, panicError)
+				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+				fmt.Fprintln(w, ">>> Stop printing more errors due to a panic.")
+				break
+			} else {
+				fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
+				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+			}
 		}
+	}
+}
+
+func writePanicError(w io.Writer, e *ext.PanicError) {
+	fmt.Fprint(w, "panic: ")
+	fmt.Fprintln(w, e.Err.Error())
+	for _, f := range e.Stack {
+		if strings.Contains(f.File, gspecPath) {
+			fmt.Fprintln(w, "    ......")
+			break
+		}
+		fmt.Fprint(w, "    ")
+		fmt.Fprintln(w, f.Name)
+		fmt.Fprint(w, "        ")
+		fmt.Fprintf(w, "%s:%d\n", f.File, f.Line)
 	}
 }

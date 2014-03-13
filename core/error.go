@@ -5,9 +5,9 @@
 package core
 
 import (
-	//	"errors"
-	//	"fmt"
 	"sync"
+
+	"github.com/hailiang/gspec/extension"
 )
 
 type testError struct {
@@ -34,21 +34,11 @@ func (t *testError) Fail(err error) {
 }
 
 func (t *testError) run(f func()) (err error) {
-	/*
-		defer func() {
-			if e := recover(); e != nil {
-				switch v := e.(type) {
-				case string:
-					err = errors.New(v)
-				case error:
-					err = v
-				default:
-					err = fmt.Errorf("%v", v)
-				}
-				// TODO: print error, terminate all tests and exit
-			}
-		}()
-	*/
+	defer func() {
+		if e := recover(); e != nil {
+			err = extension.NewPanicError(e, 2)
+		}
+	}()
 	f()
 	err = t.get()
 	return
