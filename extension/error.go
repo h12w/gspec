@@ -22,6 +22,7 @@ type FuncPos struct {
 type PanicError struct {
 	Err   error
 	Stack []FuncPos
+	SS    []byte // TODO: if it is useful, parse it, otherwise, delete it.
 }
 
 // NewPanicError returns a new PanicError. Object o is the panicking error,
@@ -36,7 +37,9 @@ func NewPanicError(o interface{}, skip int) error {
 	default:
 		err = fmt.Errorf("%v", o)
 	}
-	return &PanicError{err, newStackTrace(skip + 2)}
+	pe := &PanicError{err, newStackTrace(skip + 2), make([]byte, 4096)}
+	runtime.Stack(pe.SS, true)
+	return pe
 }
 
 // Error is the same as the panicking error.

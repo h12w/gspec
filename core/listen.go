@@ -54,6 +54,9 @@ func (l *listener) groupEnd(err error, path path) {
 	g.Error = err
 	if len(g.Children) == 0 {
 		l.Ended++
+		if err != nil {
+			l.Failed++
+		}
 	}
 	l.progress(g)
 }

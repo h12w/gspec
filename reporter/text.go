@@ -30,18 +30,30 @@ func NewTextProgresser(w io.Writer) ext.Reporter {
 // TextReporter implements a simple plain text CLI reporter.
 type textReporter struct {
 	dummyReporter
+	ext.Stats
 	w io.Writer
 }
 
 func (l *textReporter) End(groups ext.TestGroups) {
+	mid := make(map[string]bool)
 	for _, g := range groups {
-		g.For(func(path ext.TestGroups) {
+		g.For(func(path ext.TestGroups) bool {
 			last := path[len(path)-1]
 			if last.Error != nil {
-				writeTestGroups(l.w, path)
+				if !writeTestGroups(l.w, path, mid) {
+					return false
+				}
 			}
+			return true
 		})
 	}
+	if l.Stats.Failed > 0 {
+		fmt.Printf(">>> FAIL COUNT: %d of %d.\n", l.Stats.Failed, l.Stats.Total)
+	}
+}
+
+func (l *textReporter) Progress(g *ext.TestGroup, s *ext.Stats) {
+	l.Stats = *s
 }
 
 type textProgresser struct {
@@ -75,22 +87,29 @@ func (dummyReporter) End(ext.TestGroups)                  {}
 func (dummyReporter) Progress(*ext.TestGroup, *ext.Stats) {}
 
 // Write writes TestGroups from root to leaf.
-func writeTestGroups(w io.Writer, gs ext.TestGroups) {
+func writeTestGroups(w io.Writer, gs ext.TestGroups, mid map[string]bool) bool {
 	for i, g := range gs {
-		indent := strings.Repeat("  ", i)
-		fmt.Fprintln(w, indent+g.Description)
+		indent := strings.Repeat("    ", i)
+		if mid[g.ID] {
+			fmt.Fprintln(w, "")
+		} else {
+			fmt.Fprintln(w, indent+g.Description)
+			mid [g.ID] = true
+		}
 		if g.Error != nil {
 			if panicError, ok := g.Error.(*ext.PanicError); ok {
 				writePanicError(w, panicError)
 				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+				//				fmt.Fprintf(w, string(panicError.SS))
 				fmt.Fprintln(w, ">>> Stop printing more errors due to a panic.")
-				break
+				return false
 			} else {
 				fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
 				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
 			}
 		}
 	}
+	return true
 }
 
 func writePanicError(w io.Writer, e *ext.PanicError) {

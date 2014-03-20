@@ -24,6 +24,7 @@ type TestGroups []*TestGroup
 
 // Stats contains statistics of tests running.
 type Stats struct {
-	Total int
-	Ended int
+	Total  int
+	Ended  int
+	Failed int
 }
