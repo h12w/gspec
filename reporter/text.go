@@ -94,7 +94,7 @@ func writeTestGroups(w io.Writer, gs ext.TestGroups, mid map[string]bool) bool {
 			fmt.Fprintln(w, "")
 		} else {
 			fmt.Fprintln(w, indent+g.Description)
-			mid [g.ID] = true
+			mid[g.ID] = true
 		}
 		if g.Error != nil {
 			if panicError, ok := g.Error.(*ext.PanicError); ok {
@@ -103,10 +103,9 @@ func writeTestGroups(w io.Writer, gs ext.TestGroups, mid map[string]bool) bool {
 				//				fmt.Fprintf(w, string(panicError.SS))
 				fmt.Fprintln(w, ">>> Stop printing more errors due to a panic.")
 				return false
-			} else {
-				fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
-				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
 			}
+			fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
+			fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
 		}
 	}
 	return true
