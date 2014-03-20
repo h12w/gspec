@@ -43,6 +43,29 @@ func TestCaseFails(t *testing.T) {
 }
 
 /*
+Scenario: test case panics
+	Given a test case
+	When it panics
+	Then the error will be recorded and sent to the reporter
+*/
+func TestCasePanics(t *testing.T) {
+	expect := exp.Alias(exp.TFail(t))
+	r := &ReporterStub{}
+	NewScheduler(&TStub{}, r).Start(false, func(s S) {
+		do := aliasDo(s)
+		do(func() {
+			panic("panic error")
+		})
+	})
+	expect(len(r.groups)).Equal(1)
+	if len(r.groups) == 1 {
+		expect(r.groups[0].Error).Equal(errors.New("panic error"))
+	}
+}
+
+
+
+/*
 Scenario: Plain text progress indicator
 	Given a nested test group with 5 leaves
 	When the tests finished but 3 of test panics

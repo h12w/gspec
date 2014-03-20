@@ -163,10 +163,11 @@ func (m *TStub) Parallel() {
 
 func clearIDForTest(gs TestGroups) {
 	for i := range gs {
-		gs[i].For(func(gs TestGroups) {
+		gs[i].For(func(gs TestGroups) bool {
 			for j := range gs {
 				gs[j].ID = ""
 			}
+			return true
 		})
 	}
 }
