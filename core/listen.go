@@ -14,14 +14,15 @@ type listener struct {
 	groups ext.TestGroups
 	m      map[string]*ext.TestGroup
 	mu     sync.Mutex
-	ext.Reporter
+	r      ext.Reporter
 	ext.Stats
 }
 
 func newListener(r ext.Reporter) *listener {
 	return &listener{
-		m:        make(map[string]*ext.TestGroup),
-		Reporter: r}
+		m: make(map[string]*ext.TestGroup),
+		r: r,
+	}
 }
 
 func (l *listener) groupStart(g *ext.TestGroup, path path) {
@@ -62,5 +63,5 @@ func (l *listener) groupEnd(err error, path path) {
 }
 
 func (l *listener) progress(g *ext.TestGroup) {
-	l.Progress(g, &l.Stats)
+	l.r.Progress(g, &l.Stats)
 }

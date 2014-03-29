@@ -6,8 +6,8 @@ package extension
 
 // For loops through each leaf node of a TestGroup.
 // path contains the path from root to leaf.
-func (g *TestGroup) For(visit func(path TestGroups) bool) {
-	g.each(&groupStack{}, visit)
+func (g *TestGroup) For(visit func(path TestGroups) bool) bool {
+	return g.each(&groupStack{}, visit)
 }
 
 func (g *TestGroup) each(s *groupStack, visit func(path TestGroups) bool) bool {

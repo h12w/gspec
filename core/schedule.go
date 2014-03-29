@@ -39,12 +39,12 @@ func NewScheduler(t T, reporters ...ext.Reporter) *Scheduler {
 func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) error {
 	defer func() {
 		s.wg.Wait()
-		s.Reporter.End(s.groups)
+		s.broadcaster.End(s.groups)
 	}()
 	if !sequential {
 		s.t.Parallel() // signal "go test" to allow concurrent testing.
 	}
-	s.Reporter.Start()
+	s.broadcaster.Start()
 
 	(&runner{func(s S) {
 		for _, f := range funcs {

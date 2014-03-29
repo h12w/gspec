@@ -37,7 +37,7 @@ type textReporter struct {
 func (l *textReporter) End(groups ext.TestGroups) {
 	mid := make(map[string]bool)
 	for _, g := range groups {
-		g.For(func(path ext.TestGroups) bool {
+		completed := g.For(func(path ext.TestGroups) bool {
 			last := path[len(path)-1]
 			if last.Error != nil {
 				if !writeTestGroups(l.w, path, mid) {
@@ -46,6 +46,9 @@ func (l *textReporter) End(groups ext.TestGroups) {
 			}
 			return true
 		})
+		if !completed {
+			break
+		}
 	}
 	if l.Stats.Failed > 0 {
 		fmt.Printf(">>> FAIL COUNT: %d of %d.\n", l.Stats.Failed, l.Stats.Total)
