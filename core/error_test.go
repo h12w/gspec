@@ -47,8 +47,8 @@ Scenario: FailNow
 	Given the FailNow method of S
 	When it is called with an error object
 	Then the error Will be recorded and sent to the reporter
-	And the defer functions of the current goroutine get called
-	And the current goroutine terminates
+	And the defer functions get called
+	And the rest of the test cases continue to run
 */
 func TestFailNow(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
@@ -64,12 +64,15 @@ func TestFailNow(t *testing.T) {
 			s.FailNow(errors.New("err a"))
 			ch.Send("after FailNow")
 		})
+		do(func() {
+			ch.Send("another test case")
+		})
 	})
-	expect(len(r.groups)).Equal(1)
-	if len(r.groups) == 1 {
+	expect(len(r.groups)).Equal(2)
+	if len(r.groups) > 0 {
 		expect(r.groups[0].Error).Equal(errors.New("err a"))
 	}
-	expect(ch.Sorted()).Equal([]string{"before FailNow", "defer func"})
+	expect(ch.Sorted()).Equal([]string{"another test case", "before FailNow", "defer func"})
 }
 
 /*

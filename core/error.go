@@ -5,11 +5,18 @@
 package core
 
 import (
-	"runtime"
 	"sync"
 
 	"github.com/hailiang/gspec/extension"
 )
+
+type failNowError struct {
+	err error
+}
+
+func (f failNowError) Error() string {
+	return f.err.Error()
+}
 
 type testError struct {
 	err error
@@ -40,13 +47,18 @@ func (t *testError) Fail(err error) {
 // excution of the current goroutine and defer functions will get called.
 func (t *testError) FailNow(err error) {
 	t.Fail(err)
-	runtime.Goexit()
+	panic(failNowError{err})
 }
 
 func (t *testError) run(f func()) {
 	defer func() {
 		if e := recover(); e != nil {
-			t.setErr(extension.NewPanicError(e, 2))
+			switch err := e.(type) {
+			case failNowError:
+				t.setErr(err.err)
+			default:
+				t.setErr(extension.NewPanicError(e, 2))
+			}
 		}
 	}()
 	f()
