@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
+	"reflect"
 	"runtime"
 	"sort"
 	"strings"
@@ -87,22 +88,14 @@ func (c *SChan) receiveAll() {
 	wg.Wait()
 }
 
-func (c *SChan) EqualSorted(ss []string) bool {
+func (c *SChan) Sorted() []string {
 	c.receiveAll()
 	sort.Strings(c.ss)
-	return c.equal(ss)
+	return c.ss
 }
 
-func (c *SChan) equal(ss []string) bool {
-	if len(ss) != len(c.ss) {
-		return false
-	}
-	for i := range ss {
-		if ss[i] != c.ss[i] {
-			return false
-		}
-	}
-	return true
+func (c *SChan) EqualSorted(ss []string) bool {
+	return reflect.DeepEqual(c.Sorted(), ss)
 }
 
 func sortBytes(s string) string {

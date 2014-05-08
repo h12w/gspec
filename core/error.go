@@ -5,6 +5,7 @@
 package core
 
 import (
+	"runtime"
 	"sync"
 
 	"github.com/hailiang/gspec/extension"
@@ -15,31 +16,38 @@ type testError struct {
 	mu  sync.Mutex
 }
 
-func (t *testError) set(err error) {
+func (t *testError) setErr(err error) {
 	if t.err == nil {
 		t.err = err // only keeps the first failure.
 	}
 }
 
-func (t *testError) get() error {
+// get clears the err field so that it will not be repeatedly recorded by
+// parent test groups
+func (t *testError) getErr() error {
 	defer func() { t.err = nil }()
 	return t.err
 }
 
-// Fail notify that the test case has failed with an error.
+// Fail marks that the test case has failed with an error.
 func (t *testError) Fail(err error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.set(err)
+	t.setErr(err)
 }
 
-func (t *testError) run(f func()) (err error) {
+// FailNow marks that the test case has failed with an error, and stops the
+// excution of the current goroutine and defer functions will get called.
+func (t *testError) FailNow(err error) {
+	t.Fail(err)
+	runtime.Goexit()
+}
+
+func (t *testError) run(f func()) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = extension.NewPanicError(e, 2)
+			t.setErr(extension.NewPanicError(e, 2))
 		}
 	}()
 	f()
-	err = t.get()
-	return
 }

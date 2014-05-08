@@ -44,7 +44,7 @@ func TestTestCaseTraversal(t *testing.T) {
 		},
 	}
 	cases := []string{}
-	g.For(func(path TestGroups) {
+	g.For(func(path TestGroups) bool {
 		s := ""
 		for _, g := range path {
 			s += g.Description
@@ -53,6 +53,7 @@ func TestTestCaseTraversal(t *testing.T) {
 			}
 		}
 		cases = append(cases, s)
+		return true
 	})
 	expect(cases).Equal([]string{
 		"abc",

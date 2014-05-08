@@ -18,6 +18,7 @@ type TestFunc func(S)
 type S interface {
 	Alias(name string) DescFunc
 	Fail(err error)
+	FailNow(err error)
 }
 
 // specImpl implements "S" interface.
@@ -45,8 +46,10 @@ func (t *specImpl) Alias(name string) DescFunc {
 	return func(description string, f func()) {
 		t.visit(func() {
 			t.groupStart(&ext.TestGroup{ID: t.current().String(), Description: name + description}, t.current())
-			err := t.run(f)
-			t.groupEnd(err, t.current())
+			defer func() {
+				t.groupEnd(t.getErr(), t.current())
+			}()
+			t.run(f)
 		})
 	}
 }

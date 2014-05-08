@@ -43,6 +43,36 @@ func TestCaseFails(t *testing.T) {
 }
 
 /*
+Scenario: FailNow
+	Given the FailNow method of S
+	When it is called with an error object
+	Then the error Will be recorded and sent to the reporter
+	And the defer functions of the current goroutine get called
+	And the current goroutine terminates
+*/
+func TestFailNow(t *testing.T) {
+	expect := exp.Alias(exp.TFail(t))
+	r := &ReporterStub{}
+	ch := NewSChan()
+	NewScheduler(&TStub{}, r).Start(false, func(s S) {
+		do := aliasDo(s)
+		do(func() {
+			defer func() {
+				ch.Send("defer func")
+			}()
+			ch.Send("before FailNow")
+			s.FailNow(errors.New("err a"))
+			ch.Send("after FailNow")
+		})
+	})
+	expect(len(r.groups)).Equal(1)
+	if len(r.groups) == 1 {
+		expect(r.groups[0].Error).Equal(errors.New("err a"))
+	}
+	expect(ch.Sorted()).Equal([]string{"before FailNow", "defer func"})
+}
+
+/*
 Scenario: test case panics
 	Given a test case
 	When it panics
@@ -62,8 +92,6 @@ func TestCasePanics(t *testing.T) {
 		expect(r.groups[0].Error).Equal(errors.New("panic error"))
 	}
 }
-
-
 
 /*
 Scenario: Plain text progress indicator

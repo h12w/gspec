@@ -6,7 +6,6 @@ package expectation
 
 import (
 	"fmt"
-//	"runtime"
 )
 
 // FailFunc is the function type that is used to notify expectation failures.
@@ -29,14 +28,11 @@ func (a *Actual) To(check Checker, expected interface{}) {
 // actual value.
 type ExpectFunc func(actual interface{}) *Actual
 
-// Alias registers a fail function and returns an ExpectFunc. The fail function
-// needs only to record the error and the returned ExpectFunc will terminate the
-// goroutine as soon as jn expectation failure occurs.
+// Alias registers a fail function and returns an ExpectFunc.
 func Alias(fail FailFunc) ExpectFunc {
 	return func(actual interface{}) *Actual {
 		return &Actual{actual, func(e error) {
 			fail(e)
-//			runtime.Goexit()
 		}}
 	}
 }

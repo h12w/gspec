@@ -51,7 +51,9 @@ func (l *textReporter) End(groups ext.TestGroups) {
 		}
 	}
 	if l.Stats.Failed > 0 {
-		fmt.Printf(">>> FAIL COUNT: %d of %d.\n", l.Stats.Failed, l.Stats.Total)
+		fmt.Fprintf(l.w, ">>> FAIL COUNT: %d of %d.\n", l.Stats.Failed, l.Stats.Total)
+	} else {
+		fmt.Fprintf(l.w, ">>> TOTAL: %d.\n", l.Stats.Total)
 	}
 }
 
