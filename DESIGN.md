@@ -43,7 +43,7 @@ Yet Another One?
 Why writing yet another testing framework, given there are already many? (
 http://code.google.com/p/go-wiki/wiki/Projects#Testing)
 
-* Automatic test is important, especially for a single developer who lacks time
+* Automatic test is important, especially for a small team that lacks resources
   to test manually.
 * "go test" only meets minimal requirement, leaving a gap to fill in a way or
   another.
@@ -63,17 +63,23 @@ GSpec should not break any features that "go test" support, only enhancing them.
 ####"go test" command
 * "go test" command is the only way to run GSpec tests.
 * GSpec should try to be consistent with test flags that "go test" have.
+    - "-outputdir": place output files in the specified directory.
+    - "-parallel": Allow parallel execution of test functions that call
+      t.Parallel.
+    - "-v": Verbose output.
 
 ####Concurrency
-Besides concurency at the level of test functions, GSpec should support 
-concurency at the level of each expectation.
+"go test" supports concurency at the level of test functions. GSpec should
+support concurency at the level of each of its own test cases.
 
 ####Table driven tests
-Though table driven tests are recommended by "go test" if possible. GSpec should
-also support table driven test cases.
+(Table driven test)[https://code.google.com/p/go-wiki/wiki/TableDrivenTests] is
+the recommended way when possible. GSpec should also support table driven test
+cases.
 
 ####Test organization
-GSpec should be able to separate tests into multiple test functions/files.
+"go test" supports organizing test cases in multiple test functions in multiple
+files. GSpec should continue support this.
 
 ###Test Case
 A test case needs running some code and verifying the result. Further, the code
@@ -91,12 +97,11 @@ Sometimes setup/teardown is shared between test cases, so there are 4 situations
 * setup run once before all tests
 * teardown run once after all tests
 
-"go test" does nothing to help the developer with setup/teardown, devlopers have
-to figure out themselves.
+"go test" does nothing to help the developer with shared setup/teardown code.
 
-Traditional xUnit style testing frameworks implement each step above as virtual
-methods in a base class or interface. They do provide a complete solution,
-including concurrency. However, They have to introduce unavoidable boilerplate
+xUnit style testing frameworks implement each step above as virtual methods in a
+base class or interface. They do provide a complete solution, including possible
+support for concurrency. However, They have to introduce unavoidable boilerplate
 code of defining derived test classes, and nested test group is not straight
 forward to implement with derived classes.
 
@@ -111,17 +116,16 @@ GSpec should try to follow this way, though it is not obvious on how to
 implement concurrency at this stage (RSpec does not support concurrency itself).
 
 ####Shared test (Table driven style)
-Sometimes test logic is shared between test cases but setup code varies. The
-test context and expected result can be organized in a table, known as table
-driven tests.
+Sometimes both setup/teardown and test logic can be shared between test cases.
+The differences between test cases can be represented with data and organized in
+a table, and table-driven tests can be applied.
 
 GSpec should also support table driven tests, allowing table driven tests to be
 embedded in BDD style test group, or vice versa.
 
 ###Nested Test Group
-Most of the test cases do not share a test context, but when they do, the
-context should be setup (teardown) before (after) each test to isolate test
-cases from each other.
+When a testing context is shared between test cases, the context should be setup
+(teardown) before (after) each test to isolate test cases from each other.
 
 Nested test group is a tree structure. Each leaf represents a test case and the
 path from the root node to the leaf represents the setup sequence of the test
@@ -167,7 +171,17 @@ separatedly at the start (end) of the "go test" testing functions.
 
 IMPLEMENTATION:
 To implement the tree traversing logic, the path is composed of unique function
-IDs, which could be implemented as the address of the function.
+IDs, which could be implemented as either the relative position from the root
+test group or the address of the function.
+
+It seems that the function address approach is simpler, however, there are two
+major flaws of this approach:
+1. the function address changes with any code modifications, making it hard to
+   implement a useful "focus mode". So the former
+2. the function address is always the same within a loop, making it hard to
+   support table-driven testing.
+
+So the former way is chosen.
 
 ###Table-driven Testing
 GSpec should allow table driven tests and group functions nested in arbitrary
@@ -183,41 +197,38 @@ ways. e.g.
 
 IMPLEMENTATION:
 The main challenge of table driven test is: the same closure could be run
-multiple times within the loop, and the address only cannot distinguish these
-multiple runs. However, this can be solved by a map counter.
+multiple times within the loop, so each different run of the same closure should
+have different function ID.
 
 ###Concurrency
 Concurrency is a core feature of Go. "go test" supports concurency at the level
 of test functions. With a testing framework with nested test group by closures,
 it is expected to have dozens (or even hundreds) of test cases written
 in one test function. On a quad-core CPU, you probably could just split test
-cases into four test functions, but CPU could easily get many cores (hundreds or
-even thousands of cores) in the foreseeable future, thus it requires one
+cases into four test functions, but CPU could easily get many cores (dozens or
+even hundreds of cores) in the foreseeable future, thus it requires one
 goroutine per test case to make the most of the hardware.
+
+To support concurency, test cases should be completed isolated from each other.
+No variables should be shared without careful synchronization. It is an illusion
+that the variables defined in closures are shared between test cases. Actually,
+each test case runs from the root level and variables are allocated on call
+stack of its own gouroutine.
 
 When the test cases are organized in a tree of closures, there is no way to know
 the whole structure without actually running it. The process has to be
-exploratory, starting goroutines on the fly.
+exploratory, starting goroutines on the fly and guiding the test case along a
+path from the root down to a certain leaf. The path has to be stored somewhere
+and should not be shared between test cases. Thus, scheduling related variables
+have to be passed into the goroutine function (RootFunc) as an argument
+(s of interface type S). e.g.
 
-To support concurency, test cases should be completed isolated from each other.
-No variables should be shared without careful synchronization.
-
-It seems that the variables defined in closures are shared between test cases,
-but actually they are fully isolated, because each test case runs from the root
-level. Variables are allocated on call stack of its own gouroutine.
-
-The critical point is the state variables related to test scheduling. There has
-to be a way to guide the test along a path from the root down to a certain leaf.
-The path has to be stored somewhere and should not be shared between test cases.
-Thus, scheduling related variables have to be passed into the goroutine function
-(RootFunc) as an argument (g of interface type G). e.g.
-
-    scheduler.Start(func(g G) {
-        g.Group(func() {
-            g.Group(func() {
+    scheduler.Start(func(s S) {
+        s.Group(func() {
+            s.Group(func() {
                 // test case 1
             })
-            g.Group(func() {
+            s.Group(func() {
                 // test case 2
             })
         })
@@ -225,28 +236,27 @@ Thus, scheduling related variables have to be passed into the goroutine function
 
 where the RootFunc is defined as:
 
-    type RootFunc func(g G)
+    type RootFunc func(s S)
 
-and variable g contains all the variables needed to control which test case to
+and variable s contains all the variables needed to control which test case to
 run, and the scheduler makes sure each test case run once concurrently
-(sequentially).
+(or sequentially).
 
 RESTRICTION:
-* To support concurency, there must be one context variable of type G per
+* To support concurency, there must be one context variable of type S per
   goroutine. So the Group method cannot be simply defined as a global function,
   and a top-level function of type RootFunc is mandatary for writing tests.
   GSpec has to exchange some simplicty for concurency (This could be compensated
   by defining aliases for the Group method).
-* For loop should not be defined in any places excpet the closure of leaf node.
 
 ###Test Gathering
 "go test" gathers test functions with specific function/file naming conventions.
 GSpec should also be able to gather tests across test functions/files.
 
-Unlike the group context G, the scheduler can be shared by all goroutines as
+Unlike the group context S, the scheduler can be shared by all goroutines as
 long as carefully locked. So RootFuncs can be defined anywhere and are gathered
-by a single scheduler in one "go test" function. This requires Scheduler.Start
-accepts multiple RootFuncs.
+by a single scheduler instance in one "go test" function. This requires
+Scheduler.Start accepts multiple RootFuncs.
 
 RESTRICTION:
 There is no finalization hook provided by "go test", so there is no way to know
@@ -338,16 +348,13 @@ instance to seve them all and it needs to be locked.
 "go test" functions should not be run concurrently.
 * Otherwise, test cases could be printed interwaved in console.
 
+###Focus Mode
+(TODO)
+
 ###Test Time
 (TODO)
 ####Timeout
 ####Find slow tests
-
-###Focus Mode
-(TODO)
-####Support metadata for each test group?
-
-####Filter by meta data including regular expressions
 
 ###Benchmark & coverage
 What "go test" provides are good enough. Just don't break them.
