@@ -6,37 +6,39 @@ Design of GSpec
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
 - [Introduction](#introduction)
-- [Yet Another One?](#yet-another-one)
-- [Features](#features)
-  - [Enhancing "go test"](#enhancing-go-test)
-    - [Concurrency](#concurrency)
-    - [Table driven tests](#table-driven-tests)
-    - [Test organization](#test-organization)
-    - ["go test" command](#go-test-command)
-  - [Test Case](#test-case)
-    - [Shared setup/teardown (BDD style)](#shared-setupteardown-bdd-style)
-    - [Shared test (Table driven style)](#shared-test-table-driven-style)
-  - [Nested Test Group](#nested-test-group)
-  - [Table-driven Testing](#table-driven-testing)
-  - [Concurrency](#concurrency-1)
-  - [Test case organization](#test-case-organization)
-  - [Test Specification](#test-specification)
+- [Rationale](#rationale)
+- [Test organization](#test-organization)
+  - [A overview of test case](#a-overview-of-test-case)
+  - [Nested test group](#nested-test-group)
+  - [Shared setup/teardown](#shared-setupteardown)
+  - [Table-driven test](#table-driven-test)
+  - [Test case gathering](#test-case-gathering)
+  - [Test specification](#test-specification)
     - [Alias](#alias)
     - [Description](#description)
-    - [Listener](#listener)
-  - [Reporter](#reporter)
-    - [Helpful messages](#helpful-messages)
-    - [Test case failure](#test-case-failure)
-    - [Fatal error](#fatal-error)
-    - [Builtin reporter](#builtin-reporter)
+- [Test composition](#test-composition)
+  - [Expectation](#expectation)
+    - [Design goals](#design-goals)
+    - [Error Message](#error-message)
+    - [List of expectations](#list-of-expectations)
+  - [Test Double](#test-double)
+- [Test execution](#test-execution)
+  - [Concurrency](#concurrency)
   - [Focus Mode](#focus-mode)
   - [Test Time](#test-time)
     - [Timeout](#timeout)
     - [Find slow tests](#find-slow-tests)
   - [Benchmark & coverage](#benchmark-&-coverage)
   - [Options](#options)
-  - [Test Double](#test-double)
+    - ["go test" command](#go-test-command)
   - [Auto Test](#auto-test)
+- [Test report](#test-report)
+  - [Listener](#listener)
+  - [Reporter](#reporter)
+    - [Helpful messages](#helpful-messages)
+    - [Test case failure](#test-case-failure)
+    - [Fatal error](#fatal-error)
+    - [Builtin reporter](#builtin-reporter)
 - [Usage Guidelines](#usage-guidelines)
 - [Existing Go Testing Frameworks](#existing-go-testing-frameworks)
   - [xUnit Style](#xunit-style)
@@ -80,7 +82,11 @@ fundamental problems about unit testing, including:
     - Timeout detection
     - test coverage analysis
     - blocking analysis
-    - run chosen test cases (regular expressions matching test function names)
+    - run chosen test cases (focus mode by regular expressions matching test
+      function names)
+* Test report
+    - console output
+
 
 Gotest is superior in the sense that it solves major problems in daily testing
 in a good way, and contains no unnecessary features. However, it lacks some
@@ -89,28 +95,29 @@ features that are also important in unit testing:
   scattered in multiple test files.
 * gotest does not provide enough facilities to help reducing redundancy in
   testing code.
-* gotest emphasize the importance of (good error message)[http://golang.org/doc/faq#testing_framework],
+* gotest emphasize the importance of [good error message](http://golang.org/doc/faq#testing_framework),
   but does not provide any tools to achieve that.
+* gotest encourages [table-driven test](https://code.google.com/p/go-wiki/wiki/TableDrivenTests),
+  but it is not clear how to select an run a single test case in the table.
+* gotest does not provide alternative way to test report.
 
-All the short shortcomings of gotest can be remedied by a minimal framework that
+All the shortcomings of gotest can be remedied by a minimal framework that
 provide the missing features while keeping the solution provided by gotest
-intact. The framework (GSpec) should provide the following features:
-* Test cases can be organized in nested test groups so that the whole test suite
-  of a package can form a complete specification.
-    - Common setup/teardown/test logic can be shared among test cases via test
-      groups.
-    - Good error messages are achieved by attaching informative descriptions to
-      each level of test groups.
-* Expectation (assertion) helpers are provided to reduce the redundancy in test
-  code.
-* GSpec should be modular and extensible.
-* No existing solutions of gotest are broken by GSpec. Especially,
-    - organize test cases in multiple files
-    - "go test" command
-    - Concurrency
-    - Timeout
-    - Ability to run chosen test case (focus mode)
-* GSpec should be reliable by robust design and 100% test coverage.
+intact. GSpec framework should achieve the following goals:
+* Test organization
+    - A natual way to organize test cases to a complete specification.
+    - Common test logic can be shared easily, including common setup/teardown
+      and table-driven test.
+* Test composition
+    - Extensible expectation (assertion) helpers.
+* Test execution
+    - All gotest features should still be supported.
+* Test report
+    - Informative and helpful error messages.
+    - Extensible test reporters.
+* GSpec should be reliable itself.
+    - minimal and modular design.
+    - 100% test coverage.
 
 Why writing yet another test framework, given there are already many? (
 http://code.google.com/p/go-wiki/wiki/Projects#Testing)
@@ -123,13 +130,13 @@ http://code.google.com/p/go-wiki/wiki/Projects#Testing)
 * It is a good way to learn testing itself.
 * It is fun.
 
-Features
---------
-
 The following sections are organized in the sequence of design decisions, from
 major features to minor ones.
 
-###Test Case
+Test organization
+-----------------
+
+###A overview of test case
 A test case needs running some code and verifying the result. Further, the code
 run by a test case can be usually seperated into 3 steps:
 
@@ -137,42 +144,19 @@ run by a test case can be usually seperated into 3 steps:
 * perform an action and verify the result
 * teardown the test context (optional)
 
-####Shared setup/teardown (BDD style)
-Sometimes setup/teardown is shared between test cases, so there are 4 situations:
+Sometimes setup/teardown is shared among test cases, so there are 4 situations:
 
 * setup before each test
 * teardown after each test
 * setup run once before all tests
 * teardown run once after all tests
 
-"go test" does nothing to help the developer with shared setup/teardown code.
-
-xUnit style test frameworks implement each step above as virtual methods in a
-base class or interface. They do provide a complete solution, including possible
-support for concurrency. However, They have to introduce unavoidable boilerplate
-code of defining derived test classes, and nested test group is not straight
-forward to implement with derived classes.
-
-BDD style frameworks like RSpec use closures to provide an ad hoc and natual
-way to specify test cases. Pros of this method include:
-
-* A natual short test description rather than a function name
-* Setup/teardown code can be nested to form multiple levels of test groups
-* The tests form a readable and runnable specification
-
-GSpec will choose BDD style as its basic form of test cases.
-
-####Shared test (Table driven style)
-Sometimes both setup/teardown and test logic can be shared between test cases,
+Sometimes both setup/teardown and test logic can be shared among test cases,
 and the differences between test cases can be represented with data only and
 organized in a table, thus table-driven tests can be applied.
 
-GSpec should also support table driven tests, allowing table driven tests to be
-embedded in BDD style test group, or vice versa.
-
-###Nested Test Group
-When a testing context is shared between test cases, the context should be setup
-(teardown) before (after) each test to isolate test cases from each other.
+###Nested test group
+GSpec uses nested test groups to organize test cases.
 
 Nested test group is a tree structure. Each leaf represents a test case and the
 path from the root node to the leaf represents the setup sequence of the test
@@ -187,6 +171,7 @@ represents the teardown sequence of the test context for the test case. e.g.
 The setup sequence should be: abc1 abc2, and the teardown sequence should be:
 c1ba c2ba. (The relative order between c1 and c2 is not important)
 
+###Shared setup/teardown
 One way of doing setup/teardown is by hook functions as what RSpec does (before,
 after method with argument :each). An alternative way is to define the setup
 code directly in the closure and schedule it to run before each test case. As
@@ -230,10 +215,7 @@ major flaws of this approach:
 
 So the former way is chosen.
 
-###Table-driven Testing
-[Table driven test](https://code.google.com/p/go-wiki/wiki/TableDrivenTests) is
-the recommended way when possible.
-
+###Table-driven test
 GSpec should allow table driven tests and group functions nested in arbitrary
 ways. e.g.
 
@@ -249,6 +231,98 @@ IMPLEMENTATION:
 The main challenge of table driven test is: the same closure could be run
 multiple times within the loop, so each different run of the same closure should
 have different function ID.
+
+###Test case gathering
+"go test" gathers test functions with specific function/file naming conventions.
+GSpec should also be able to gather tests across test functions/files.
+
+Unlike the group context S, the scheduler can be shared by all goroutines as
+long as carefully locked. So RootFuncs can be defined anywhere and are gathered
+by a single scheduler instance in one "go test" function. This requires
+Scheduler.Start accepts multiple RootFuncs.
+
+RESTRICTION:
+There is no finalization hook provided by "go test", so there is no way to know
+when all test functions finish. The only possible way is to output the result
+for each test gathering. So RootFuncs should be gathered only all at once in one
+package.
+
+###Test specification
+GSpec should be able to generate a structured, readable plain text specification
+from the tests written. There should be a way to define and collect information
+for each level of test group.
+
+Another benefit of plain text specification is that it eliminates the need to
+define a unique function name for each test function.
+
+####Alias
+GSpec should be able to provide a convenient way to use customized alias names
+for the nested group function. e.g. describe, context, it, specify and example.
+
+GSpec should be able to tell what alias name is used for a certain test group.
+
+####Description
+GSpec should be able to assotiate a description to each level of test group.
+
+Besides, it also should be able to allow types inserted between test description
+so that during refactoring, these types can be found and modified too and won't
+get out of sync. Go does not support first class type, so it could be
+implemented by variables with zero value. (OPTIONAL, TODO)
+
+Test composition
+----------------
+
+###Expectation
+
+####Design goals
+* Provide structured and helpful error messages.
+* Extensible.
+* Can be used alone with "go test".
+* Fluent interface.
+* Do not panic.
+
+####Error Message
+An error message should tell the developer clearly:
+* Where the failure is
+* What is expected
+* What is actually got
+
+Should a customizable description supported? No!
+* In a BDD-style framework, such descriptions already included in the "it" test
+  group. e.g. it("should xxx", func() { expect ... }). So providing such
+  optional arguments will be a duplication.
+* When used directly with "go test", such messages can be easily written as a
+  comment above the expectation line of code, and printed out when the test
+  fails.
+
+An error message should be provided in the form of an error object.
+* Plain string message can be easily obtained by method Error().
+* Detail structure can still be hold within the object, so that an aggresive 
+  reporter can use such information to provide an enhanced visualization such
+  as colorful highlighting.
+
+####List of expectations
+This is a complete list of expectations, "+" means already supported:
+* +To: general expectation
+* +Panic: panic and panic with an object
+* +Equal: deep equal
+*  Is: shallow equal
+*  Order comparision: >, <, >=, <=, Within(delta).Of(value)
+*  Composition: Not, And, Or
+*  True/False: can be supported by Is(true), Is(false)
+*  Nil: can be supported by Is(nil)
+*  Empty: empty for container types
+*  Error: can be supported by Equal
+*  Implements: can be supported by IsType
+*  IsType: if a interface is of a type
+*  String: Contains, Match...
+*  Collection: HasLen, All, Any, Exact, InOrder, InPartialOrder ...
+
+###Test Double
+(TODO)
+
+Test execution
+--------------
 
 ###Concurrency
 Concurrency is a core feature of Go. "go test" supports concurency at the level
@@ -271,7 +345,8 @@ exploratory, starting goroutines on the fly and guiding the test case along a
 path from the root down to a certain leaf. The path has to be stored somewhere
 and should not be shared between test cases. Thus, scheduling related variables
 have to be passed into the goroutine function (RootFunc) as an argument
-(s of interface type S). e.g.
+(s of interface type S). So the group function now becomes the Group method of
+S, e.g.
 
     scheduler.Start(func(s S) {
         s.Group(func() {
@@ -299,44 +374,36 @@ RESTRICTION:
   GSpec has to exchange some simplicty for concurency (This could be compensated
   by defining aliases for the Group method).
 
-###Test case organization
-"go test" gathers test functions with specific function/file naming conventions.
-GSpec should also be able to gather tests across test functions/files.
+###Focus Mode
+(TODO)
 
-Unlike the group context S, the scheduler can be shared by all goroutines as
-long as carefully locked. So RootFuncs can be defined anywhere and are gathered
-by a single scheduler instance in one "go test" function. This requires
-Scheduler.Start accepts multiple RootFuncs.
+###Test Time
+(TODO)
+####Timeout
+####Find slow tests
 
-RESTRICTION:
-There is no finalization hook provided by "go test", so there is no way to know
-when all test functions finish. The only possible way is to output the result
-for each test gathering. So RootFuncs should be gathered only all at once in one
-package.
+###Benchmark & coverage
+What "go test" provides are good enough. Just don't break them.
 
-###Test Specification
-GSpec should be able to generate a structured, readable plain text specification
-from the tests written. There should be a way to define and collect information
-for each level of test group.
+###Options
+Options of GSpec should able to set hard coded or via CLI flags. Flag should
+have higher priority than hard coded value so that can be changed at runtime.
 
-Another benefit of plain text specification is that it eliminates the need to
-define a unique function name for each test function.
+####"go test" command
+* "go test" command is the only way to run GSpec tests.
+* GSpec should try to be consistent with test flags that "go test" have.
+    - "-outputdir": place output files in the specified directory.
+    - "-parallel": Allow parallel execution of test functions that call
+      t.Parallel.
+    - "-v": Verbose output.
 
-####Alias
-GSpec should be able to provide a convenient way to use customized alias names
-for the nested group function. e.g. describe, context, it, specify and example.
+###Auto Test
+(TODO)
 
-GSpec should be able to tell what alias name is used for a certain test group.
+Test report
+-----------
 
-####Description
-GSpec should be able to assotiate a description to each level of test group.
-
-Besides, it also should be able to allow types inserted between test description
-so that during refactoring, these types can be found and modified too and won't
-get out of sync. Go does not support first class type, so it could be
-implemented by variables with zero value. (OPTIONAL, TODO)
-
-####Listener
+###Listener
 A listener is an internal object embedded in the test scheduler that collects
 the outputs from the tests, reconstructing the tree structure of nested test
 groups with their descriptions and results.
@@ -400,36 +467,6 @@ instance to seve them all and it needs to be locked.
 * If there are multiple test schedulers and one reporter per scheduler, then
 "go test" functions should not be run concurrently.
 * Otherwise, test cases could be printed interwaved in console.
-
-###Focus Mode
-(TODO)
-
-###Test Time
-(TODO)
-####Timeout
-####Find slow tests
-
-###Benchmark & coverage
-What "go test" provides are good enough. Just don't break them.
-
-###Options
-Options of GSpec should able to set hard coded or via CLI flags. Flag should
-have higher priority than hard coded value so that can be changed at runtime.
-
-####"go test" command
-* "go test" command is the only way to run GSpec tests.
-* GSpec should try to be consistent with test flags that "go test" have.
-    - "-outputdir": place output files in the specified directory.
-    - "-parallel": Allow parallel execution of test functions that call
-      t.Parallel.
-    - "-v": Verbose output.
-
-
-###Test Double
-(TODO)
-
-###Auto Test
-(TODO)
 
 Usage Guidelines
 ----------------
