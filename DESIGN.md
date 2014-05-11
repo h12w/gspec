@@ -3,7 +3,7 @@ Design of GSpec
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+**Table of Contents**
 
 - [Introduction](#introduction)
 - [Rationale](#rationale)
@@ -12,10 +12,10 @@ Design of GSpec
   - [Nested test group](#nested-test-group)
   - [Shared setup/teardown](#shared-setupteardown)
   - [Table-driven test](#table-driven-test)
-  - [Test case gathering](#test-case-gathering)
   - [Test specification](#test-specification)
     - [Alias](#alias)
     - [Description](#description)
+  - [Test case gathering](#test-case-gathering)
 - [Test composition](#test-composition)
   - [Expectation](#expectation)
     - [Design goals](#design-goals)
@@ -40,12 +40,13 @@ Design of GSpec
     - [Fatal error](#fatal-error)
     - [Builtin reporter](#builtin-reporter)
 - [Usage Guidelines](#usage-guidelines)
-- [Existing Go Testing Frameworks](#existing-go-testing-frameworks)
-  - [xUnit Style](#xunit-style)
-  - [BDD Style](#bdd-style)
-  - [Expectations (assertions)](#expectations-assertions)
-  - [Mock](#mock)
 - [Reference](#reference)
+  - [Existing Go Testing Frameworks](#existing-go-testing-frameworks)
+    - [xUnit Style](#xunit-style)
+    - [BDD Style](#bdd-style)
+    - [Expectations (assertions)](#expectations-assertions)
+    - [Mock](#mock)
+  - [Links](#links)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -105,7 +106,7 @@ All the shortcomings of gotest can be remedied by a minimal framework that
 provide the missing features while keeping the solution provided by gotest
 intact. GSpec framework should achieve the following goals:
 * Test organization
-    - A natual way to organize test cases to a complete specification.
+    - A natual way to organize test cases into a complete specification.
     - Common test logic can be shared easily, including common setup/teardown
       and table-driven test.
 * Test composition
@@ -113,8 +114,8 @@ intact. GSpec framework should achieve the following goals:
 * Test execution
     - All gotest features should still be supported.
 * Test report
-    - Informative and helpful error messages.
-    - Extensible test reporters.
+    - Extensible test reporters that provide informative and helpful error
+      messages.
 * GSpec should be reliable itself.
     - minimal and modular design.
     - 100% test coverage.
@@ -232,21 +233,6 @@ The main challenge of table driven test is: the same closure could be run
 multiple times within the loop, so each different run of the same closure should
 have different function ID.
 
-###Test case gathering
-"go test" gathers test functions with specific function/file naming conventions.
-GSpec should also be able to gather tests across test functions/files.
-
-Unlike the group context S, the scheduler can be shared by all goroutines as
-long as carefully locked. So RootFuncs can be defined anywhere and are gathered
-by a single scheduler instance in one "go test" function. This requires
-Scheduler.Start accepts multiple RootFuncs.
-
-RESTRICTION:
-There is no finalization hook provided by "go test", so there is no way to know
-when all test functions finish. The only possible way is to output the result
-for each test gathering. So RootFuncs should be gathered only all at once in one
-package.
-
 ###Test specification
 GSpec should be able to generate a structured, readable plain text specification
 from the tests written. There should be a way to define and collect information
@@ -268,6 +254,21 @@ Besides, it also should be able to allow types inserted between test description
 so that during refactoring, these types can be found and modified too and won't
 get out of sync. Go does not support first class type, so it could be
 implemented by variables with zero value. (OPTIONAL, TODO)
+
+###Test case gathering
+"go test" gathers test functions with specific function/file naming conventions.
+GSpec should also be able to gather tests across test functions/files.
+
+Unlike the group context S, the scheduler can be shared by all goroutines as
+long as carefully locked. So RootFuncs can be defined anywhere and are gathered
+by a single scheduler instance in one "go test" function. This requires
+Scheduler.Start accepts multiple RootFuncs.
+
+RESTRICTION:
+There is no finalization hook provided by "go test", so there is no way to know
+when all test functions finish. The only possible way is to output the result
+for each test gathering. So RootFuncs should be gathered only all at once in one
+package.
 
 Test composition
 ----------------
@@ -476,13 +477,15 @@ Usage Guidelines
 * Write abstract specifications in text; write concrete examples in code.
 * One expectation per test case.
 
-Existing Go Testing Frameworks
-------------------------------
-###xUnit Style
+Reference
+---------
+###Existing Go Testing Frameworks
+
+####xUnit Style
 * launchpad.net/gocheck
 * github.com/stretchr/testify
 
-###BDD Style
+####BDD Style
 * smartystreets.github.io/goconvey
 * github.com/onsi/ginkgo
 * github.com/franela/goblin
@@ -491,18 +494,17 @@ Existing Go Testing Frameworks
 * github.com/azer/mao
 * github.com/pranavraja/zen (forked from mao)
 
-###Expectations (assertions)
+####Expectations (assertions)
 * github.com/onsi/gomega
 * launchpad.net/gocheck
 * github.com/stretchr/testify/assert
 
-###Mock
+####Mock
 * code.google.com/p/gomock
 * https://github.com/qur/withmock (gomock companion)
 * github.com/stretchr/testify/mock
 * github.com/jvshahid/mock4go
 
-Reference
----------
-http://betterspecs.org/
-http://doctoc.herokuapp.com/
+###Links
+* http://betterspecs.org/
+* http://doctoc.herokuapp.com/
