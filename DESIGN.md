@@ -92,20 +92,19 @@ Gotest is superior in the sense that it solves major problems in daily test
 in a good way, and contains no unnecessary features. However, it lacks some
 features that are also important in unit test:
 * Test organization
-    - gotest does not help much with test organization beyond test functions
-      scattered in multiple test files.
+    - gotest does not help much beyond test functions scattered in multiple test
+      files.
     - gotest does not provide enough facilities to help reducing redundancy in
       test code.
 * Test composition
     - gotest lacks expectation (assertion) helpers that reduce redundant code.
 * Test execution
     - gotest encourages [table-driven test](https://code.google.com/p/go-wiki/wiki/TableDrivenTests),
-      but it is not clear how to select an run a single test case in the table.
+      but it is not clear how to select and run a single test case in the table.
 * Test report
     - gotest emphasize the importance of [good error message](http://golang.org/doc/faq#testing_framework),
       but does not provide any tools to achieve that.
-    - gotest does not provide alternative way to test report besides console
-      output.
+    - gotest does not provide alternative way besides console output.
     - gotest does not provide a clean message when test panics or timeout.
 
 All the shortcomings of gotest can be remedied by a minimal framework that
@@ -113,12 +112,12 @@ provide the missing features while keeping the solution provided by gotest
 intact. GSpec framework should achieve the following goals:
 * Test organization
     - A natual way to organize test cases into a complete specification.
-    - Common test logic can be shared easily, including common setup/teardown
-      and table-driven test.
+    - Common test logic can be shared easily.
 * Test composition
     - Extensible expectation helpers.
 * Test execution
     - All gotest features should still be supported.
+    - Table driven test (with focus mode).
 * Test report
     - Extensible test reporters that provide informative and helpful error
       messages.
