@@ -24,8 +24,8 @@ Design of GSpec
   - [Test Double](#test-double)
 - [Test execution](#test-execution)
   - [Concurrency](#concurrency)
-  - [Focus Mode](#focus-mode)
-  - [Test Time](#test-time)
+  - [Focus mode](#focus-mode)
+  - [Test time](#test-time)
     - [Timeout](#timeout)
     - [Find slow tests](#find-slow-tests)
   - [Benchmark & coverage](#benchmark-&-coverage)
@@ -41,7 +41,7 @@ Design of GSpec
     - [Builtin reporter](#builtin-reporter)
 - [Usage Guidelines](#usage-guidelines)
 - [Reference](#reference)
-  - [Existing Go Testing Frameworks](#existing-go-testing-frameworks)
+  - [Existing Go Test Frameworks](#existing-go-testing-frameworks)
     - [xUnit Style](#xunit-style)
     - [BDD Style](#bdd-style)
     - [Expectations (assertions)](#expectations-assertions)
@@ -65,11 +65,11 @@ strategy can be used. The model is divided into multiple parts and the
 interactions among those parts are kept minimal, so that each part of the
 software can be written and verified separately.
 
-This is the basic idea about unit testing.
+This is the basic idea about unit test.
 
 The builtin test framework for Go (gotest for short, including "go test" command
 and "testing" package) is a lightweight test framework that solves most of the
-fundamental problems about unit testing, including:
+fundamental problems about unit test, including:
 * Test organization
     - a test case is a function with specific signature.
     - a test function can be put in any files with name *_test.go.
@@ -88,19 +88,25 @@ fundamental problems about unit testing, including:
 * Test report
     - console output
 
-
-Gotest is superior in the sense that it solves major problems in daily testing
+Gotest is superior in the sense that it solves major problems in daily test
 in a good way, and contains no unnecessary features. However, it lacks some
-features that are also important in unit testing:
-* gotest does not help much with test organization beyond test functions
-  scattered in multiple test files.
-* gotest does not provide enough facilities to help reducing redundancy in
-  testing code.
-* gotest emphasize the importance of [good error message](http://golang.org/doc/faq#testing_framework),
-  but does not provide any tools to achieve that.
-* gotest encourages [table-driven test](https://code.google.com/p/go-wiki/wiki/TableDrivenTests),
-  but it is not clear how to select an run a single test case in the table.
-* gotest does not provide alternative way to test report.
+features that are also important in unit test:
+* Test organization
+    - gotest does not help much with test organization beyond test functions
+      scattered in multiple test files.
+    - gotest does not provide enough facilities to help reducing redundancy in
+      test code.
+* Test composition
+    - gotest lacks expectation (assertion) helpers that reduce redundant code.
+* Test execution
+    - gotest encourages [table-driven test](https://code.google.com/p/go-wiki/wiki/TableDrivenTests),
+      but it is not clear how to select an run a single test case in the table.
+* Test report
+    - gotest emphasize the importance of [good error message](http://golang.org/doc/faq#testing_framework),
+      but does not provide any tools to achieve that.
+    - gotest does not provide alternative way to test report besides console
+      output.
+    - gotest does not provide a clean message when test panics or timeout.
 
 All the shortcomings of gotest can be remedied by a minimal framework that
 provide the missing features while keeping the solution provided by gotest
@@ -110,12 +116,13 @@ intact. GSpec framework should achieve the following goals:
     - Common test logic can be shared easily, including common setup/teardown
       and table-driven test.
 * Test composition
-    - Extensible expectation (assertion) helpers.
+    - Extensible expectation helpers.
 * Test execution
     - All gotest features should still be supported.
 * Test report
     - Extensible test reporters that provide informative and helpful error
       messages.
+    - Handle panics and timeout gracefully.
 * GSpec should be reliable itself.
     - minimal and modular design.
     - 100% test coverage.
@@ -128,7 +135,7 @@ http://code.google.com/p/go-wiki/wiki/Projects#Testing)
 * "go test" only meets minimal requirement, leaving a gap to fill in a way or
   another.
 * None of the existing frameworks fully satisfy all the goals above.
-* It is a good way to learn testing itself.
+* It is a good way to learn test itself.
 * It is fun.
 
 The following sections are organized in the sequence of design decisions, from
@@ -212,7 +219,7 @@ major flaws of this approach:
 1. the function address changes with any code modifications, making it hard to
    implement a useful "focus mode".
 2. the function address is always the same within a loop, making it hard to
-   support table-driven testing.
+   support table-driven test.
 
 So the former way is chosen.
 
@@ -293,8 +300,8 @@ Should a customizable description supported? No!
   group. e.g. it("should xxx", func() { expect ... }). So providing such
   optional arguments will be a duplication.
 * When used directly with "go test", such messages can be easily written as a
-  comment above the expectation line of code, and printed out when the testtimeout goroutine
-  fails.
+  comment above the expectation line of code, and printed out when the test
+  goroutine fails.
 
 An error message should be provided in the form of an error object.
 * Plain string message can be easily obtained by method Error().
@@ -510,7 +517,7 @@ Usage Guidelines
 
 Reference
 ---------
-###Existing Go Testing Frameworks
+###Existing Go Test Frameworks
 
 ####xUnit Style
 * launchpad.net/gocheck
