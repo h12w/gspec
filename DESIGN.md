@@ -210,7 +210,7 @@ test group or the address of the function.
 It seems that the function address approach is simpler, however, there are two
 major flaws of this approach:
 1. the function address changes with any code modifications, making it hard to
-   implement a useful "focus mode". So the former
+   implement a useful "focus mode".
 2. the function address is always the same within a loop, making it hard to
    support table-driven testing.
 
@@ -375,10 +375,16 @@ RESTRICTION:
   GSpec has to exchange some simplicty for concurency (This could be compensated
   by defining aliases for the Group method).
 
-###Focus Mode
-(TODO)
+###Focus mode
+Focus mode allows you specify a single test case and run it. It is especially
+useful when you are trying to fix a failed test case and want to print some logs
+or attach a debugger.
 
-###Test Time
+Focus mode should be implemented as a command line option of "go test", without
+affecting the test code. Like this:
+    go test -focus <test case id>
+
+###Test time
 (TODO)
 ####Timeout
 ####Find slow tests
