@@ -293,7 +293,7 @@ Should a customizable description supported? No!
   group. e.g. it("should xxx", func() { expect ... }). So providing such
   optional arguments will be a duplication.
 * When used directly with "go test", such messages can be easily written as a
-  comment above the expectation line of code, and printed out when the test
+  comment above the expectation line of code, and printed out when the testtimeout goroutine
   fails.
 
 An error message should be provided in the form of an error object.
@@ -384,10 +384,35 @@ Focus mode should be implemented as a command line option of "go test", without
 affecting the test code. Like this:
     go test -focus <test case id>
 
+As mentioned in the [Shared setup/teardown](#shared-setupteardown) section, the
+test case id should not be the address of the closures, but the path of the
+serial numbers in the order of execution for each closure, because you do not
+want to change the command line to run the same test case every time. The
+address of the function will easily change even if a single line is added or
+removed, while the path of execution is much more stable.
+
 ###Test time
-(TODO)
 ####Timeout
+It will be awkward if one of the test cases hangs without knowing which one.
+"go test" uses a simple way to address this problem. The timeout option will
+set a time limit t and when a test runs longer than t, it simply panics to stop
+the execution of all tests and dump all the stack trace. It will be the
+developer's responsibility to find where it hangs.
+
+This method still works with GSpec, but there should be a simpler way to tell
+which line and test case hangs directly.
+
+(TODO)
+
 ####Find slow tests
+It is important to keep unit tests run fast so that they can be run as often as
+possible during the development, thus, it is important to find slow tests and
+improve them.
+
+It can be implemented by logging the start and end time of each test group, but
+should be optional so that it will introduce overhead.
+
+(TODO)
 
 ###Benchmark & coverage
 What "go test" provides are good enough. Just don't break them.
