@@ -11,11 +11,7 @@ import (
 )
 
 type failNowError struct {
-	err error
-}
-
-func (f failNowError) Error() string {
-	return f.err.Error()
+	error
 }
 
 type testError struct {
@@ -55,7 +51,7 @@ func (t *testError) run(f func()) {
 		if e := recover(); e != nil {
 			switch err := e.(type) {
 			case failNowError:
-				t.setErr(err.err)
+				t.setErr(err.error)
 			default:
 				t.setErr(extension.NewPanicError(e, 2))
 			}
