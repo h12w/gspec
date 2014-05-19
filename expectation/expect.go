@@ -4,10 +4,6 @@
 
 package expectation
 
-import (
-	"fmt"
-)
-
 // FailFunc is the function type that is used to notify expectation failures.
 type FailFunc func(error)
 
@@ -34,27 +30,5 @@ func Alias(fail FailFunc) ExpectFunc {
 		return &Actual{actual, func(e error) {
 			fail(e)
 		}}
-	}
-}
-
-// T is a subset of testing.T used in this package.
-type T interface {
-	Fail()
-	FailNow()
-}
-
-// TFail return the FailFunc for testing.T.Fail
-func TFail(t T) FailFunc {
-	return func(err error) {
-		t.Fail()
-		fmt.Println(err.Error())
-	}
-}
-
-// TFailNow return the FailFunc for testing.T.FailNow
-func TFailNow(t T) FailFunc {
-	return func(err error) {
-		t.FailNow()
-		fmt.Println(err.Error())
 	}
 }

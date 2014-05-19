@@ -5,7 +5,6 @@
 package extension
 
 import (
-	"errors"
 	"fmt"
 	"runtime"
 )
@@ -28,16 +27,11 @@ type PanicError struct {
 // NewPanicError returns a new PanicError. Object o is the panicking error,
 // skip is the magic number to skip noise entries of stack trace.
 func NewPanicError(o interface{}, skip int) error {
-	var err error
-	switch v := o.(type) {
-	case string:
-		err = errors.New(v)
-	case error:
-		err = v
-	default:
+	err, isErr := o.(error)
+	if !isErr {
 		err = fmt.Errorf("%v", o)
 	}
-	pe := &PanicError{err, newStackTrace(skip + 2), make([]byte, 4096)}
+	pe := &PanicError{err, newStackTrace(skip + 1), make([]byte, 4096)}
 	runtime.Stack(pe.SS, true)
 	return pe
 }
@@ -49,7 +43,7 @@ func (e *PanicError) Error() string {
 
 func newStackTrace(skip int) []FuncPos {
 	s := []FuncPos{}
-	for i := skip; ; i++ {
+	for i := 1 + skip; ; i++ {
 		pc, file, line, ok := runtime.Caller(i)
 		s = append(s, FuncPos{runtime.FuncForPC(pc).Name(), file, line, pc})
 		if !ok {

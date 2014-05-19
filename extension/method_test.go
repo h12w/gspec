@@ -60,6 +60,27 @@ func TestTestCaseTraversal(t *testing.T) {
 		"abd:err",
 		"ae",
 	})
+
+	cases = []string{}
+	g.For(func(path TestGroups) bool {
+		s := ""
+		hasError := false
+		for _, g := range path {
+			s += g.Description
+			if g.Error != nil {
+				s += ":" + g.Error.Error()
+				hasError = true
+			}
+		}
+		cases = append(cases, s)
+		return !hasError
+	})
+	expect(cases).Equal([]string{
+		"abc",
+		"abd:err",
+	})
+
+
 }
 
 /*

@@ -10,32 +10,6 @@ import (
 	"github.com/hailiang/gspec/errors"
 )
 
-type testCase struct {
-	actual, expected interface{}
-	succeeded        bool
-}
-
-func TestEqual(t *testing.T) {
-	cases := []testCase{
-		{nil, nil, true},
-		{nil, 1, false},
-		{1, 1, true},
-		{1, 2, false},
-		{int32(1), int32(1), true},
-		{1, int32(1), true},
-		{1, "1", true},
-		{[]int{1}, []int{1}, true},
-	}
-
-	for _, c := range cases {
-		m, expect := mockExpect()
-		expect(c.actual).Equal(c.expected)
-		if (m.err != nil) == c.succeeded {
-			t.Errorf("Equal test fails: %v", c)
-		}
-	}
-}
-
 func TestExpectTo(t *testing.T) {
 	m, expect := mockExpect()
 	expect(nil).To(func(actual, expected interface{}) error {

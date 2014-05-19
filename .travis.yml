@@ -15,7 +15,8 @@ before_install:
 script:
 - go vet -n ./...
 - $HOME/gopath/bin/golint .
-# TODO: coverage inluding subpackages
+#- ./cover.sh
+#- go tool cover -func profile.cov
 - cd core
 - go test -covermode=count -coverprofile=profile.cov
 - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci

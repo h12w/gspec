@@ -14,6 +14,8 @@ type failNowError struct {
 	error
 }
 
+// testError receives the error or panic sent within a test group and transfers
+// it to the context when needed.
 type testError struct {
 	err error
 	mu  sync.Mutex
@@ -32,7 +34,8 @@ func (t *testError) getErr() error {
 	return t.err
 }
 
-// Fail marks that the test case has failed with an error.
+// Fail marks that the test case has failed with an error. It can be called in
+// another goroutine.
 func (t *testError) Fail(err error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -40,7 +43,8 @@ func (t *testError) Fail(err error) {
 }
 
 // FailNow marks that the test case has failed with an error, and stops the
-// excution of the current goroutine and defer functions will get called.
+// excution of the current goroutine and defer functions will get called. It
+// must be called in the same goroutine of the test group.
 func (t *testError) FailNow(err error) {
 	t.Fail(err)
 	panic(failNowError{err})

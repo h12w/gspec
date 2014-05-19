@@ -322,7 +322,9 @@ This is a complete list of expectations, "+" means already supported:
 *  Error: can be supported by Equal
 *  Implements: can be supported by IsType
 *  IsType: if a interface is of a type
-*  String: Contains, Match...
+*  String
+    - +HasPrefix/HasSuffix
+    - Contains, Match...
 *  Collection: HasLen, All, Any, Exact, InOrder, InPartialOrder ...
 
 ###Test Double
