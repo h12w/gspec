@@ -88,10 +88,19 @@ func (c *SChan) receiveAll() {
 	wg.Wait()
 }
 
+func (c *SChan) Unsorted() []string {
+	c.receiveAll()
+	return c.ss
+}
+
 func (c *SChan) Sorted() []string {
 	c.receiveAll()
 	sort.Strings(c.ss)
 	return c.ss
+}
+
+func (c *SChan) Equal(ss []string) bool {
+	return reflect.DeepEqual(c.Unsorted(), ss)
 }
 
 func (c *SChan) EqualSorted(ss []string) bool {

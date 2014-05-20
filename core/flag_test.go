@@ -14,7 +14,7 @@ Scenario: run a specified test case
 func focusFuncs(ch *SChan) []TestFunc {
 	return []TestFunc{
 		func(s S) {
-			do := aliasDo(s)
+			do := aliasGroup(s)
 			do(func() {
 				do(func() {
 					ch.Send("a")
@@ -25,7 +25,7 @@ func focusFuncs(ch *SChan) []TestFunc {
 			})
 		},
 		func(s S) {
-			do := aliasDo(s)
+			do := aliasGroup(s)
 			do(func() {
 				do(func() {
 					ch.Send("c")

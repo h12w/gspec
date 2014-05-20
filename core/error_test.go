@@ -31,7 +31,7 @@ func TestCaseFails(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
 	NewScheduler(&TStub{}, r).Start(false, func(s S) {
-		do := aliasDo(s)
+		do := aliasGroup(s)
 		do(func() {
 			s.Fail(errors.New("err a"))
 		})
@@ -55,7 +55,7 @@ func TestFailNow(t *testing.T) {
 	r := &ReporterStub{}
 	ch := NewSChan()
 	NewScheduler(&TStub{}, r).Start(false, func(s S) {
-		do := aliasDo(s)
+		do := aliasGroup(s)
 		do(func() {
 			defer func() {
 				ch.Send("defer func")
@@ -85,7 +85,7 @@ func TestCasePanics(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
 	NewScheduler(&TStub{}, r).Start(false, func(s S) {
-		do := aliasDo(s)
+		do := aliasGroup(s)
 		do(func() {
 			panic("panic error")
 		})
@@ -145,7 +145,7 @@ func TestNotifyT(t *testing.T) {
 	mt := &TStub{}
 	r := &ReporterStub{}
 	NewScheduler(mt, r).Start(false, func(s S) {
-		do := aliasDo(s)
+		do := aliasGroup(s)
 		do(func() {
 			s.Fail(errors.New(""))
 		})
