@@ -50,7 +50,7 @@ func (t *testError) FailNow(err error) {
 	panic(failNowError{err})
 }
 
-func (t *testError) run(f func()) {
+func (t *testError) capturePanic(f func()) {
 	defer func() {
 		if e := recover(); e != nil {
 			switch err := e.(type) {

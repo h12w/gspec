@@ -36,7 +36,7 @@ func (r *runner) runSeq(dst path) {
 }
 
 func (r *runner) runSpec(dst path, run runFunc) {
-	r.f(r.newSpec(newGrouper(dst, run)))
+	r.f(r.newSpec(newGroup(dst, run)))
 }
 
 type group struct {
@@ -48,17 +48,15 @@ type group struct {
 }
 type runFunc func(path)
 
-func newGrouper(dst path, run runFunc) *group {
+func newGroup(dst path, run runFunc) *group {
 	return &group{dst: dst, runNew: run}
 }
 
 func (t *group) visit(f func()) {
-	id := t.next
-	t.cur.push(id)
+	t.cur.push(t.next)
 	t.next = 0
 	defer func() {
-		t.next = t.cur.pop()
-		t.next++
+		t.next = t.cur.pop() + 1
 	}()
 	if !t.cur.onPath(t.dst) {
 		return
@@ -81,14 +79,11 @@ func (p path) clone() path {
 }
 
 func (p path) onPath(dst path) bool {
-	// func id is unique, comparing the last should be enough
-	if last := imin(len(p), len(dst)) - 1; last >= 0 {
-		for i := 0; i <= last; i++ {
-			if p[i] != dst[i] {
-				return false
-			}
+	last := imin(len(p), len(dst)) - 1
+	for i := 0; i <= last; i++ {
+		if p[i] != dst[i] {
+			return false
 		}
-		//		return p[last] == dst[last]
 	}
 	return true // initial idStack is empty
 }
@@ -111,5 +106,20 @@ func (p *path) Set(s string) (err error) {
 			return
 		}
 	}
+	return
+}
+
+type idStack struct {
+	path
+}
+
+func (p *idStack) push(i funcID) {
+	p.path = append(p.path, i)
+}
+func (p *idStack) pop() (i funcID) {
+	if len(p.path) == 0 {
+		panic("call pop when idStack is empty.")
+	}
+	p.path, i = p.path[:len(p.path)-1], p.path[len(p.path)-1]
 	return
 }

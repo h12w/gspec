@@ -31,7 +31,7 @@ Scenario: run a test defined in a closure
 */
 func TestRunClosureTest(t *testing.T) {
 	ch := NewSChan()
-	RunSeq(func(s S) {
+	runSeq(func(s S) {
 		do := aliasDo(s)
 		do(func() {
 			ch.Send("a")
@@ -50,7 +50,7 @@ Scenario: setup a common test context for two tests (before each)
 */
 func TestBeforeEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(s S) {
+	runCon(func(s S) {
 		do := aliasDo(s)
 		do(func() {
 			s := "s"
@@ -81,7 +81,7 @@ Scenario: teardown a common test context for two tests (after each)
 */
 func TestAfterEach(t *testing.T) {
 	ch := NewSChan()
-	Run(func(s S) {
+	runCon(func(s S) {
 		do := aliasDo(s)
 		do(func() {
 			s := ""
@@ -110,7 +110,7 @@ Scenario: Table driven test
 */
 func TestTableDriven(t *testing.T) {
 	ch := NewSChan()
-	Run(func(s S) {
+	runCon(func(s S) {
 		do := s.Alias("")
 		do("outer", func() {
 			for i := 0; i < 3; i++ {
@@ -153,7 +153,7 @@ Scenario: nested testing group
 */
 func TestNestedTestingContext(t *testing.T) {
 	ch := NewSChan()
-	Run(func(s S) {
+	runCon(func(s S) {
 		do := aliasDo(s)
 		do(func() {
 			s := ""
@@ -199,7 +199,7 @@ Scenario: concurrent running tests
 func TestConcurrentRunning(t *testing.T) {
 	delay := 10 * time.Millisecond
 	tm := time.Now()
-	Run(func(s S) {
+	runCon(func(s S) {
 		do := aliasDo(s)
 		do(func() {
 			time.Sleep(delay)
@@ -223,6 +223,24 @@ func TestConcurrentRunning(t *testing.T) {
 	}
 }
 
+/*
+Story: Internal Tests
+	Test internal types/functions
+*/
+
+func TestIDStack(t *testing.T) {
+	expect := exp.Alias(exp.TFail(t))
+	p := idStack{}
+	p.push(funcID(1))
+	p.push(funcID(2))
+	expect(p.path).Equal(path{1, 2})
+	i := p.pop()
+	expect(p.path).Equal(path{1})
+	expect(i).Equal(funcID(2))
+	i = p.pop()
+	expect(p.path).Equal(path{})
+	expect(func() { p.pop() }).Panic()
+}
 func TestPathSerialization(t *testing.T) {
 	expect := exp.Alias(exp.TFailNow(t))
 

@@ -37,13 +37,14 @@ func NewScheduler(t T, reporters ...ext.Reporter) *Scheduler {
 
 // Start starts tests defined in funcs concurrently or sequentially.
 func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) error {
+	if !sequential {
+		s.t.Parallel() // signal "go test" to allow concurrent testing.
+	}
+
 	defer func() {
 		s.wg.Wait()
 		s.broadcaster.End(s.groups)
 	}()
-	if !sequential {
-		s.t.Parallel() // signal "go test" to allow concurrent testing.
-	}
 	s.broadcaster.Start()
 
 	(&runner{func(s S) {

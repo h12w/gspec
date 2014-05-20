@@ -16,28 +16,32 @@ func focusFuncs(ch *SChan) []TestFunc {
 		func(s S) {
 			do := aliasDo(s)
 			do(func() {
-				ch.Send("a")
-			})
-			do(func() {
-				ch.Send("b")
+				do(func() {
+					ch.Send("a")
+				})
+				do(func() {
+					ch.Send("b")
+				})
 			})
 		},
 		func(s S) {
 			do := aliasDo(s)
 			do(func() {
-				ch.Send("c")
-			})
-			do(func() {
-				ch.Send("d")
+				do(func() {
+					ch.Send("c")
+				})
+				do(func() {
+					ch.Send("d")
+				})
 			})
 		},
 	}
 }
 
 func TestRunFocusA(t *testing.T) {
-	globalConfig.focus = path{0}
+	globalConfig.focus = path{0, 0}
 	ch := NewSChan()
-	Run(focusFuncs(ch)...)
+	runCon(focusFuncs(ch)...)
 	if exp := []string{"a"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
 	}
@@ -45,9 +49,9 @@ func TestRunFocusA(t *testing.T) {
 }
 
 func TestRunFocusB(t *testing.T) {
-	globalConfig.focus = path{1}
+	globalConfig.focus = path{0, 1}
 	ch := NewSChan()
-	Run(focusFuncs(ch)...)
+	runCon(focusFuncs(ch)...)
 	if exp := []string{"b"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
 	}
@@ -55,9 +59,9 @@ func TestRunFocusB(t *testing.T) {
 }
 
 func TestRunFocusC(t *testing.T) {
-	globalConfig.focus = path{2}
+	globalConfig.focus = path{1, 0}
 	ch := NewSChan()
-	Run(focusFuncs(ch)...)
+	runCon(focusFuncs(ch)...)
 	if exp := []string{"c"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
 	}
@@ -65,9 +69,9 @@ func TestRunFocusC(t *testing.T) {
 }
 
 func TestRunFocusD(t *testing.T) {
-	globalConfig.focus = path{3}
+	globalConfig.focus = path{1, 1}
 	ch := NewSChan()
-	Run(focusFuncs(ch)...)
+	runCon(focusFuncs(ch)...)
 	if exp := []string{"d"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
 	}

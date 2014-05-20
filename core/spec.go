@@ -21,8 +21,8 @@ type S interface {
 	FailNow(err error)
 }
 
-// specImpl implements "S" interface.
-type specImpl struct {
+// spec implements "S" interface.
+type spec struct {
 	*group
 	*listener
 	testError
@@ -33,13 +33,13 @@ type specImpl struct {
 type DescFunc func(description string, f func())
 
 func newSpec(g *group, l *listener) S {
-	return &specImpl{
+	return &spec{
 		group:    g,
 		listener: l,
 	}
 }
 
-func (t *specImpl) Alias(name string) DescFunc {
+func (t *spec) Alias(name string) DescFunc {
 	if name != "" {
 		name += " "
 	}
@@ -49,7 +49,7 @@ func (t *specImpl) Alias(name string) DescFunc {
 			defer func() {
 				t.groupEnd(t.getErr(), t.current())
 			}()
-			t.run(f)
+			t.capturePanic(f)
 		})
 	}
 }
