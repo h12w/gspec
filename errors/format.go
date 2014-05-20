@@ -17,8 +17,11 @@ var (
 	// strings. It has a default implementation and can be replaced with an
 	// external function.
 	Sprint = func(v interface{}) string {
-		return fmt.Sprintf("%#v", v)
+		return fmt.Sprintf("%v", v)
 	}
+
+	// IndentString is the default value for a level of indent.
+	IndentString = "    "
 )
 
 // Pos represents a position in the source file.
@@ -29,13 +32,7 @@ type Pos struct {
 
 // GetPos get the current position of execution.
 func GetPos(skip int) *Pos {
-	_, file, line, _ := runtime.Caller(skip)
-	if file == "" {
-		file = "???"
-	}
-	if line == 0 {
-		line = 1
-	}
+	_, file, line, _ := runtime.Caller(skip + 1)
 	return &Pos{file, line}
 }
 
@@ -50,12 +47,13 @@ func (pos *Pos) Decorate(s, indent string) string {
 	var buf bytes.Buffer
 	// Every line is indented at least one tab.
 	buf.WriteString(indent)
-	fmt.Fprintf(&buf, "%s:%d: ", pos.BasePath(), pos.Line)
+	fmt.Fprintf(&buf, "%s:%d:", pos.BasePath(), pos.Line)
 
 	if strings.Contains(s, "\n") {
 		buf.WriteByte('\n')
-		buf.WriteString(Indent(s, "\t"))
+		buf.WriteString(Indent(s, IndentString))
 	} else {
+		buf.WriteByte(' ')
 		buf.WriteString(s)
 	}
 	return buf.String()
@@ -74,8 +72,10 @@ func Indent(s, indent string) string {
 	var buf bytes.Buffer
 	lines := toLines(s)
 	for _, line := range lines {
-		buf.WriteString(indent)
-		buf.WriteString(line)
+		if len(line) > 0 {
+			buf.WriteString(indent)
+			buf.WriteString(line)
+		}
 		buf.WriteByte('\n')
 	}
 	return buf.String()

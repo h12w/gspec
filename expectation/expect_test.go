@@ -12,11 +12,22 @@ import (
 
 func TestExpectTo(t *testing.T) {
 	m, expect := mockExpect()
-	expect(nil).To(func(actual, expected interface{}) error {
-		return errors.Expect("x")
+	expect(nil).To(func(actual, expected interface{}, skip int) error {
+		return errors.Expect("x", skip+1)
 	}, nil)
-	if e, ok := m.Error(); !ok || e.Text != "x" {
-		t.Errorf("Expect error message %v to be x", e.Text)
+	e, ok := m.Error()
+	if !ok {
+		t.Errorf("Expect error to be type ExpectError, got %v.", e)
+	}
+	if e.Text != "x" {
+		t.Errorf("Expect error message %v to be x.", e.Text)
+	}
+	if e.Pos.BasePath() != "expect_test.go" {
+		t.Errorf("Expect error position in file expect_test.go, but got %s.",
+			e.Pos.BasePath())
+	}
+	if e.Pos.Line != 17 {
+		t.Errorf("Expect error position at line 17, but got %d.", e.Pos.Line)
 	}
 }
 

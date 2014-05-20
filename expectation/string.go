@@ -11,47 +11,47 @@ import (
 )
 
 // HasPrefix checks if the actual value has a prefix of expected value.
-func HasPrefix(actual, expected interface{}) error {
-	a, e, err := checkStringType(actual, expected)
+func HasPrefix(actual, expected interface{}, skip int) error {
+	a, e, err := checkStringType(actual, expected, skip+1)
 	if err != nil {
 		return err
 	}
 	if strings.HasPrefix(a, e) {
 		return nil
 	}
-	return errors.Compare(actual, expected, "to has the prefix of")
+	return errors.Compare(actual, expected, "to has the prefix of", skip+1)
 }
 
 // HasSuffix checks if the actual value has a suffix of expected value.
-func HasSuffix(actual, expected interface{}) error {
-	a, e, err := checkStringType(actual, expected)
+func HasSuffix(actual, expected interface{}, skip int) error {
+	a, e, err := checkStringType(actual, expected, skip+1)
 	if err != nil {
 		return err
 	}
 	if strings.HasSuffix(a, e) {
 		return nil
 	}
-	return errors.Compare(actual, expected, "to has the suffix of")
+	return errors.Compare(actual, expected, "to has the suffix of", skip+1)
 }
 
-func checkStringType(actual, expected interface{}) (string, string, error) {
+func checkStringType(actual, expected interface{}, skip int) (string, string, error) {
 	a, ok := actual.(string)
 	if !ok {
-		return "", "", errors.Expect("actual value is a string.")
+		return "", "", errors.Expect("actual value is a string.", skip+1)
 	}
 	e, ok := expected.(string)
 	if !ok {
-		return "", "", errors.Expect("expected value is a string.")
+		return "", "", errors.Expect("expected value is a string.", skip+1)
 	}
 	return a, e, nil
 }
 
 // HasPrefix is the fluent method for checker HasPrefix.
 func (a *Actual) HasPrefix(expected interface{}) {
-	a.To(HasPrefix, expected)
+	a.to(HasPrefix, expected, 1)
 }
 
 // HasSuffix is the fluent method for checker HasSuffix.
 func (a *Actual) HasSuffix(expected interface{}) {
-	a.To(HasSuffix, expected)
+	a.to(HasSuffix, expected, 1)
 }

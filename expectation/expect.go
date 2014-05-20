@@ -15,7 +15,11 @@ type Actual struct {
 
 // To is a general method for checking an expectation.
 func (a *Actual) To(check Checker, expected interface{}) {
-	if err := check(a.v, expected); err != nil {
+	a.to(check, expected, 1)
+}
+
+func (a *Actual) to(check Checker, expected interface{}, skip int) {
+	if err := check(a.v, expected, skip+1); err != nil {
 		a.fail(err)
 	}
 }

@@ -13,36 +13,36 @@ import (
 
 // Checker is the type of function that checks between actual and expected value
 // then returns an Error if the expectation fails.
-type Checker func(actual, expected interface{}) error
+type Checker func(actual, expected interface{}, skip int) error
 
 // Equal checks for the equality of contents and is tolerant of type differences.
-func Equal(actual, expected interface{}) error {
+func Equal(actual, expected interface{}, skip int) error {
 	if reflect.DeepEqual(actual, expected) {
 		return nil
 	}
 	if fmt.Sprint(actual) == fmt.Sprint(expected) {
 		return nil
 	}
-	return errors.Compare(actual, expected, "to equal")
+	return errors.Compare(actual, expected, "to equal", skip+1)
 }
 
 // NotEqual is the reverse of Equal.
-func NotEqual(actual, expected interface{}) error {
-	if Equal(actual, expected) != nil {
+func NotEqual(actual, expected interface{}, skip int) error {
+	if Equal(actual, expected, skip+1) != nil {
 		return nil
 	}
-	return errors.Compare(actual, expected, "not to equal")
+	return errors.Compare(actual, expected, "not to equal", skip+1)
 }
 
 // Panic checks if a function panics.
-func Panic(actual, expected interface{}) (ret error) {
+func Panic(actual, expected interface{}, skip int) (ret error) {
 	f, ok := actual.(func())
 	if !ok {
-		ret = errors.Expect("the argument of Panic has to be a function of type func().")
+		ret = errors.Expect("the argument of Panic has to be a function of type func().", skip)
 	}
 	defer func() {
 		if err := recover(); err == nil {
-			ret = errors.Expect("panicking")
+			ret = errors.Expect("panicking", skip+1)
 		}
 	}()
 	f()
@@ -51,15 +51,15 @@ func Panic(actual, expected interface{}) (ret error) {
 
 // Equal is the fluent method for checker Equal.
 func (a *Actual) Equal(expected interface{}) {
-	a.To(Equal, expected)
+	a.to(Equal, expected, 1)
 }
 
 // NotEqual is the fluent method for checker NotEqual.
 func (a *Actual) NotEqual(expected interface{}) {
-	a.To(NotEqual, expected)
+	a.to(NotEqual, expected, 1)
 }
 
 // Panic is the fluent method for checker Panic.
 func (a *Actual) Panic() {
-	a.To(Panic, nil)
+	a.to(Panic, nil, 1)
 }
