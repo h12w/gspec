@@ -8,10 +8,6 @@ import (
 	ext "github.com/hailiang/gspec/extension"
 )
 
-// TestFunc is the type of the function prepared to run in a goroutine for each
-// test case.
-type TestFunc func(S)
-
 // S (short for "spec") provides the interface for writing tests and internally
 // holds an object that contains minimal context needed to pass into a testing
 // goroutine.
@@ -32,10 +28,10 @@ type spec struct {
 // descritpion and a closure.
 type DescFunc func(description string, f func())
 
-func newSpec(g *group, l *collector) S {
+func newSpec(g *group, c *collector) S {
 	return &spec{
 		group:     g,
-		collector: l,
+		collector: c,
 	}
 }
 
@@ -45,7 +41,12 @@ func (s *spec) Alias(name string) DescFunc {
 	}
 	return func(description string, f func()) {
 		s.visit(func() {
-			s.groupStart(&ext.TestGroup{ID: s.current().String(), Description: name + description}, s.current())
+			s.groupStart(
+				&ext.TestGroup{
+					ID:          s.current().String(),
+					Description: name + description},
+				s.current(),
+			)
 			defer func() {
 				s.groupEnd(s.getErr(), s.current())
 			}()

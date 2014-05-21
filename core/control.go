@@ -52,7 +52,7 @@ func (c *Controller) Start(sequential bool, funcs ...TestFunc) error {
 		for _, f := range funcs {
 			f(s)
 		}
-	}, c.newSpec).run(sequential, c.focus)
+	}, sequential, c.newSpec).run(sequential, c.focus)
 
 	return nil
 }
