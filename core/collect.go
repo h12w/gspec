@@ -10,7 +10,7 @@ import (
 	ext "github.com/hailiang/gspec/extension"
 )
 
-type listener struct {
+type collector struct {
 	groups ext.TestGroups
 	m      map[string]*ext.TestGroup
 	mu     sync.Mutex
@@ -18,50 +18,50 @@ type listener struct {
 	ext.Stats
 }
 
-func newListener(r ext.Reporter) *listener {
-	return &listener{
+func newCollector(r ext.Reporter) *collector {
+	return &collector{
 		m: make(map[string]*ext.TestGroup),
 		r: r,
 	}
 }
 
-func (l *listener) groupStart(g *ext.TestGroup, path path) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+func (c *collector) groupStart(g *ext.TestGroup, path path) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	id := path.String()
-	if l.m[id] != nil {
+	if c.m[id] != nil {
 		return
 	}
-	l.Total++
+	c.Total++
 	if len(path) == 1 { // root node
-		l.groups = append(l.groups, g)
+		c.groups = append(c.groups, g)
 	} else {
 		parentID := path[:len(path)-1].String()
-		parent := l.m[parentID] // must exists
+		parent := c.m[parentID] // must exists
 		if len(parent.Children) == 0 {
-			l.Total--
+			c.Total--
 		}
 		parent.Children = append(parent.Children, g)
 	}
-	l.m[id] = g
-	l.progress(g)
+	c.m[id] = g
+	c.progress(g)
 }
 
-func (l *listener) groupEnd(err error, path path) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+func (c *collector) groupEnd(err error, path path) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	id := path.String()
-	g := l.m[id]
+	g := c.m[id]
 	g.Error = err
 	if len(g.Children) == 0 {
-		l.Ended++
+		c.Ended++
 		if err != nil {
-			l.Failed++
+			c.Failed++
 		}
 	}
-	l.progress(g)
+	c.progress(g)
 }
 
-func (l *listener) progress(g *ext.TestGroup) {
-	l.r.Progress(g, &l.Stats)
+func (c *collector) progress(g *ext.TestGroup) {
+	c.r.Progress(g, &c.Stats)
 }

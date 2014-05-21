@@ -17,20 +17,20 @@ func newGroup(dst path, run runFunc) *group {
 	return &group{dst: dst, runNew: run}
 }
 
-func (t *group) visit(f func()) {
-	t.cur.push(t.next)
-	t.next = 0
-	defer func() { t.next = t.cur.pop() + 1 }()
-	if !t.cur.onPath(t.dst) {
+func (g *group) visit(f func()) {
+	g.cur.push(g.next)
+	g.next = 0
+	defer func() { g.next = g.cur.pop() + 1 }()
+	if !g.cur.onPath(g.dst) {
 		return
-	} else if t.done {
-		t.runNew(t.cur.clone())
+	} else if g.done {
+		g.runNew(g.cur.clone())
 		return
 	}
-	defer func() { t.done = true }()
+	defer func() { g.done = true }()
 	f()
 }
 
-func (t *group) current() path {
-	return t.cur.clone()
+func (g *group) current() path {
+	return g.cur.clone()
 }

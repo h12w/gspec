@@ -24,7 +24,7 @@ type S interface {
 // spec implements "S" interface.
 type spec struct {
 	*group
-	*listener
+	*collector
 	testError
 }
 
@@ -32,24 +32,24 @@ type spec struct {
 // descritpion and a closure.
 type DescFunc func(description string, f func())
 
-func newSpec(g *group, l *listener) S {
+func newSpec(g *group, l *collector) S {
 	return &spec{
-		group:    g,
-		listener: l,
+		group:     g,
+		collector: l,
 	}
 }
 
-func (t *spec) Alias(name string) DescFunc {
+func (s *spec) Alias(name string) DescFunc {
 	if name != "" {
 		name += " "
 	}
 	return func(description string, f func()) {
-		t.visit(func() {
-			t.groupStart(&ext.TestGroup{ID: t.current().String(), Description: name + description}, t.current())
+		s.visit(func() {
+			s.groupStart(&ext.TestGroup{ID: s.current().String(), Description: name + description}, s.current())
 			defer func() {
-				t.groupEnd(t.getErr(), t.current())
+				s.groupEnd(s.getErr(), s.current())
 			}()
-			t.capturePanic(f)
+			s.capturePanic(f)
 		})
 	}
 }

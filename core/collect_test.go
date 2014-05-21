@@ -21,13 +21,13 @@ Story: Internal Tests
 
 /*
 Scenario: reconstruct nested test group to a tree
-	Given a treeListener
+	Given a treeCollector
 	When it's groupStart method is called like real tests running
 	Then it is able to reconstruct the tree structure
 */
-func TestTreeListener(t *testing.T) {
+func TestTreeCollector(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
-	co := newListener(NewTextReporter(os.Stdout))
+	co := newCollector(NewTextReporter(os.Stdout))
 	a := &TestGroup{
 		Description: "a",
 	}
@@ -75,5 +75,5 @@ func TestTreeListener(t *testing.T) {
 			Description: "z",
 		},
 	}
-	expect(co.groups).Equal(exp) //, "TreeListener fail to reconstruct correct tree"
+	expect(co.groups).Equal(exp) //, "TreeCollector fail to reconstruct correct tree"
 }

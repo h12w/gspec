@@ -33,7 +33,7 @@ Design of GSpec
     - ["go test" command](#go-test-command)
   - [Auto Test](#auto-test)
 - [Test report](#test-report)
-  - [Listener](#listener)
+  - [Collector](#collector)
   - [Reporter](#reporter)
     - [Helpful messages](#helpful-messages)
     - [Test case failure](#test-case-failure)
@@ -443,15 +443,15 @@ have higher priority than hard coded value so that can be changed at runtime.
 Test report
 -----------
 
-###Listener
-A listener is an internal object embedded in the test scheduler that collects
+###Collector
+A collector is an internal object embedded in the test scheduler that collects
 the outputs from the tests, reconstructing the tree structure of nested test
 groups with their descriptions and results.
 
-The implementation of a listener must assume being called concurrently out of
+The implementation of a collector must assume being called concurrently out of
 order. To reconstruct a tree structure, it would be easy if a parent node is
-always collected before its children, so a listener should collect before the
-start of each test group. To collect the result of each test case, a listener
+always collected before its children, so a collector should collect before the
+start of each test group. To collect the result of each test case, a collector
 also needs to collect at the end of each test group.
 
 ###Reporter

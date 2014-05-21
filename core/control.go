@@ -21,44 +21,44 @@ type T interface {
 // reporter is the view, and the controller controls the test running and send
 // the test result to the test reporter.
 type Controller struct {
+	*collector
 	*broadcaster
-	*listener
 	*config
 }
 
 // NewController creates and intialize a new Controller using r as the test
 // reporter.
 func NewController(t T, reporters ...ext.Reporter) *Controller {
-	s := &Controller{
+	c := &Controller{
 		broadcaster: newBroadcaster(t, reporters),
 		config:      &globalConfig,
 	}
-	s.listener = newListener(s.broadcaster)
-	return s
+	c.collector = newCollector(c.broadcaster)
+	return c
 }
 
 // Start starts tests defined in funcs concurrently or sequentially.
-func (s *Controller) Start(sequential bool, funcs ...TestFunc) error {
+func (c *Controller) Start(sequential bool, funcs ...TestFunc) error {
 	if !sequential {
-		s.t.Parallel() // signal "go test" to allow concurrent testing.
+		c.t.Parallel() // signal "go test" to allow concurrent testing.
 	}
 
-	s.broadcaster.Start()
+	c.broadcaster.Start()
 	defer func() {
-		s.broadcaster.End(s.groups)
+		c.broadcaster.End(c.groups)
 	}()
 
 	newRunner(func(s S) {
 		for _, f := range funcs {
 			f(s)
 		}
-	}, s.newSpec).run(sequential, s.focus)
+	}, c.newSpec).run(sequential, c.focus)
 
 	return nil
 }
 
-func (s *Controller) newSpec(g *group) S {
-	return newSpec(g, s.listener)
+func (c *Controller) newSpec(g *group) S {
+	return newSpec(g, c.collector)
 }
 
 // broadcaster syncs, receives and broadcasts all messages via Reporter interface

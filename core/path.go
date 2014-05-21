@@ -13,8 +13,8 @@ import (
 // serial is an integer serial number of the execution of a test closure
 type serial int
 
-func (f serial) String() string {
-	return fmt.Sprint(int(f))
+func (s serial) String() string {
+	return fmt.Sprint(int(s))
 }
 
 func parseSerial(s string) (f serial, _ error) {
@@ -74,14 +74,14 @@ type serialStack struct {
 	path
 }
 
-func (p *serialStack) push(i serial) {
-	p.path = append(p.path, i)
+func (s *serialStack) push(i serial) {
+	s.path = append(s.path, i)
 }
-func (p *serialStack) pop() (i serial) {
-	if len(p.path) == 0 {
+func (s *serialStack) pop() (i serial) {
+	if len(s.path) == 0 {
 		panic("call pop when serialStack is empty.")
 	}
-	p.path, i = p.path[:len(p.path)-1], p.path[len(p.path)-1]
+	s.path, i = s.path[:len(s.path)-1], s.path[len(s.path)-1]
 	return
 }
 
@@ -91,21 +91,21 @@ type pathQueue struct {
 	mu sync.Mutex
 }
 
-func (f *pathQueue) count() int {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	return len(f.a)
+func (q *pathQueue) count() int {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	return len(q.a)
 }
 
-func (f *pathQueue) enqueue(p path) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	f.a = append(f.a, p.clone())
+func (q *pathQueue) enqueue(p path) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	q.a = append(q.a, p.clone())
 }
 
-func (f *pathQueue) dequeue() (p path) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	p, f.a = f.a[0], f.a[1:]
+func (q *pathQueue) dequeue() (p path) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	p, q.a = q.a[0], q.a[1:]
 	return
 }
