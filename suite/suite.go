@@ -31,7 +31,7 @@ func Add(fs ...core.TestFunc) int {
 
 // Run all tests in the global test suite.
 func Run(t core.T, sequential bool) {
-	s := core.NewScheduler(t, Reporters...)
+	s := core.NewController(t, Reporters...)
 	err := s.Start(sequential, testFunctions...)
 	if err != nil {
 		fmt.Println(err)
