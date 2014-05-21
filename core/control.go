@@ -16,17 +16,20 @@ type T interface {
 	Parallel()
 }
 
-// A Scheduler schedules test running.
-type Scheduler struct {
+// Controller is the "C" of MVC (Model View Controller). In a test framework,
+// all the test cases form a model (but unchangable by the controller), the test
+// reporter is the view, and the controller controls the test running and send
+// the test result to the test reporter.
+type Controller struct {
 	*broadcaster
 	*listener
 	*config
 }
 
-// NewScheduler creates and intialize a new Scheduler using r as the test
+// NewController creates and intialize a new Controller using r as the test
 // reporter.
-func NewScheduler(t T, reporters ...ext.Reporter) *Scheduler {
-	s := &Scheduler{
+func NewController(t T, reporters ...ext.Reporter) *Controller {
+	s := &Controller{
 		broadcaster: newBroadcaster(t, reporters),
 		config:      &globalConfig,
 	}
@@ -35,15 +38,15 @@ func NewScheduler(t T, reporters ...ext.Reporter) *Scheduler {
 }
 
 // Start starts tests defined in funcs concurrently or sequentially.
-func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) error {
+func (s *Controller) Start(sequential bool, funcs ...TestFunc) error {
 	if !sequential {
 		s.t.Parallel() // signal "go test" to allow concurrent testing.
 	}
 
+	s.broadcaster.Start()
 	defer func() {
 		s.broadcaster.End(s.groups)
 	}()
-	s.broadcaster.Start()
 
 	newRunner(func(s S) {
 		for _, f := range funcs {
@@ -54,7 +57,7 @@ func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) error {
 	return nil
 }
 
-func (s *Scheduler) newSpec(g *group) S {
+func (s *Controller) newSpec(g *group) S {
 	return newSpec(g, s.listener)
 }
 

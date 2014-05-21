@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-// runner is used to run nested groups in concurrently or sequencially.
+// runner is used to run nested groups concurrently or sequencially.
 //
 // A queue is used to store the targets. It is not mandatary because the closure
 // for a test group can be executed directly rather than pushing into a queue,

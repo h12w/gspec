@@ -42,15 +42,15 @@ func xmlPrint(v interface{}) string {
 }
 
 var (
-	globalScheduler = NewScheduler(&TStub{}, NewTextReporter(ioutil.Discard))
+	globalController = NewController(&TStub{}, NewTextReporter(ioutil.Discard))
 )
 
 func runCon(f ...TestFunc) {
-	globalScheduler.Start(false, f...)
+	globalController.Start(false, f...)
 }
 
 func runSeq(f ...TestFunc) {
-	globalScheduler.Start(true, f...)
+	globalController.Start(true, f...)
 }
 
 type SS struct {
