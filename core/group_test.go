@@ -6,8 +6,6 @@ package core
 
 import (
 	"testing"
-
-	exp "github.com/hailiang/gspec/expectation"
 )
 
 /*
@@ -25,7 +23,7 @@ Scenario: run a test defined in a closure
 	Then it should be executed once and only once
 */
 func TestRunClosureTest(t *testing.T) {
-	ch := NewSChan()
+	ch := NewSS()
 	runGroup(func(g groupFunc) {
 		g(func() {
 			ch.Send("a")
@@ -40,10 +38,10 @@ func TestRunClosureTest(t *testing.T) {
 Scenario: setup a common test context for two tests (before each)
 	Given 3 tests (a, b, c) with a common setup code (s)
 	When executed
-	Then the ordered execution sequence is: sa sb sc
+	Then the ordered execution sequence is: sa, sb, sc in any order.
 */
 func TestBeforeEach(t *testing.T) {
-	ch := NewSChan()
+	ch := NewSS()
 	runGroup(func(g groupFunc) {
 		g(func() {
 			s := "s"
@@ -70,16 +68,15 @@ func TestBeforeEach(t *testing.T) {
 Scenario: teardown a common test context for two tests (after each)
 	Given two tests (a, b) with a common teardown code (t)
 	When executed
-	Then the ordered execution sequence is: at bt
+	Then the ordered execution sequence is: at, bt in any order.
 */
 func TestAfterEach(t *testing.T) {
-	ch := NewSChan()
+	ch := NewSS()
 	runGroup(func(g groupFunc) {
+		s := ""
 		g(func() {
-			s := ""
 			defer func() {
 				s += "t"
-				ch.Send(s)
 			}()
 			g(func() {
 				s += "a"
@@ -88,8 +85,9 @@ func TestAfterEach(t *testing.T) {
 				s += "b"
 			})
 		})
+		ch.Send(s)
 	})
-	if exp := []string{"at", "bt"}; !ch.EqualSorted(exp) {
+	if exp := []string{"at", "bt"}; !ch.Equal(exp) {
 		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
 	}
 }
@@ -101,7 +99,7 @@ Scenario: Table driven test
 	Each test case get run once
 */
 func TestTableDriven(t *testing.T) {
-	ch := NewSChan()
+	ch := NewSS()
 	runGroup(func(g groupFunc) {
 		g(func() { // outer
 			for i := 0; i < 3; i++ {
@@ -120,7 +118,7 @@ func TestTableDriven(t *testing.T) {
 			}
 		})
 	})
-	if exp := []string{"a", "b", "c", "d", "e", "f"}; !ch.EqualSorted(exp) {
+	if exp := []string{"a", "d", "b", "e", "c", "f"}; !ch.Equal(exp) {
 		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
 	}
 }
@@ -140,19 +138,17 @@ Scenario: nested testing group
 		}
 
 	When the test is run.
-	Then the ordered execution sequence is: ab acd aef
+	Then the ordered execution sequence is: ab, acd, aef in any order.
 */
 func TestNestedTestingContext(t *testing.T) {
-	ch := NewSChan()
+	ch := NewSS()
 	runGroup(func(g groupFunc) {
+		s := ""
 		g(func() {
-			s := ""
-			defer func() {
-				ch.Send(s)
-			}()
 			s = "a"
 			defer func() {
 				s += "A"
+				ch.Send(s)
 			}()
 			g(func() {
 				s += "b"
@@ -174,58 +170,28 @@ func TestNestedTestingContext(t *testing.T) {
 			})
 		})
 	})
-	if exp := []string{"abA", "acdCA", "aefA"}; !ch.EqualSorted(exp) {
+	if exp := []string{"abA", "acdCA", "aefA"}; !ch.Equal(exp) {
 		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
 	}
 }
 
-/*
-Story: Internal Tests
-	Test internal types/functions
-*/
-
-func TestPathSerialization(t *testing.T) {
-	expect := exp.Alias(exp.TFailNow(t))
-
-	var p path
-	p.Set("0/1/2")
-	expect(len(p)).Equal(3)
-	expect(p[0]).Equal(funcID(0))
-	expect(p[1]).Equal(funcID(1))
-	expect(p[2]).Equal(funcID(2))
-
-	err := p.Set("UVW")
-	expect(err).NotEqual(nil)
-
-	p = path{0, 1, 2}
-	expect(p.String()).Equal("0/1/2")
-}
-
-func TestIDStack(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
-	p := idStack{}
-	p.push(funcID(1))
-	p.push(funcID(2))
-	expect(p.path).Equal(path{1, 2})
-	i := p.pop()
-	expect(p.path).Equal(path{1})
-	expect(i).Equal(funcID(2))
-	i = p.pop()
-	expect(p.path).Equal(path{})
-	expect(func() { p.pop() }).Panic()
+// runGroup is a simplified implementation to run nested test group.
+func runGroup(f func(g groupFunc)) {
+	fifo := &pathQueue{}
+	fifo.enqueue(path{})
+	for fifo.count() > 0 {
+		dst := fifo.dequeue()
+		runPath(dst, f, fifo)
+	}
 }
 
 type groupFunc func(func())
 
-func runGroup(f func(g groupFunc)) {
-	runPath(path{}, f)
-}
-
-func runPath(dst path, f func(g groupFunc)) {
+func runPath(dst path, f func(g groupFunc), fifo *pathQueue) {
 	group := newGroup(
 		dst,
-		func(dst path) {
-			runPath(dst, f)
+		func(newDst path) {
+			fifo.enqueue(newDst)
 		})
 	f(group.visit)
 }

@@ -16,24 +16,24 @@ Scenario: concurrent running tests
 	Then the time to run all should be 2 to 3 times of one test rather than N times
 		(the first test must return first then the rest tests can be discovered and run simultaneously)
 */
-func TestConcurrentRunning(t *testing.T) {
+func TestConcurrentRunningTime(t *testing.T) {
 	delay := 10 * time.Millisecond
 	tm := time.Now()
 	runCon(func(s S) {
-		do := aliasGroup(s)
-		do(func() {
+		g := aliasGroup(s)
+		g(func() {
 			time.Sleep(delay)
-			do(func() {
+			g(func() {
 			})
-			do(func() {
+			g(func() {
 			})
-			do(func() {
+			g(func() {
 			})
 		})
-		do(func() {
+		g(func() {
 			time.Sleep(delay)
 		})
-		do(func() {
+		g(func() {
 			time.Sleep(delay)
 		})
 	})
@@ -43,8 +43,43 @@ func TestConcurrentRunning(t *testing.T) {
 	}
 }
 
+func TestNestedTestingContextConcurrently(t *testing.T) {
+	ch := NewSS()
+	runCon(func(s S) {
+		g := aliasGroup(s)
+		g(func() {
+			s := "a"
+			defer func() {
+				s += "A"
+				ch.Send(s)
+			}()
+			g(func() {
+				s += "b"
+			})
+			g(func() {
+				s += "c"
+				defer func() {
+					s += "C"
+				}()
+				g(func() {
+					s += "d"
+				})
+			})
+			g(func() {
+				s += "e"
+				g(func() {
+					s += "f"
+				})
+			})
+		})
+	})
+	if exp := []string{"abA", "acdCA", "aefA"}; !ch.EqualSorted(exp) {
+		t.Fatalf("Wrong execution sequence for nested group, expected: %v, got: %v", exp, ch.Slice())
+	}
+}
+
 func TestRunSeq(t *testing.T) {
-	ch := NewSChan()
+	ch := NewSS()
 	runSeq(func(s S) {
 		g := aliasGroup(s)
 		g(func() {

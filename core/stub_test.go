@@ -7,6 +7,7 @@ package core
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"reflect"
 	"runtime"
@@ -52,58 +53,39 @@ func runSeq(f ...TestFunc) {
 	globalScheduler.Start(true, f...)
 }
 
-type SChan struct {
-	ch chan string
+type SS struct {
 	ss []string
-	wg sync.WaitGroup
+	mu sync.Mutex
 }
 
-func NewSChan() *SChan {
-	return &SChan{ch: make(chan string)}
+func NewSS() *SS {
+	return &SS{}
 }
 
-func (c *SChan) Send(s string) {
-	c.wg.Add(1)
-	go func() {
-		c.ch <- s
-		c.wg.Done()
-	}()
+func (c *SS) Send(s string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.ss = append(c.ss, s)
 }
 
-func (c *SChan) Slice() []string {
+func (c *SS) Slice() []string {
 	return c.ss
 }
 
-func (c *SChan) receiveAll() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		for s := range c.ch {
-			c.ss = append(c.ss, s)
-		}
-		wg.Done()
-	}()
-	c.wg.Wait()
-	close(c.ch)
-	wg.Wait()
-}
-
-func (c *SChan) Unsorted() []string {
-	c.receiveAll()
+func (c *SS) Unsorted() []string {
 	return c.ss
 }
 
-func (c *SChan) Sorted() []string {
-	c.receiveAll()
+func (c *SS) Sorted() []string {
 	sort.Strings(c.ss)
 	return c.ss
 }
 
-func (c *SChan) Equal(ss []string) bool {
+func (c *SS) Equal(ss []string) bool {
 	return reflect.DeepEqual(c.Unsorted(), ss)
 }
 
-func (c *SChan) EqualSorted(ss []string) bool {
+func (c *SS) EqualSorted(ss []string) bool {
 	return reflect.DeepEqual(c.Sorted(), ss)
 }
 
@@ -172,4 +154,9 @@ func clearIDForTest(gs TestGroups) {
 			return true
 		})
 	}
+}
+
+func p(v ...interface{}) error {
+	_, err := fmt.Println(v...)
+	return err
 }

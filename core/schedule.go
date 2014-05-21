@@ -21,7 +21,6 @@ type Scheduler struct {
 	*broadcaster
 	*listener
 	*config
-	wg sync.WaitGroup
 }
 
 // NewScheduler creates and intialize a new Scheduler using r as the test
@@ -42,16 +41,15 @@ func (s *Scheduler) Start(sequential bool, funcs ...TestFunc) error {
 	}
 
 	defer func() {
-		s.wg.Wait()
 		s.broadcaster.End(s.groups)
 	}()
 	s.broadcaster.Start()
 
-	(&runner{func(s S) {
+	newRunner(func(s S) {
 		for _, f := range funcs {
 			f(s)
 		}
-	}, &s.wg, s.newSpec}).run(sequential, s.focus)
+	}, s.newSpec).run(sequential, s.focus)
 
 	return nil
 }

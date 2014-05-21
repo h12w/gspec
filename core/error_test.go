@@ -53,7 +53,7 @@ Scenario: FailNow
 func TestFailNow(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
-	ch := NewSChan()
+	ch := NewSS()
 	NewScheduler(&TStub{}, r).Start(false, func(s S) {
 		do := aliasGroup(s)
 		do(func() {

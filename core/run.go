@@ -8,32 +8,50 @@ import (
 	"sync"
 )
 
+// runner is used to run nested groups in concurrently or sequencially.
+//
+// A queue is used to store the targets. It is not mandatary because the closure
+// for a test group can be executed directly rather than pushing into a queue,
+// but a queue is needed to keep the execution order in sequencial mode in the
+// order the nested groups are written, making the algorithm easier to understand.
 type runner struct {
 	f       TestFunc
-	wg      *sync.WaitGroup
+	q       pathQueue
 	newSpec func(*group) S
+	wg      sync.WaitGroup
+}
+
+func newRunner(f TestFunc, newSpec func(*group) S) *runner {
+	return &runner{f: f, newSpec: newSpec}
 }
 
 func (r *runner) run(sequential bool, dst path) {
-	if sequential {
-		r.runSeq(dst)
-	} else {
-		r.runCon(dst)
+	r.q.enqueue(dst)
+	for r.q.count() > 0 {
+		for r.q.count() > 0 {
+			dst := r.q.dequeue()
+			r.runOne(sequential, dst)
+		}
+		// if the queue is empty, wait until all the current jobs are finished
+		// and check again.
+		r.wg.Wait()
 	}
 }
 
-func (r *runner) runCon(dst path) {
-	r.wg.Add(1)
-	go func() {
-		defer r.wg.Done()
-		r.runSpec(dst, r.runCon)
-	}()
-}
-
-func (r *runner) runSeq(dst path) {
-	r.runSpec(dst, r.runSeq)
-}
-
-func (r *runner) runSpec(dst path, run runFunc) {
-	r.f(r.newSpec(newGroup(dst, run)))
+func (r *runner) runOne(sequential bool, dst path) {
+	s := r.newSpec(
+		newGroup(
+			dst,
+			func(newDst path) {
+				r.q.enqueue(newDst)
+			}))
+	if sequential {
+		r.f(s)
+	} else {
+		r.wg.Add(1)
+		go func() {
+			defer r.wg.Done()
+			r.f(s)
+		}()
+	}
 }

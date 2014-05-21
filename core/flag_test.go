@@ -11,7 +11,7 @@ Scenario: run a specified test case
 	Then only the corresponding test case is executed
 */
 
-func focusFuncs(ch *SChan) []TestFunc {
+func focusFuncs(ch *SS) []TestFunc {
 	return []TestFunc{
 		func(s S) {
 			do := aliasGroup(s)
@@ -40,7 +40,7 @@ func focusFuncs(ch *SChan) []TestFunc {
 
 func TestRunFocusA(t *testing.T) {
 	globalConfig.focus = path{0, 0}
-	ch := NewSChan()
+	ch := NewSS()
 	runCon(focusFuncs(ch)...)
 	if exp := []string{"a"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
@@ -50,7 +50,7 @@ func TestRunFocusA(t *testing.T) {
 
 func TestRunFocusB(t *testing.T) {
 	globalConfig.focus = path{0, 1}
-	ch := NewSChan()
+	ch := NewSS()
 	runCon(focusFuncs(ch)...)
 	if exp := []string{"b"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
@@ -60,7 +60,7 @@ func TestRunFocusB(t *testing.T) {
 
 func TestRunFocusC(t *testing.T) {
 	globalConfig.focus = path{1, 0}
-	ch := NewSChan()
+	ch := NewSS()
 	runCon(focusFuncs(ch)...)
 	if exp := []string{"c"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
@@ -70,7 +70,7 @@ func TestRunFocusC(t *testing.T) {
 
 func TestRunFocusD(t *testing.T) {
 	globalConfig.focus = path{1, 1}
-	ch := NewSChan()
+	ch := NewSS()
 	runCon(focusFuncs(ch)...)
 	if exp := []string{"d"}; !ch.EqualSorted(exp) {
 		t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
