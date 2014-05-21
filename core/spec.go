@@ -41,14 +41,15 @@ func (s *spec) Alias(name string) DescFunc {
 	}
 	return func(description string, f func()) {
 		s.visit(func() {
+			cur := s.current()
 			s.groupStart(
 				&ext.TestGroup{
-					ID:          s.current().String(),
+					ID:          cur.String(),
 					Description: name + description},
-				s.current(),
+				cur,
 			)
 			defer func() {
-				s.groupEnd(s.getErr(), s.current())
+				s.groupEnd(s.getErr(), cur)
 			}()
 			s.capturePanic(f)
 		})

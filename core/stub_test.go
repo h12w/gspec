@@ -5,8 +5,6 @@
 package core
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"reflect"
@@ -15,30 +13,27 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hailiang/gspec/errors"
 	. "github.com/hailiang/gspec/extension"
 	. "github.com/hailiang/gspec/reporter"
+	ogdl "github.com/ogdl/flow"
 )
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	errors.Sprint = jsonPrint
+	errors.Sprint = ogdlPrint
 }
 
-func dumpPrint(v interface{}) string {
-	spew.Config.Indent = "    "
-	return "\n" + spew.Sdump(v)
-}
-
-func jsonPrint(v interface{}) string {
-	buf, _ := json.MarshalIndent(v, "    ", "  ")
-	return "\n    " + string(buf) + "\n"
-}
-
-func xmlPrint(v interface{}) string {
-	buf, _ := xml.MarshalIndent(v, "    ", "    ")
-	return "\n" + string(buf) + "\n"
+func ogdlPrint(v interface{}) string {
+	buf, _ := ogdl.MarshalIndent(v, "    ", "    ")
+	typ := ""
+	if v != nil {
+		typ = reflect.TypeOf(v).String() + "\n"
+	}
+	return "\n" +
+		typ +
+		string(buf) +
+		"\n"
 }
 
 var (

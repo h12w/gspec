@@ -6,11 +6,10 @@ notifications:
   email: false
 
 before_install:
-- go get github.com/davecgh/go-spew/spew
 - go get code.google.com/p/go.tools/cmd/cover
-- go get github.com/hailiang/goveralls
 - go get code.google.com/p/go.tools/cmd/vet
 - go get github.com/golang/lint/golint
+- go get github.com/mattn/goveralls
 
 script:
 - go vet -n ./...

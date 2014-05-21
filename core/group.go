@@ -24,7 +24,7 @@ func (g *group) visit(f func()) {
 	if !g.cur.onPath(g.dst) {
 		return
 	} else if g.done {
-		g.runNew(g.cur.clone())
+		g.runNew(g.cur.path)
 		return
 	}
 	defer func() { g.done = true }()
