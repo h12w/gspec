@@ -33,35 +33,35 @@ func (f TestFunc) toConcurrent(wg *sync.WaitGroup) TestFunc {
 type runner struct {
 	f       TestFunc
 	q       pathQueue
-	newSpec func(*group) S
 	wg      *sync.WaitGroup
+	newSpec func(*group) S
 }
 
-func newRunner(f TestFunc, sequential bool, newSpec func(*group) S) *runner {
+func newRunner(f TestFunc, concurrent bool, newSpec func(*group) S) *runner {
 	var wg *sync.WaitGroup
-	if !sequential {
+	if concurrent {
 		wg = new(sync.WaitGroup)
 		f = f.toConcurrent(wg)
 	}
 	return &runner{f: f, newSpec: newSpec, wg: wg}
 }
 
-func (r *runner) run(sequential bool, dst path) {
+func (r *runner) run(dst path) {
 	r.q.enqueue(dst)
 	for r.q.count() > 0 {
 		for r.q.count() > 0 {
 			dst := r.q.dequeue()
-			r.runOne(sequential, dst)
+			r.runOne(dst)
 		}
-		// if the queue is empty, wait until all the current jobs are finished
-		// and check again.
 		if r.wg != nil {
+			// make sure there are no running test groups so that all test
+			// groups have been visited.
 			r.wg.Wait()
 		}
 	}
 }
 
-func (r *runner) runOne(sequential bool, dst path) {
+func (r *runner) runOne(dst path) {
 	r.f(r.newSpec(
 		newGroup(
 			dst,

@@ -38,8 +38,8 @@ func NewController(t T, reporters ...ext.Reporter) *Controller {
 }
 
 // Start starts tests defined in funcs concurrently or sequentially.
-func (c *Controller) Start(sequential bool, funcs ...TestFunc) error {
-	if !sequential {
+func (c *Controller) Start(concurrent bool, funcs ...TestFunc) error {
+	if concurrent {
 		c.t.Parallel() // signal "go test" to allow concurrent testing.
 	}
 
@@ -52,7 +52,7 @@ func (c *Controller) Start(sequential bool, funcs ...TestFunc) error {
 		for _, f := range funcs {
 			f(s)
 		}
-	}, sequential, c.newSpec).run(sequential, c.focus)
+	}, concurrent, c.newSpec).run(c.focus)
 
 	return nil
 }

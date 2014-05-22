@@ -41,11 +41,11 @@ var (
 )
 
 func runCon(f ...TestFunc) {
-	globalController.Start(false, f...)
+	globalController.Start(true, f...)
 }
 
 func runSeq(f ...TestFunc) {
-	globalController.Start(true, f...)
+	globalController.Start(false, f...)
 }
 
 type SS struct {
