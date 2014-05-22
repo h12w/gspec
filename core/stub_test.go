@@ -140,11 +140,12 @@ func (m *TStub) Fail() {
 func (m *TStub) Parallel() {
 }
 
-func clearIDForTest(gs TestGroups) {
+func clearGroupForTest(gs TestGroups) {
 	for i := range gs {
 		gs[i].For(func(gs TestGroups) bool {
 			for j := range gs {
 				gs[j].ID = ""
+				gs[j].Duration = 0
 			}
 			return true
 		})

@@ -38,7 +38,7 @@ func TestDescribeTests(t *testing.T) {
 			})
 		})
 	})
-	clearIDForTest(r.groups)
+	clearGroupForTest(r.groups)
 	expect(r.groups).Equal(TestGroups{
 		{
 			Description: "describe a",

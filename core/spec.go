@@ -5,6 +5,8 @@
 package core
 
 import (
+	"time"
+
 	ext "github.com/hailiang/gspec/extension"
 )
 
@@ -15,6 +17,7 @@ type S interface {
 	Alias(name string) DescFunc
 	Fail(err error)
 	FailNow(err error)
+	setDuration(d time.Duration)
 }
 
 // spec implements "S" interface.
@@ -22,6 +25,7 @@ type spec struct {
 	*group
 	*collector
 	testError
+	leaf path
 }
 
 // DescFunc is the type of the function to define a test group with a
@@ -41,6 +45,7 @@ func (s *spec) Alias(name string) DescFunc {
 	}
 	return func(description string, f func()) {
 		s.visit(func(cur path) {
+			s.leaf = cur
 			s.groupStart(
 				&ext.TestGroup{
 					ID:          cur.String(),
@@ -53,4 +58,8 @@ func (s *spec) Alias(name string) DescFunc {
 			s.capturePanic(f)
 		})
 	}
+}
+
+func (s *spec) setDuration(d time.Duration) {
+	s.collector.setDuration(s.leaf, d)
 }

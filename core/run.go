@@ -6,6 +6,7 @@ package core
 
 import (
 	"sync"
+	"time"
 )
 
 // TestFunc is the type of the function prepared to run in a goroutine for each
@@ -23,6 +24,16 @@ func (f TestFunc) toConcurrent(wg *sync.WaitGroup) TestFunc {
 	}
 }
 
+// measureTime decorates a TestFunc with time measurement.
+func (f TestFunc) measureTime() TestFunc {
+	return func(s S) {
+		t := time.Now()
+		f(s)
+		d := time.Now().Sub(t)
+		s.setDuration(d)
+	}
+}
+
 // runner is used to run nest test groups in a TestFunc concurrently or
 // sequencially.
 //
@@ -33,17 +44,16 @@ func (f TestFunc) toConcurrent(wg *sync.WaitGroup) TestFunc {
 type runner struct {
 	f       TestFunc
 	q       pathQueue
-	wg      *sync.WaitGroup
+	wg      sync.WaitGroup
 	newSpec func(*group) S
 }
 
 func newRunner(f TestFunc, concurrent bool, newSpec func(*group) S) *runner {
-	var wg *sync.WaitGroup
+	r := &runner{f: f.measureTime(), newSpec: newSpec}
 	if concurrent {
-		wg = new(sync.WaitGroup)
-		f = f.toConcurrent(wg)
+		r.f = r.f.toConcurrent(&r.wg)
 	}
-	return &runner{f: f, newSpec: newSpec, wg: wg}
+	return r
 }
 
 func (r *runner) run(dst path) {
@@ -53,11 +63,9 @@ func (r *runner) run(dst path) {
 			dst := r.q.dequeue()
 			r.runOne(dst)
 		}
-		if r.wg != nil {
-			// make sure there are no running test groups so that all test
-			// groups have been visited.
-			r.wg.Wait()
-		}
+		// make sure there are no running test groups so that all test
+		// groups have been visited.
+		r.wg.Wait()
 	}
 }
 

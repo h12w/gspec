@@ -6,6 +6,7 @@ package core
 
 import (
 	"sync"
+	"time"
 
 	ext "github.com/hailiang/gspec/extension"
 )
@@ -60,6 +61,15 @@ func (c *collector) groupEnd(err error, path path) {
 		}
 	}
 	c.progress(g)
+}
+
+func (c *collector) setDuration(path path, d time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	id := path.String()
+	if g, ok := c.m[id]; ok {
+		g.Duration = d
+	}
 }
 
 func (c *collector) progress(g *ext.TestGroup) {

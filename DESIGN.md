@@ -418,10 +418,9 @@ It is important to keep unit tests run fast so that they can be run as often as
 possible during the development, thus, it is important to find slow tests and
 improve them.
 
-It can be implemented by logging the start and end time of each test group, but
-should be optional so that it will introduce overhead.
-
-(TODO)
+It can be implemented by measuring each run of a test case and store the
+time duration. Test reporter is responsible to analyze the result and find slow
+test cases.
 
 ###Benchmark & coverage
 What "go test" provides are good enough. Just don't break them.

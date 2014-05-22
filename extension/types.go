@@ -4,6 +4,10 @@
 
 package extension
 
+import (
+	"time"
+)
+
 // Reporter is a interface to accept events from tests running.
 type Reporter interface {
 	Start()
@@ -16,6 +20,7 @@ type TestGroup struct {
 	ID          string
 	Description string
 	Error       error
+	Duration    time.Duration
 	Children    TestGroups
 }
 
