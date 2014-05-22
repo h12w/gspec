@@ -402,15 +402,16 @@ removed, while the path of execution is much more stable.
 ###Test time
 ####Timeout
 It will be awkward if one of the test cases hangs without knowing which one.
-"go test" uses a simple way to address this problem. The timeout option will
-set a time limit t and when a test runs longer than t, it simply panics to stop
-the execution of all tests and dump all the stack trace. It will be the
-developer's responsibility to find where it hangs.
+"go test" uses two steps to address this problem:
+1. In the testing package, a Timer is used to limit the test time, and panics
+   when the time exeeds the limit (pkg/testing/testing.go).
+2. If the Timer does not get the chance to run because the code under tests
+   saturate all the CPU resouces within the test process, "go test" will detects
+   the problem, signal the test process, wait 5 seconds for dumping stack trace,
+   and kill the test process (cmd/go/test.go).
 
-This method still works with GSpec, but there should be a simpler way to tell
-which line and test case hangs directly.
-
-(TODO)
+Though not friendly enough, it is a comprehensive method. GSpec will do nothing
+about timeout for now, unless an obvious better way is found.
 
 ####Find slow tests
 It is important to keep unit tests run fast so that they can be run as often as
