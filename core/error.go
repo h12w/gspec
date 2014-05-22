@@ -22,6 +22,8 @@ type testError struct {
 }
 
 func (t *testError) setErr(err error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	if t.err == nil {
 		t.err = err // only keeps the first failure.
 	}
@@ -30,6 +32,8 @@ func (t *testError) setErr(err error) {
 // get clears the err field so that it will not be repeatedly recorded by
 // parent test groups
 func (t *testError) getErr() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	defer func() { t.err = nil }()
 	return t.err
 }
@@ -37,8 +41,6 @@ func (t *testError) getErr() error {
 // Fail marks that the test case has failed with an error. It can be called in
 // another goroutine.
 func (t *testError) Fail(err error) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
 	t.setErr(err)
 }
 

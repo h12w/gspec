@@ -4,6 +4,7 @@
 
 package core
 
+// group implements the core algorithm of nested test groups.
 type group struct {
 	dst    path
 	cur    serialStack
@@ -17,7 +18,7 @@ func newGroup(dst path, run runFunc) *group {
 	return &group{dst: dst, runNew: run}
 }
 
-func (g *group) visit(f func()) {
+func (g *group) visit(f func(cur path)) {
 	g.cur.push(g.next)
 	g.next = 0
 	defer func() { g.next = g.cur.pop() + 1 }()
@@ -28,9 +29,5 @@ func (g *group) visit(f func()) {
 		return
 	}
 	defer func() { g.done = true }()
-	f()
-}
-
-func (g *group) current() path {
-	return g.cur.clone()
+	f(g.cur.path)
 }

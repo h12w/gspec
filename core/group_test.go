@@ -193,5 +193,9 @@ func runPath(dst path, f func(g groupFunc), fifo *pathQueue) {
 		func(newDst path) {
 			fifo.enqueue(newDst)
 		})
-	f(group.visit)
+	f(func(ff func()) {
+		group.visit(func(cur path) {
+			ff()
+		})
+	})
 }

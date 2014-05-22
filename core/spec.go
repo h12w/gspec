@@ -40,8 +40,7 @@ func (s *spec) Alias(name string) DescFunc {
 		name += " "
 	}
 	return func(description string, f func()) {
-		s.visit(func() {
-			cur := s.current()
+		s.visit(func(cur path) {
 			s.groupStart(
 				&ext.TestGroup{
 					ID:          cur.String(),

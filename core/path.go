@@ -70,6 +70,7 @@ func (p *path) Set(s string) (err error) {
 	return
 }
 
+// serialStack implements stack operations on path.
 type serialStack struct {
 	path
 }
@@ -77,6 +78,7 @@ type serialStack struct {
 func (s *serialStack) push(i serial) {
 	s.path = append(s.path, i)
 }
+
 func (s *serialStack) pop() (i serial) {
 	if len(s.path) == 0 {
 		panic("call pop when serialStack is empty.")
