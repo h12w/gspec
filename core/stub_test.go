@@ -37,7 +37,7 @@ func ogdlPrint(v interface{}) string {
 }
 
 var (
-	globalController = NewController(NewTextReporter(ioutil.Discard))
+	globalController = NewController(&Config{}, NewTextReporter(ioutil.Discard))
 )
 
 func runCon(f ...TestFunc) {

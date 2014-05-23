@@ -141,6 +141,8 @@ type failReporter struct {
 	dummyReporter
 }
 
+// NewFailReporter creates and initializes a reporter that calls T.Fail when
+// any test error occurs.
 func NewFailReporter(t T) ext.Reporter {
 	return &failReporter{t: t}
 }

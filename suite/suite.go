@@ -5,6 +5,7 @@
 package suite
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -19,8 +20,14 @@ var (
 		reporter.NewTextProgresser(os.Stdout),
 		reporter.NewTextReporter(os.Stdout),
 	}
+
 	testFunctions []core.TestFunc
+	globalConfig  core.Config
 )
+
+func init() {
+	flag.Var(&globalConfig.Focus, "focus", "test case id to select one test case to run")
+}
 
 // Add GSpec test functions to the global test suite.
 // Return value has no meaning, allowing it to be called in global scope.
@@ -41,7 +48,7 @@ func Run(t T, concurrent bool) {
 		t.Parallel()
 	}
 	fr := reporter.NewFailReporter(t)
-	s := core.NewController(append(Reporters, fr)...)
+	s := core.NewController(&globalConfig, append(Reporters, fr)...)
 	err := s.Start(concurrent, testFunctions...)
 	if err != nil {
 		fmt.Println(err)

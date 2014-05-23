@@ -26,7 +26,7 @@ func newCollector(r ext.Reporter) *collector {
 	}
 }
 
-func (c *collector) groupStart(g *ext.TestGroup, path path) {
+func (c *collector) groupStart(g *ext.TestGroup, path Path) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	id := path.String()
@@ -48,7 +48,7 @@ func (c *collector) groupStart(g *ext.TestGroup, path path) {
 	c.progress(g)
 }
 
-func (c *collector) groupEnd(err error, path path) {
+func (c *collector) groupEnd(err error, path Path) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	id := path.String()
@@ -64,7 +64,7 @@ func (c *collector) groupEnd(err error, path path) {
 	}
 }
 
-func (c *collector) setDuration(path path, d time.Duration) {
+func (c *collector) setDuration(path Path, d time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	id := path.String()
@@ -80,9 +80,9 @@ func (c *collector) progress(g *ext.TestGroup) {
 // timer implements the start and end method of S, and is responsible for
 // measuring test time.
 type timer struct {
-	leaf        path
+	leaf        Path
 	startTime   time.Time
-	setDuration func(path, time.Duration)
+	setDuration func(Path, time.Duration)
 }
 
 func (t *timer) start() {

@@ -6,28 +6,32 @@ package core
 
 // group implements the core algorithm of nested test groups.
 type group struct {
-	dst    path
+	dst    Path
 	cur    serialStack
-	next   serial
+	next   Serial
 	done   bool
 	runNew runFunc
 }
-type runFunc func(path)
+type runFunc func(Path)
 
-func newGroup(dst path, run runFunc) *group {
+func newGroup(dst Path, run runFunc) *group {
 	return &group{dst: dst, runNew: run}
 }
 
-func (g *group) visit(f func(cur path)) {
+// visit method calls each test group closure along the path defined by
+// group.dst, ignoring the node not on path. Once a leaf node is visited, it
+// stops calling the rest closures on path, but provides the path of them
+// through group.runNew.
+func (g *group) visit(f func(cur Path)) {
 	g.cur.push(g.next)
 	g.next = 0
 	defer func() { g.next = g.cur.pop() + 1 }()
 	if !g.cur.onPath(g.dst) {
 		return
 	} else if g.done {
-		g.runNew(g.cur.path)
+		g.runNew(g.cur.Path)
 		return
 	}
 	defer func() { g.done = true }()
-	f(g.cur.clone())
+	f(g.cur.Path)
 }

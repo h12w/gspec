@@ -54,7 +54,7 @@ func newRunner(f TestFunc, concurrent bool, c *collector) *runner {
 	return r
 }
 
-func (r *runner) run(dst path) {
+func (r *runner) run(dst Path) {
 	r.q.enqueue(dst)
 	for r.q.count() > 0 {
 		for r.q.count() > 0 {
@@ -67,9 +67,9 @@ func (r *runner) run(dst path) {
 	}
 }
 
-func (r *runner) runOne(dst path) {
+func (r *runner) runOne(dst Path) {
 	r.f(newSpec(
-		newGroup(dst, func(newDst path) { r.q.enqueue(newDst) }),
+		newGroup(dst, func(newDst Path) { r.q.enqueue(newDst) }),
 		r.c,
 	))
 }

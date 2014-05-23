@@ -10,14 +10,15 @@ import (
 	"sync"
 )
 
-// serial is an integer serial number of the execution of a test closure
-type serial int
+// Serial is an integer serial number of the execution of a test closure.
+type Serial int
 
-func (s serial) String() string {
+// String converts a Serial to a string.
+func (s Serial) String() string {
 	return fmt.Sprint(int(s))
 }
 
-func parseSerial(s string) (f serial, _ error) {
+func parseSerial(s string) (f Serial, _ error) {
 	n, err := fmt.Sscanf(s, "%d", &f)
 	if n == 1 {
 		return f, nil
@@ -25,13 +26,14 @@ func parseSerial(s string) (f serial, _ error) {
 	return 0, err
 }
 
-type path []serial
+// Path represents a path from the root to the leaf of nested test groups.
+type Path []Serial
 
-func (p path) clone() path {
-	return append(path{}, p...)
+func (p Path) clone() Path {
+	return append(Path{}, p...)
 }
 
-func (p path) onPath(dst path) bool {
+func (p Path) onPath(dst Path) bool {
 	last := imin(len(p), len(dst)) - 1
 	for i := 0; i <= last; i++ {
 		if p[i] != dst[i] {
@@ -48,7 +50,7 @@ func imin(a, b int) int {
 }
 
 // Set implements the String method of flag.Value interface.
-func (p path) String() string {
+func (p Path) String() string {
 	ss := make([]string, len(p))
 	for i := range ss {
 		ss[i] = p[i].String()
@@ -57,9 +59,9 @@ func (p path) String() string {
 }
 
 // Set implements the Set method of flag.Value interface.
-func (p *path) Set(s string) (err error) {
+func (p *Path) Set(s string) (err error) {
 	ss := strings.Split(s, "/")
-	*p = make(path, len(ss))
+	*p = make(Path, len(ss))
 	for i := range ss {
 		(*p)[i], err = parseSerial(ss[i])
 		if err != nil {
@@ -70,26 +72,26 @@ func (p *path) Set(s string) (err error) {
 	return
 }
 
-// serialStack implements stack operations on path.
+// serialStack implements stack operations on Path.
 type serialStack struct {
-	path
+	Path
 }
 
-func (s *serialStack) push(i serial) {
-	s.path = append(s.path, i)
+func (s *serialStack) push(i Serial) {
+	s.Path = append(s.Path, i)
 }
 
-func (s *serialStack) pop() (i serial) {
-	if len(s.path) == 0 {
+func (s *serialStack) pop() (i Serial) {
+	if len(s.Path) == 0 {
 		panic("call pop when serialStack is empty.")
 	}
-	s.path, i = s.path[:len(s.path)-1], s.path[len(s.path)-1]
+	s.Path, i = s.Path[:len(s.Path)-1], s.Path[len(s.Path)-1]
 	return
 }
 
 // pathQueue implements a thread safe queue for path (test group destination).
 type pathQueue struct {
-	a  []path
+	a  []Path
 	mu sync.Mutex
 }
 
@@ -99,13 +101,13 @@ func (q *pathQueue) count() int {
 	return len(q.a)
 }
 
-func (q *pathQueue) enqueue(p path) {
+func (q *pathQueue) enqueue(p Path) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	q.a = append(q.a, p.clone())
 }
 
-func (q *pathQueue) dequeue() (p path) {
+func (q *pathQueue) dequeue() (p Path) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	p, q.a = q.a[0], q.a[1:]

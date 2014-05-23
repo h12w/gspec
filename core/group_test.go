@@ -178,7 +178,7 @@ func TestNestedTestingContext(t *testing.T) {
 // runGroup is a simplified implementation to run nested test group.
 func runGroup(f func(g groupFunc)) {
 	fifo := &pathQueue{}
-	fifo.enqueue(path{})
+	fifo.enqueue(Path{})
 	for fifo.count() > 0 {
 		dst := fifo.dequeue()
 		runPath(dst, f, fifo)
@@ -187,14 +187,14 @@ func runGroup(f func(g groupFunc)) {
 
 type groupFunc func(func())
 
-func runPath(dst path, f func(g groupFunc), fifo *pathQueue) {
+func runPath(dst Path, f func(g groupFunc), fifo *pathQueue) {
 	group := newGroup(
 		dst,
-		func(newDst path) {
+		func(newDst Path) {
 			fifo.enqueue(newDst)
 		})
 	f(func(ff func()) {
-		group.visit(func(cur path) {
+		group.visit(func(cur Path) {
 			ff()
 		})
 	})

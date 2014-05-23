@@ -17,45 +17,45 @@ Story: Internal Tests
 
 func TestFuncIDString(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
-	expect(serial(0).String()).Equal("0")
-	expect(serial(3).String()).Equal("3")
+	expect(Serial(0).String()).Equal("0")
+	expect(Serial(3).String()).Equal("3")
 
 	id, err := parseSerial("2")
 	expect(err).Equal(nil)
-	expect(id).Equal(serial(2))
+	expect(id).Equal(Serial(2))
 
 	id, err = parseSerial("XYZ")
 	expect(err).NotEqual(nil)
-	expect(id).Equal(serial(0))
+	expect(id).Equal(Serial(0))
 }
 
 func TestPathSerialization(t *testing.T) {
 	expect := exp.Alias(exp.TFailNow(t))
 
-	var p path
+	var p Path
 	p.Set("0/1/2")
 	expect(len(p)).Equal(3)
-	expect(p[0]).Equal(serial(0))
-	expect(p[1]).Equal(serial(1))
-	expect(p[2]).Equal(serial(2))
+	expect(p[0]).Equal(Serial(0))
+	expect(p[1]).Equal(Serial(1))
+	expect(p[2]).Equal(Serial(2))
 
 	err := p.Set("UVW")
 	expect(err).NotEqual(nil)
 
-	p = path{0, 1, 2}
+	p = Path{0, 1, 2}
 	expect(p.String()).Equal("0/1/2")
 }
 
 func TestIDStack(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	p := serialStack{}
-	p.push(serial(1))
-	p.push(serial(2))
-	expect(p.path).Equal(path{1, 2})
+	p.push(Serial(1))
+	p.push(Serial(2))
+	expect(p.Path).Equal(Path{1, 2})
 	i := p.pop()
-	expect(p.path).Equal(path{1})
-	expect(i).Equal(serial(2))
+	expect(p.Path).Equal(Path{1})
+	expect(i).Equal(Serial(2))
 	i = p.pop()
-	expect(p.path).Equal(path{})
+	expect(p.Path).Equal(Path{})
 	expect(func() { p.pop() }).Panic()
 }

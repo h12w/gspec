@@ -37,21 +37,21 @@ func TestTreeCollector(t *testing.T) {
 	c := &TestGroup{
 		Description: "c",
 	}
-	cp := path{1, 2, 3}
+	cp := Path{1, 2, 3}
 	d := &TestGroup{
 		Description: "d",
 	}
 	z := &TestGroup{
 		Description: "z",
 	}
-	co.groupStart(a, path{1})
-	co.groupStart(b, path{1, 2})
+	co.groupStart(a, Path{1})
+	co.groupStart(b, Path{1, 2})
 	co.groupStart(c, cp)
 	c.Error = errors.New("c err")
-	co.groupStart(a, path{1})
-	co.groupStart(b, path{1, 2})
-	co.groupStart(d, path{1, 2, 4})
-	co.groupStart(z, path{5})
+	co.groupStart(a, Path{1})
+	co.groupStart(b, Path{1, 2})
+	co.groupStart(d, Path{1, 2, 4})
+	co.groupStart(z, Path{5})
 
 	exp := TestGroups{
 		&TestGroup{
