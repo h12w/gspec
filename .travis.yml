@@ -16,5 +16,6 @@ script:
 - go version
 # a workaround related to go issue 6479.
 - go install -a -race std
+- export PATH=$HOME/gopath/bin:$PATH
 - ./check.sh
-- $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci
+- goveralls -coverprofile=profile.cov -service=travis-ci

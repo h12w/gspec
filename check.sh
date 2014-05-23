@@ -2,7 +2,7 @@
 set -e
 
 go vet -n ./...
-$GOPATH/bin/golint .
+golint .
 go test -race ./...
 
 # Run test coverage on each subdirectories and merge the coverage profile.
