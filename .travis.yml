@@ -13,8 +13,10 @@ before_install:
 - go get github.com/ogdl/flow
 
 script:
+- go version
 - go vet -n ./...
 - $HOME/gopath/bin/golint .
+- go install -a -race std
 - go test -race ./...
 - ./cover.sh
 - go tool cover -func profile.cov
