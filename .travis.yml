@@ -16,6 +16,7 @@ script:
 - go version
 - go vet -n ./...
 - $HOME/gopath/bin/golint .
+# a workaround related to go issue 6479.
 - go install -a -race std
 - go test -race ./...
 - ./cover.sh

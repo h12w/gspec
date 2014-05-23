@@ -6,7 +6,6 @@ package core
 
 import (
 	"sync"
-	"time"
 )
 
 // TestFunc is the type of the function prepared to run in a goroutine for each
@@ -24,13 +23,12 @@ func (f TestFunc) toConcurrent(wg *sync.WaitGroup) TestFunc {
 	}
 }
 
-// measureTime decorates a TestFunc with time measurement.
-func (f TestFunc) measureTime() TestFunc {
+// toMeasurable decorates a TestFunc with time measurement.
+func (f TestFunc) toMeasurable() TestFunc {
 	return func(s S) {
-		t := time.Now()
+		s.start()
+		defer s.end()
 		f(s)
-		d := time.Now().Sub(t)
-		s.setDuration(d)
 	}
 }
 
@@ -42,14 +40,14 @@ func (f TestFunc) measureTime() TestFunc {
 // but a queue is needed to keep the execution order in sequencial mode in the
 // order the nested groups are written, making the algorithm easier to understand.
 type runner struct {
-	f       TestFunc
-	q       pathQueue
-	wg      sync.WaitGroup
-	newSpec func(*group) S
+	f  TestFunc
+	q  pathQueue
+	wg sync.WaitGroup
+	c  *collector
 }
 
-func newRunner(f TestFunc, concurrent bool, newSpec func(*group) S) *runner {
-	r := &runner{f: f.measureTime(), newSpec: newSpec}
+func newRunner(f TestFunc, concurrent bool, c *collector) *runner {
+	r := &runner{f: f.toMeasurable(), c: c}
 	if concurrent {
 		r.f = r.f.toConcurrent(&r.wg)
 	}
@@ -63,17 +61,15 @@ func (r *runner) run(dst path) {
 			dst := r.q.dequeue()
 			r.runOne(dst)
 		}
-		// make sure there are no running test groups so that all test
-		// groups have been visited.
+		// make sure that there are no test groups running so that all groups
+		// have been visited.
 		r.wg.Wait()
 	}
 }
 
 func (r *runner) runOne(dst path) {
-	r.f(r.newSpec(
-		newGroup(
-			dst,
-			func(newDst path) {
-				r.q.enqueue(newDst)
-			})))
+	r.f(newSpec(
+		newGroup(dst, func(newDst path) { r.q.enqueue(newDst) }),
+		r.c,
+	))
 }

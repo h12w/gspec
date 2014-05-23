@@ -29,5 +29,5 @@ func (g *group) visit(f func(cur path)) {
 		return
 	}
 	defer func() { g.done = true }()
-	f(g.cur.path)
+	f(g.cur.clone())
 }

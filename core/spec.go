@@ -5,8 +5,6 @@
 package core
 
 import (
-	"time"
-
 	ext "github.com/hailiang/gspec/extension"
 )
 
@@ -17,15 +15,16 @@ type S interface {
 	Alias(name string) DescFunc
 	Fail(err error)
 	FailNow(err error)
-	setDuration(d time.Duration)
+	start()
+	end()
 }
 
 // spec implements "S" interface.
 type spec struct {
 	*group
 	*collector
+	timer
 	testError
-	leaf path
 }
 
 // DescFunc is the type of the function to define a test group with a
@@ -36,6 +35,7 @@ func newSpec(g *group, c *collector) S {
 	return &spec{
 		group:     g,
 		collector: c,
+		timer:     timer{setDuration: c.setDuration},
 	}
 }
 
@@ -58,8 +58,4 @@ func (s *spec) Alias(name string) DescFunc {
 			s.capturePanic(f)
 		})
 	}
-}
-
-func (s *spec) setDuration(d time.Duration) {
-	s.collector.setDuration(s.leaf, d)
 }

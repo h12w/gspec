@@ -52,13 +52,9 @@ func (c *Controller) Start(concurrent bool, funcs ...TestFunc) error {
 		for _, f := range funcs {
 			f(s)
 		}
-	}, concurrent, c.newSpec).run(c.focus)
+	}, concurrent, c.collector).run(c.focus)
 
 	return nil
-}
-
-func (c *Controller) newSpec(g *group) S {
-	return newSpec(g, c.collector)
 }
 
 // broadcaster syncs, receives and broadcasts all messages via Reporter interface

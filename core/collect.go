@@ -52,15 +52,16 @@ func (c *collector) groupEnd(err error, path path) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	id := path.String()
-	g := c.m[id]
-	g.Error = err
-	if len(g.Children) == 0 {
-		c.Ended++
-		if err != nil {
-			c.Failed++
+	if g, ok := c.m[id]; ok {
+		g.Error = err
+		if len(g.Children) == 0 {
+			c.Ended++
+			if err != nil {
+				c.Failed++
+			}
 		}
+		c.progress(g)
 	}
-	c.progress(g)
 }
 
 func (c *collector) setDuration(path path, d time.Duration) {
@@ -74,4 +75,20 @@ func (c *collector) setDuration(path path, d time.Duration) {
 
 func (c *collector) progress(g *ext.TestGroup) {
 	c.r.Progress(g, &c.Stats)
+}
+
+// timer implements the start and end method of S, and is responsible for
+// measuring test time.
+type timer struct {
+	leaf        path
+	startTime   time.Time
+	setDuration func(path, time.Duration)
+}
+
+func (t *timer) start() {
+	t.startTime = time.Now()
+}
+
+func (t *timer) end() {
+	t.setDuration(t.leaf, time.Now().Sub(t.startTime))
 }
