@@ -30,7 +30,7 @@ Scenario: test case fails
 func TestCaseFails(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
-	NewController(&TStub{}, r).Start(true, func(s S) {
+	NewController(r).Start(true, func(s S) {
 		do := aliasGroup(s)
 		do(func() {
 			s.Fail(errors.New("err a"))
@@ -54,7 +54,7 @@ func TestFailNow(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
 	ch := NewSS()
-	NewController(&TStub{}, r).Start(true, func(s S) {
+	NewController(r).Start(true, func(s S) {
 		do := aliasGroup(s)
 		do(func() {
 			defer func() {
@@ -84,7 +84,7 @@ Scenario: test case panics
 func TestCasePanics(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
-	NewController(&TStub{}, r).Start(true, func(s S) {
+	NewController(r).Start(true, func(s S) {
 		do := aliasGroup(s)
 		do(func() {
 			panic("panic error")
@@ -105,7 +105,7 @@ Scenario: Plain text progress indicator
 func Test3Pass2Fail(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	var buf bytes.Buffer
-	NewController(&TStub{}, NewTextProgresser(&buf)).Start(true, func(s S) {
+	NewController(NewTextProgresser(&buf)).Start(true, func(s S) {
 		do := s.Alias("")
 		do("a", func() {
 			do("a-b", func() {
@@ -139,7 +139,6 @@ Scenario: notify testing.T
 	Given a Fail method of S
 	When it is called
 	Then testing.T.Fail should be called
-*/
 func TestNotifyT(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	mt := &TStub{}
@@ -152,3 +151,4 @@ func TestNotifyT(t *testing.T) {
 	})
 	expect(mt.s).Equal("Fail.")
 }
+*/

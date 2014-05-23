@@ -10,12 +10,6 @@ import (
 	ext "github.com/hailiang/gspec/extension"
 )
 
-// T is an interface that allows a testing.T to be passed to GSpec.
-type T interface {
-	Fail()
-	Parallel()
-}
-
 // Controller is the "C" of MVC (Model View Controller). In a test framework,
 // all the test cases form a model (but unchangable by the controller), the test
 // reporter is the view, and the controller controls the test running and send
@@ -28,9 +22,9 @@ type Controller struct {
 
 // NewController creates and intialize a new Controller using r as the test
 // reporter.
-func NewController(t T, reporters ...ext.Reporter) *Controller {
+func NewController(reporters ...ext.Reporter) *Controller {
 	c := &Controller{
-		broadcaster: newBroadcaster(t, reporters),
+		broadcaster: newBroadcaster(reporters),
 		config:      &globalConfig,
 	}
 	c.collector = newCollector(c.broadcaster)
@@ -39,10 +33,6 @@ func NewController(t T, reporters ...ext.Reporter) *Controller {
 
 // Start starts tests defined in funcs concurrently or sequentially.
 func (c *Controller) Start(concurrent bool, funcs ...TestFunc) error {
-	if concurrent {
-		c.t.Parallel() // signal "go test" to allow concurrent testing.
-	}
-
 	c.broadcaster.Start()
 	defer func() {
 		c.broadcaster.End(c.groups)
@@ -59,13 +49,12 @@ func (c *Controller) Start(concurrent bool, funcs ...TestFunc) error {
 
 // broadcaster syncs, receives and broadcasts all messages via Reporter interface
 type broadcaster struct {
-	t  T
 	a  []ext.Reporter
 	mu sync.Mutex
 }
 
-func newBroadcaster(t T, reporters []ext.Reporter) *broadcaster {
-	return &broadcaster{t: t, a: reporters}
+func newBroadcaster(reporters []ext.Reporter) *broadcaster {
+	return &broadcaster{a: reporters}
 }
 
 func (b *broadcaster) Start() {
@@ -87,9 +76,6 @@ func (b *broadcaster) End(groups ext.TestGroups) {
 func (b *broadcaster) Progress(g *ext.TestGroup, stats *ext.Stats) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	if g.Error != nil {
-		b.t.Fail()
-	}
 	for _, r := range b.a {
 		r.Progress(g, stats)
 	}

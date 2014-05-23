@@ -29,10 +29,20 @@ func Add(fs ...core.TestFunc) int {
 	return 0
 }
 
+// T is an interface that allows a testing.T to be passed to GSpec.
+type T interface {
+	Fail()
+	Parallel()
+}
+
 // Run all tests in the global test suite.
-func Run(t core.T, sequential bool) {
-	s := core.NewController(t, Reporters...)
-	err := s.Start(sequential, testFunctions...)
+func Run(t T, concurrent bool) {
+	if concurrent {
+		t.Parallel()
+	}
+	fr := reporter.NewFailReporter(t)
+	s := core.NewController(append(Reporters, fr)...)
+	err := s.Start(concurrent, testFunctions...)
 	if err != nil {
 		fmt.Println(err)
 		t.Fail()

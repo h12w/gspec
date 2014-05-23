@@ -130,3 +130,23 @@ func writePanicError(w io.Writer, e *ext.PanicError) {
 		fmt.Fprintf(w, "%s:%d\n", f.File, f.Line)
 	}
 }
+
+// T is an interface that allows a testing.T to be passed.
+type T interface {
+	Fail()
+}
+
+type failReporter struct {
+	t T
+	dummyReporter
+}
+
+func NewFailReporter(t T) ext.Reporter {
+	return &failReporter{t: t}
+}
+
+func (r *failReporter) Progress(g *ext.TestGroup, stats *ext.Stats) {
+	if g.Error != nil {
+		r.t.Fail()
+	}
+}
