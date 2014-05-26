@@ -17,17 +17,23 @@ import (
 
 var (
 	// Reporters are the test reporters used during the test.
+	Reporters = []ext.Reporter{
+		reporter.NewTextProgresser(os.Stdout),
+		reporter.NewTextReporter(os.Stdout, Verbose()),
+	}
 
 	testFunctions []core.TestFunc
 	globalConfig  config
 )
 
 type config struct {
-	focus core.Path
+	focus      core.Path
+	concurrent bool
 }
 
 func init() {
-	flag.Var(&globalConfig.focus, "focus", "test case id to select one test case to run")
+	flag.Var(&globalConfig.focus, "focus", "tell GSpec to run only focused test case.")
+	flag.BoolVar(&globalConfig.concurrent, "concurrent", false, "tell GSpec to run concurrently, false by default.")
 }
 
 // Add GSpec test functions to the global test suite.
@@ -41,22 +47,16 @@ func Add(fs ...core.TestFunc) int {
 // the testing package.
 type T interface {
 	Fail()
-	Parallel()
 }
 
 // Run all tests in the global test suite.
-func Run(t T, concurrent bool) {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	if concurrent {
-		t.Parallel()
+func Run(t T) {
+	if globalConfig.concurrent {
+		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
-	fr := reporter.NewFailReporter(t)
-	Reporters := []ext.Reporter{
-		reporter.NewTextProgresser(os.Stdout),
-		reporter.NewTextReporter(os.Stdout, Verbose()),
-	}
-	s := core.NewController(append(Reporters, fr)...)
-	err := s.Start(globalConfig.focus, concurrent, testFunctions...)
+	reporters := append(Reporters, reporter.NewFailReporter(t))
+	s := core.NewController(reporters...)
+	err := s.Start(globalConfig.focus, globalConfig.concurrent, testFunctions...)
 	if err != nil {
 		fmt.Println(err)
 		t.Fail()
