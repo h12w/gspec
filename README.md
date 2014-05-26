@@ -1,21 +1,21 @@
-GSpec
-=====
+GSpec: a productive Go test framework
+=====================================
 
 [![Build Status](https://travis-ci.org/hailiang/gspec.png?branch=master)](https://travis-ci.org/hailiang/gspec)
 [![Coverage Status](https://coveralls.io/repos/hailiang/gspec/badge.png?branch=master)](https://coveralls.io/r/hailiang/gspec?branch=master)
 [![GoDoc](https://godoc.org/github.com/hailiang/gspec?status.png)](https://godoc.org/github.com/hailiang/gspec)
 
 GSpec is a *concurrent, minimal, extensible and reliable* test framework in Go
-that makes it easy to organize and verify the mind model of software.
+that makes it productive to organize and verify the mind model of software.
 
 Highlights:
 
-* *Natual*:     a complete running specification can be organized via both BDD and
-              table driven styles.
+* *Expressive*: a complete running specification can be organized via both BDD
+                and table driven styles.
 * *Reliabile*:  the implementation has minimal footprint and is tested with 100%
-              coverage.
+                coverage.
 * *Concurrent*: run test cases concurrently or sequentially.
-* *Extensible*: Customizable BDD cue words, expectations and test reporters.
+* *Extensible*: customizable BDD cue words, expectations and test reporters.
 * *Compatible*: "go test" is enough to run GSpec tests.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -27,7 +27,8 @@ Highlights:
   - [Write tests with GSpec](#write-tests-with-gspec)
   - [Run tests with "go test"](#run-tests-with-go-test)
 - [Extend GSpec](#extend-gspec)
-  - [Test Group](#test-group)
+    - [Package organization](#package-organization)
+  - [Error](#error)
   - [Expectation](#expectation)
   - [Reporter](#reporter)
 - [Hack GSpec](#hack-gspec)
@@ -50,7 +51,7 @@ As Go's convention, write GSpec tests in file xxx_test.go to test code in xxx.go
 import (
 	"fmt"
 
-	// core implements core alogrithms of test running with less than 500 lines of code.
+	// core implements core alogrithms of nested test groups with less than 500 lines of code.
 	"github.com/hailiang/gspec/core"
 	// expectation contains extensible expectation (assertion) helpers.
 	exp "github.com/hailiang/gspec/expectation"
@@ -134,22 +135,35 @@ go test -focus 1/1
 
 Extend GSpec
 ------------
+####Package organization
 The subpackages are organized with minimal coupling.
-
-1. core and expectation does not know each other. 
-2. core and reporter communicate via the interface defined in extension.
-3. core receives and transfers errors to reporter without knowing their exact types.
-
 ```
 extension   <- 
 core        <- extension
-errors      <- 
+error       <- 
 expectation <- errors
 reporter    <- extension, errors
 suite       <- core, exntension, reporter
 ```
+1. the core package implements core algorithms of test organization and execution,
+   but nothing else. It is extensible through the types defined in the extension
+   package.
+2. the expectation package implements expectation helpers. It reports expecation
+   errors to Fail or FailNow method of interface core.S. core receives and hand
+   errors over to reporters without knowing their exact types. expectation package
+   can be replaced by any package with an error reporting function of the same
+   signature.
+3. the error package is responsible for implementing the details of an error, e.g.
+   the type of the error, file, line number and the stack trace.
+4. the reporter package contains all the builtin test reporters that implement
+   extension.Reporter. A reporter gets notifications about the progress of test
+   running and gets a complete specification of all the nested test groups,
+   including test errors.
+5. the suite package integrates all other packages together, providing a quick
+   way of test gathering, running and reporting.
 
-###Test Group
+###Error
+Good error message is mandatory to productive testing.
 
 ###Expectation
 
