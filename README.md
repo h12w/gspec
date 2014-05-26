@@ -9,73 +9,116 @@ GSpec is a concurrent, minimal, extensible and reliable testing framework in Go
 that makes it easy to organize and verify the mind model of software. It
 supports both BDD style and table driven testing.
 
-(under development).
-
 Highlights:
 
-* Concurrent: one goroutine per test case (sequential running also supported).
-* Natual:     BDD and table driven style are integrated natually. Use either one or both to fit your test scenario.
-* Reliabile:  the design is minimal and orthogonal; the code is tested under 100% coverage.
+* Natual:     a complete running specification can be organized via both BDD and
+              table driven styles.
+* Reliabile:  the implementation has minimal footprint and is tested with 100%
+              coverage.
+* Concurrent: run test cases concurrently or sequentially.
 * Extensible: Customizable BDD cue words, expectations and test reporters.
-* Separable:  subpackages are organized with minimal coupling.
-* Compatible: "go test" is enough to run GSpec tests (However, it does not depend on "testing" package).
-* Succinct:   the core implementation is less than 500 lines of code.
+* Compatible: "go test" is enough to run GSpec tests.
 
-Design
-------
+Quick start
+-----------
 
-[Core](DESIGN.md)
+###Get GSpec
+```
+go get -t -u github.com/hailiang/gspec
+go test github.com/hailiang/gspec/...
+```
 
-[Expectations](expectation/DESIGN.md)
-
-Examples
---------
+###Write tests with GSpec
+As Go's convention, write GSpec tests in file xxx_test.go to test code in xxx.go.
 ```go
+// GSpec follows modular design.
 import (
-	"testing"
+	"fmt"
 
+	// core implements core alogrithms of test running with less than 500 lines of code.
 	"github.com/hailiang/gspec/core"
+	// expectation contains extensible expectation (assertion) helpers.
 	exp "github.com/hailiang/gspec/expectation"
+	// suite gathers test functions and run them.
 	"github.com/hailiang/gspec/suite"
 )
 
+// Only one suite.Add is needed for each xxx_test.go file.
 var _ = suite.Add(func(s core.S) {
+	// BDD cue word is customizible.
 	describe, given, when, it := s.Alias("describe"), s.Alias("given"), s.Alias("when"), s.Alias("it")
-	expect := exp.Alias(s.Fail)
+	// expectation cue word is customizible too.
+	expect := exp.Alias(s.FailNow)
 
+	// A BDD example.
 	describe("an integer i", func() {
+		// setup
 		i := 2
+		defer func() {
+			// teardown (if any)
+		}()
 		given("another integer j", func() {
 			j := 3
 			when("j is added to i", func() {
 				i += j
 				it("should become the sum of original i and j", func() {
-					expect(i).Equal(4)
+					expect(i).Equal(5) // a passing case
 				})
 			})
 			when("j is minused from i", func() {
 				i -= j
 				it("should become the difference of j minus i", func() {
-					expect(i).Equal(4)
+					expect(i).Equal(4) // a failing case
 				})
 			})
+			when("j is multiplied to i", nil) // a pending case
 		})
-		// more scenarios here.
 	})
 
-	// more tests here.
+	// A table-driven example.
+	testcase := s.Alias("testcase")
+	describe("integer summation", func() {
+		for _, c := range []struct{ i, j, sum int }{
+			{1, 2, 3}, // a passing case
+			{1, 1, 0}, // a failing case
+		} {
+			testcase(fmt.Sprintf(`%d + %d = %d`, c.i, c.j, c.sum), func() {
+				expect(c.i + c.j).Equal(c.sum)
+			})
+		}
+	})
 })
+```
+
+Write the following go test function in any test file (e.g. all_test.go).
+
+```go
+import (
+	"testing"
+	"github.com/hailiang/gspec/suite"
+)
 
 func TestAll(t *testing.T) {
-	suite.Run(t, false)
+	suite.Run(t)
 }
 ```
 
-Concurrent
-----------
+###Run tests with "go test"
+Run all the tests concurrently (sequencially by default) and display errors.
+```
+go test -concurrent
+```
+Run all the tests and view the complete specification.
+```
+go test -v
+```
+Run only a failing test case (even an entry in the driven table):
+```
+go test -focus 1/1
+```
 
-Separable
----------
+Extend GSpec
+------------
 The subpackages are organized with minimal coupling.
 
 1. core and expectation does not know each other. 
@@ -90,5 +133,16 @@ expectation <- errors
 reporter    <- extension, errors
 suite       <- core, exntension, reporter
 ```
+
+###Test Group
+
+###Expectation
+
+###Reporter
+
+Hack GSpec
+----------
+
+[Design of GSpec](DESIGN.md)
 
 
