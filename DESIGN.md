@@ -41,7 +41,7 @@ Design of GSpec
     - [Builtin reporter](#builtin-reporter)
 - [Usage Guidelines](#usage-guidelines)
 - [Reference](#reference)
-  - [Existing Go Test Frameworks](#existing-go-testing-frameworks)
+  - [Existing Go Test Frameworks](#existing-go-test-frameworks)
     - [xUnit Style](#xunit-style)
     - [BDD Style](#bdd-style)
     - [Expectations (assertions)](#expectations-assertions)
@@ -94,8 +94,7 @@ features that are also important in unit test:
 * Test organization
     - gotest does not help much beyond test functions scattered in multiple test
       files.
-    - gotest does not provide enough facilities to help reducing redundancy in
-      test code.
+    - gotest does not help reducing duplicate setup and teardown code.
 * Test composition
     - gotest lacks expectation (assertion) helpers that reduce redundant code.
 * Test execution
@@ -105,7 +104,7 @@ features that are also important in unit test:
     - gotest emphasize the importance of [good error message](http://golang.org/doc/faq#testing_framework),
       but does not provide any tools to achieve that.
     - gotest does not provide alternative way besides console output.
-    - gotest does not provide a clean message when test panics or timeout.
+    - gotest does not provide a clean message when test panics.
 
 All the shortcomings of gotest can be remedied by a minimal framework that
 provide the missing features while keeping the solution provided by gotest
@@ -116,12 +115,12 @@ intact. GSpec framework should achieve the following goals:
 * Test composition
     - Extensible expectation helpers.
 * Test execution
-    - All gotest features should still be supported.
+    - All gotest features should not be broken.
     - Table driven test (with focus mode).
 * Test report
     - Extensible test reporters that provide informative and helpful error
       messages.
-    - Handle panics and timeout gracefully.
+    - Handle panics gracefully.
 * GSpec should be reliable itself.
     - minimal and modular design.
     - 100% test coverage.
@@ -261,14 +260,21 @@ so that during refactoring, these types can be found and modified too and won't
 get out of sync. Go does not support first class type, so it could be
 implemented by variables with zero value. (OPTIONAL, TODO)
 
+####Pending mode
+GSpec should allow a test case with only description but no test closure, a
+placeholder to delay the test implementation.
+
+No test closure can be easily implemented with a nil closure, which will trigger
+a special error sent to the test reporter so that it can be marked as "pending".
+
 ###Test case gathering
 "go test" gathers test functions with specific function/file naming conventions.
 GSpec should also be able to gather tests across test functions/files.
 
-Unlike the group context S, the scheduler can be shared by all goroutines as
+Unlike the group context S, the controller can be shared by all goroutines as
 long as carefully locked. So RootFuncs can be defined anywhere and are gathered
-by a single scheduler instance in one "go test" function. This requires
-Scheduler.Start accepts multiple RootFuncs.
+by a single controller instance in one "go test" function. This requires
+Controller.Start accepts multiple RootFuncs.
 
 RESTRICTION:
 There is no finalization hook provided by "go test", so there is no way to know
@@ -357,7 +363,7 @@ have to be passed into the goroutine function (RootFunc) as an argument
 (s of interface type S). So the group function now becomes the Group method of
 S, e.g.
 
-    scheduler.Start(func(s S) {
+    controller.Start(func(s S) {
         s.Group(func() {
             s.Group(func() {
                 // test case 1
@@ -373,7 +379,7 @@ where the RootFunc is defined as:
     type RootFunc func(s S)
 
 and variable s contains all the variables needed to control which test case to
-run, and the scheduler makes sure each test case run once concurrently
+run, and the controller makes sure each test case run once concurrently
 (or sequentially).
 
 RESTRICTION:
@@ -444,7 +450,7 @@ Test report
 -----------
 
 ###Collector
-A collector is an internal object embedded in the test scheduler that collects
+A collector is an internal object embedded in the test controller that collects
 the outputs from the tests, reconstructing the tree structure of nested test
 groups with their descriptions and results.
 
@@ -499,12 +505,12 @@ GSpec should contain a builtin reporter:
 * In verbose mode, it should display an additional progress line (.F*).
 
 RESTRICTION:
-* If there is a single test scheduler in a single "go test" function, then a
+* If there is a single test controller in a single "go test" function, then a
 single reporter instance that serves it needs no locking. (Recommended)
 needed.
-* If there are multiple test schedulers, there should be a single reporeter
+* If there are multiple test controllers, there should be a single reporeter
 instance to seve them all and it needs to be locked.
-* If there are multiple test schedulers and one reporter per scheduler, then
+* If there are multiple test controllers and one reporter per controller, then
 "go test" functions should not be run concurrently.
 * Otherwise, test cases could be printed interwaved in console.
 
