@@ -49,6 +49,7 @@ func Panic(actual, expected interface{}, skip int) (ret error) {
 	return nil
 }
 
+// IsType checks if the actual value is of the same type as the expected value.
 func IsType(actual, expected interface{}, skip int) error {
 	if reflect.TypeOf(actual) != reflect.TypeOf(expected) {
 		return errors.Compare(actual, expected, "to have type of", skip+1)

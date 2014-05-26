@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	exp "github.com/hailiang/gspec/expectation"
+	ext "github.com/hailiang/gspec/extension"
 	. "github.com/hailiang/gspec/reporter"
 )
 
@@ -31,8 +32,8 @@ func TestCaseFails(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
 	NewController(r).Start(Path{}, true, func(s S) {
-		do := aliasGroup(s)
-		do(func() {
+		g := aliasGroup(s)
+		g(func() {
 			s.Fail(errors.New("err a"))
 		})
 	})
@@ -55,8 +56,8 @@ func TestFailNow(t *testing.T) {
 	r := &ReporterStub{}
 	ch := NewSS()
 	NewController(r).Start(Path{}, true, func(s S) {
-		do := aliasGroup(s)
-		do(func() {
+		g := aliasGroup(s)
+		g(func() {
 			defer func() {
 				ch.Send("defer func")
 			}()
@@ -64,7 +65,7 @@ func TestFailNow(t *testing.T) {
 			s.FailNow(errors.New("err a"))
 			ch.Send("after FailNow")
 		})
-		do(func() {
+		g(func() {
 			ch.Send("another test case")
 		})
 	})
@@ -85,8 +86,8 @@ func TestCasePanics(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	r := &ReporterStub{}
 	NewController(r).Start(Path{}, true, func(s S) {
-		do := aliasGroup(s)
-		do(func() {
+		g := aliasGroup(s)
+		g(func() {
 			panic("panic error")
 		})
 	})
@@ -106,25 +107,25 @@ func Test3Pass2Fail(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
 	var buf bytes.Buffer
 	NewController(NewTextProgresser(&buf)).Start(Path{}, true, func(s S) {
-		do := s.Alias("")
-		do("a", func() {
-			do("a-b", func() {
+		g := s.Alias("")
+		g("a", func() {
+			g("a-b", func() {
 			})
-			do("a-c", func() {
-				do("a-c-d", func() {
+			g("a-c", func() {
+				g("a-c-d", func() {
 					s.Fail(errors.New("err: a-c-d"))
 				})
 			})
-			do("a-e", func() {
-				do("a-e-f", func() {
+			g("a-e", func() {
+				g("a-e-f", func() {
 					s.Fail(errors.New("err: a-e-f"))
 				})
-				do("a-e-g", func() {
+				g("a-e-g", func() {
 					s.Fail(errors.New("123"))
 				})
 			})
 		})
-		do("h", func() {
+		g("h", func() {
 		})
 	})
 	out, _ := buf.ReadString('\n')
@@ -135,20 +136,24 @@ func Test3Pass2Fail(t *testing.T) {
 }
 
 /*
-Scenario: notify testing.T
-	Given a Fail method of S
-	When it is called
-	Then testing.T.Fail should be called
-func TestNotifyT(t *testing.T) {
+Scenario: Pending test group
+	Given nested test groups
+	When one of them has no test closure
+	Then a PendingError is set.
+*/
+func TestPending(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
-	mt := &TStub{}
 	r := &ReporterStub{}
 	NewController(r).Start(Path{}, true, func(s S) {
-		do := aliasGroup(s)
-		do(func() {
-			s.Fail(errors.New(""))
+		g := aliasGroup(s)
+		g(func() {
+		})
+		g(nil)
+		g(func() {
 		})
 	})
-	expect(mt.s).Equal("Fail.")
+	expect(len(r.groups)).Equal(3)
+	if len(r.groups) == 3 {
+		expect(r.groups[1].Error).Equal(&ext.PendingError{})
+	}
 }
-*/

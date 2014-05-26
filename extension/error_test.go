@@ -27,3 +27,10 @@ func TestNewPanicError(t *testing.T) {
 	e = NewPanicError(false, 0)
 	expect(e.Error()).Equal(errors.New("false"))
 }
+
+func TestNewPendingError(t *testing.T) {
+	expect := exp.Alias(exp.TFail(t))
+	e := NewPendingError()
+	expect(e).IsType(&PendingError{})
+	expect(e.Error()).Contains("pending")
+}

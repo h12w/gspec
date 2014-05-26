@@ -33,6 +33,7 @@ func NewController(reporters ...ext.Reporter) *Controller {
 func (c *Controller) Start(path Path, concurrent bool, funcs ...TestFunc) error {
 	c.broadcaster.Start()
 	defer func() {
+		c.collector.sort()
 		c.broadcaster.End(c.groups)
 	}()
 

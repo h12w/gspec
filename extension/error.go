@@ -52,3 +52,15 @@ func newStackTrace(skip int) []FuncPos {
 	}
 	return s
 }
+
+// PendingError is used for marking a test group without a test closure.
+type PendingError struct{}
+
+func (*PendingError) Error() string {
+	return "(pending test case)"
+}
+
+// NewPendingError returns a new PendingError.
+func NewPendingError() error {
+	return &PendingError{}
+}

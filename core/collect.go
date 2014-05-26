@@ -57,11 +57,20 @@ func (c *collector) groupEnd(err error, path Path) {
 		if len(g.Children) == 0 {
 			c.Ended++
 			if err != nil {
-				c.Failed++
+				switch err.(type) {
+				case *ext.PendingError:
+					c.Pending++
+				default:
+					c.Failed++
+				}
 			}
 		}
 		c.progress(g)
 	}
+}
+
+func (c *collector) sort() {
+	c.groups.Sort()
 }
 
 func (c *collector) setDuration(path Path, d time.Duration) {

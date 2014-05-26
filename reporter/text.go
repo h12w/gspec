@@ -53,9 +53,11 @@ func (l *textReporter) End(groups ext.TestGroups) {
 	}
 	if l.Stats.Failed > 0 {
 		fmt.Fprintf(l.w, ">>> FAIL COUNT: %d of %d.\n", l.Stats.Failed, l.Stats.Total)
-	} else {
-		fmt.Fprintf(l.w, ">>> TOTAL: %d.\n", l.Stats.Total)
 	}
+	if l.Stats.Pending > 0 {
+		fmt.Fprintf(l.w, ">>> PENDING COUNT: %d of %d.\n", l.Stats.Pending, l.Stats.Total)
+	}
+	fmt.Fprintf(l.w, ">>> TOTAL: %d.\n", l.Stats.Total)
 }
 
 func (l *textReporter) Progress(g *ext.TestGroup, s *ext.Stats) {
@@ -75,7 +77,11 @@ func (p *textProgresser) Progress(g *ext.TestGroup, s *ext.Stats) {
 	if s.Ended > p.Ended {
 		sym := "."
 		if g.Error != nil {
-			sym = "F"
+			if isPending(g.Error) {
+				sym = "p"
+			} else {
+				sym = "F"
+			}
 		}
 		fmt.Fprint(p.w, sym)
 	}
@@ -109,7 +115,9 @@ func writeTestGroups(w io.Writer, gs ext.TestGroups, mid map[string]bool) bool {
 				return false
 			}
 			fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
-			fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+			if !isPending(g.Error) {
+				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+			}
 		}
 	}
 	return true
@@ -150,4 +158,12 @@ func (r *failReporter) Progress(g *ext.TestGroup, stats *ext.Stats) {
 	if g.Error != nil {
 		r.t.Fail()
 	}
+}
+
+func isPending(err error) bool {
+	switch err.(type) {
+	case *ext.PendingError:
+		return true
+	}
+	return false
 }

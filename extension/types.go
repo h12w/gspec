@@ -27,9 +27,13 @@ type TestGroup struct {
 // TestGroups is the type of slice of *TestGroup
 type TestGroups []*TestGroup
 
+// ByID implements Less method of sort.Interface for sorting TestGroups by ID.
+type ByID struct{ TestGroups }
+
 // Stats contains statistics of tests running.
 type Stats struct {
-	Total  int
-	Ended  int
-	Failed int
+	Total   int
+	Ended   int
+	Failed  int
+	Pending int
 }

@@ -7,7 +7,7 @@ package core
 import (
 	"sync"
 
-	"github.com/hailiang/gspec/extension"
+	ext "github.com/hailiang/gspec/extension"
 )
 
 type failNowError struct {
@@ -59,9 +59,13 @@ func (t *testError) capturePanic(f func()) {
 			case failNowError:
 				t.setErr(err.error)
 			default:
-				t.setErr(extension.NewPanicError(e, 2))
+				t.setErr(ext.NewPanicError(e, 2))
 			}
 		}
 	}()
-	f()
+	if f != nil {
+		f()
+	} else {
+		t.setErr(ext.NewPendingError())
+	}
 }
