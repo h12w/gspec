@@ -5,9 +5,9 @@ GSpec
 [![Coverage Status](https://coveralls.io/repos/hailiang/gspec/badge.png?branch=master)](https://coveralls.io/r/hailiang/gspec?branch=master)
 [![GoDoc](https://godoc.org/github.com/hailiang/gspec?status.png)](https://godoc.org/github.com/hailiang/gspec)
 
-GSpec is a concurrent, minimal, extensible and reliable testing framework in Go
+GSpec is a concurrent, minimal, extensible and reliable test framework in Go
 that makes it easy to organize and verify the mind model of software. It
-supports both BDD style and table driven testing.
+supports both BDD style and table driven test.
 
 Highlights:
 
@@ -18,6 +18,22 @@ Highlights:
 * Concurrent: run test cases concurrently or sequentially.
 * Extensible: Customizable BDD cue words, expectations and test reporters.
 * Compatible: "go test" is enough to run GSpec tests.
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Quick start](#quick-start)
+  - [Get GSpec](#get-gspec)
+  - [Write tests with GSpec](#write-tests-with-gspec)
+  - [Run tests with "go test"](#run-tests-with-go-test)
+- [Extend GSpec](#extend-gspec)
+  - [Test Group](#test-group)
+  - [Expectation](#expectation)
+  - [Reporter](#reporter)
+- [Hack GSpec](#hack-gspec)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 Quick start
 -----------
