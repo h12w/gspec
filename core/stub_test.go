@@ -6,7 +6,6 @@ package core
 
 import (
 	"fmt"
-	"io/ioutil"
 	"reflect"
 	"runtime"
 	"sort"
@@ -15,7 +14,6 @@ import (
 
 	"github.com/hailiang/gspec/errors"
 	. "github.com/hailiang/gspec/extension"
-	. "github.com/hailiang/gspec/reporter"
 	ogdl "github.com/ogdl/flow"
 )
 
@@ -37,15 +35,15 @@ func ogdlPrint(v interface{}) string {
 }
 
 var (
-	globalController = NewController(&Config{}, NewTextReporter(ioutil.Discard))
+	globalController = NewController(&ReporterStub{})
 )
 
 func runCon(f ...TestFunc) {
-	globalController.Start(true, f...)
+	globalController.Start(Path{}, true, f...)
 }
 
 func runSeq(f ...TestFunc) {
-	globalController.Start(false, f...)
+	globalController.Start(Path{}, false, f...)
 }
 
 type SS struct {
@@ -112,6 +110,7 @@ type ReporterStub struct {
 func (l *ReporterStub) Start() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	l.groups = nil
 }
 
 func (l *ReporterStub) End(groups TestGroups) {

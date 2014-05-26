@@ -54,9 +54,8 @@ var focusTestCases = []focusTestCase{
 
 func TestRunFocus(t *testing.T) {
 	for _, c := range focusTestCases {
-		config := &Config{Focus: c.path}
 		ch := NewSS()
-		NewController(config, &ReporterStub{}).Start(true, focusFuncs(ch)...)
+		NewController(&ReporterStub{}).Start(c.path, true, focusFuncs(ch)...)
 		if !ch.Equal(c.exp) {
 			t.Fatalf("Wrong execution of a closure test, got %v.", ch.Slice())
 		}

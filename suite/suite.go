@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/hailiang/gspec/core"
 	ext "github.com/hailiang/gspec/extension"
@@ -16,17 +17,17 @@ import (
 
 var (
 	// Reporters are the test reporters used during the test.
-	Reporters = []ext.Reporter{
-		reporter.NewTextProgresser(os.Stdout),
-		reporter.NewTextReporter(os.Stdout),
-	}
 
 	testFunctions []core.TestFunc
-	globalConfig  core.Config
+	globalConfig  config
 )
 
+type config struct {
+	focus core.Path
+}
+
 func init() {
-	flag.Var(&globalConfig.Focus, "focus", "test case id to select one test case to run")
+	flag.Var(&globalConfig.focus, "focus", "test case id to select one test case to run")
 }
 
 // Add GSpec test functions to the global test suite.
@@ -36,7 +37,8 @@ func Add(fs ...core.TestFunc) int {
 	return 0
 }
 
-// T is an interface that allows a testing.T to be passed to GSpec.
+// T is an interface that allows a testing.T to be passed without depending on
+// the testing package.
 type T interface {
 	Fail()
 	Parallel()
@@ -44,14 +46,28 @@ type T interface {
 
 // Run all tests in the global test suite.
 func Run(t T, concurrent bool) {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	if concurrent {
 		t.Parallel()
 	}
 	fr := reporter.NewFailReporter(t)
-	s := core.NewController(&globalConfig, append(Reporters, fr)...)
-	err := s.Start(concurrent, testFunctions...)
+	Reporters := []ext.Reporter{
+		reporter.NewTextProgresser(os.Stdout),
+		reporter.NewTextReporter(os.Stdout, Verbose()),
+	}
+	s := core.NewController(append(Reporters, fr)...)
+	err := s.Start(globalConfig.focus, concurrent, testFunctions...)
 	if err != nil {
 		fmt.Println(err)
 		t.Fail()
 	}
+}
+
+// Verbose returns value of "test.v" flag without depending on the testing
+// package.
+func Verbose() bool {
+	if f := flag.Lookup("test.v"); f != nil {
+		return f.Value.String() == "true"
+	}
+	return false
 }

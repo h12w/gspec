@@ -17,8 +17,8 @@ const gspecPath = "github.com/hailiang/gspec"
 
 // NewTextReporter creates and initialize a new text reporter using w to write
 // the output.
-func NewTextReporter(w io.Writer) ext.Reporter {
-	return &textReporter{w: w}
+func NewTextReporter(w io.Writer, verbose bool) ext.Reporter {
+	return &textReporter{w: w, verbose: verbose}
 }
 
 // NewTextProgresser creates and initialize a new text progresser using w to
@@ -31,7 +31,8 @@ func NewTextProgresser(w io.Writer) ext.Reporter {
 type textReporter struct {
 	dummyReporter
 	ext.Stats
-	w io.Writer
+	w       io.Writer
+	verbose bool
 }
 
 func (l *textReporter) End(groups ext.TestGroups) {
@@ -39,7 +40,7 @@ func (l *textReporter) End(groups ext.TestGroups) {
 	for _, g := range groups {
 		completed := g.For(func(path ext.TestGroups) bool {
 			last := path[len(path)-1]
-			if last.Error != nil {
+			if l.verbose || last.Error != nil {
 				if !writeTestGroups(l.w, path, mid) {
 					return false
 				}
@@ -95,9 +96,7 @@ func (dummyReporter) Progress(*ext.TestGroup, *ext.Stats) {}
 func writeTestGroups(w io.Writer, gs ext.TestGroups, mid map[string]bool) bool {
 	for i, g := range gs {
 		indent := strings.Repeat("    ", i)
-		if mid[g.ID] {
-			fmt.Fprintln(w, "")
-		} else {
+		if !mid[g.ID] {
 			fmt.Fprintln(w, indent+g.Description)
 			mid[g.ID] = true
 		}

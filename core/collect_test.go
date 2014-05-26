@@ -6,12 +6,10 @@ package core
 
 import (
 	"errors"
-	"os"
 	"testing"
 
 	exp "github.com/hailiang/gspec/expectation"
 	. "github.com/hailiang/gspec/extension"
-	. "github.com/hailiang/gspec/reporter"
 )
 
 /*
@@ -27,7 +25,7 @@ Scenario: reconstruct nested test group to a tree
 */
 func TestTreeCollector(t *testing.T) {
 	expect := exp.Alias(exp.TFail(t))
-	co := newCollector(NewTextReporter(os.Stdout))
+	co := newCollector(&ReporterStub{})
 	a := &TestGroup{
 		Description: "a",
 	}

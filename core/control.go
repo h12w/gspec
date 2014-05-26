@@ -17,30 +17,20 @@ import (
 type Controller struct {
 	*collector
 	*broadcaster
-	_Config
-}
-
-// Config is the configuration options of Controller.
-type Config struct {
-	Focus Path
-}
-type _Config struct {
-	*Config
 }
 
 // NewController creates and intialize a new Controller using r as the test
 // reporter.
-func NewController(config *Config, reporters ...ext.Reporter) *Controller {
+func NewController(reporters ...ext.Reporter) *Controller {
 	c := &Controller{
 		broadcaster: newBroadcaster(reporters),
-		_Config:     _Config{config},
 	}
 	c.collector = newCollector(c.broadcaster)
 	return c
 }
 
 // Start starts tests defined in funcs concurrently or sequentially.
-func (c *Controller) Start(concurrent bool, funcs ...TestFunc) error {
+func (c *Controller) Start(path Path, concurrent bool, funcs ...TestFunc) error {
 	c.broadcaster.Start()
 	defer func() {
 		c.broadcaster.End(c.groups)
@@ -50,7 +40,7 @@ func (c *Controller) Start(concurrent bool, funcs ...TestFunc) error {
 		for _, f := range funcs {
 			f(s)
 		}
-	}, concurrent, c.collector).run(c.Focus)
+	}, concurrent, c.collector).run(path)
 
 	return nil
 }
