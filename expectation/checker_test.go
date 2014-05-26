@@ -53,3 +53,12 @@ var panicTestCases = []expectTestCase{
 func TestPanic(t *testing.T) {
 	testExpectations(t, panicTestCases)
 }
+
+var isTypeTestCases = []expectTestCase{
+	{`expect(int(0)).IsType(int(1))`, func(expect ExpectFunc) { expect(int(0)).IsType(int(1)) }, true},
+	{`expect(int(0)).IsType(bool(true))`, func(expect ExpectFunc) { expect(int(0)).IsType(bool(true)) }, false},
+}
+
+func TestIsType(t *testing.T) {
+	testExpectations(t, isTypeTestCases)
+}

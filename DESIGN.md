@@ -320,6 +320,7 @@ This is a complete list of expectations, "+" means already supported:
 * +Panic: panic and panic with an object
 * +Equal: deep equal
 *  Is: shallow equal
+* +IsType: if a interface is of a type
 *  Order comparision: >, <, >=, <=, Within(delta).Of(value)
 *  Composition: Not, And, Or
 *  True/False: can be supported by Is(true), Is(false)
@@ -327,7 +328,6 @@ This is a complete list of expectations, "+" means already supported:
 *  Empty: empty for container types
 *  Error: can be supported by Equal
 *  Implements: can be supported by IsType
-*  IsType: if a interface is of a type
 *  String
     - +HasPrefix
     - +HasSuffix

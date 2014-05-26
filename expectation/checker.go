@@ -49,6 +49,13 @@ func Panic(actual, expected interface{}, skip int) (ret error) {
 	return nil
 }
 
+func IsType(actual, expected interface{}, skip int) error {
+	if reflect.TypeOf(actual) != reflect.TypeOf(expected) {
+		return errors.Compare(actual, expected, "to have type of", skip+1)
+	}
+	return nil
+}
+
 // Equal is the fluent method for checker Equal.
 func (a *Actual) Equal(expected interface{}) {
 	a.to(Equal, expected, 1)
@@ -62,4 +69,9 @@ func (a *Actual) NotEqual(expected interface{}) {
 // Panic is the fluent method for checker Panic.
 func (a *Actual) Panic() {
 	a.to(Panic, nil, 1)
+}
+
+// IsType is the fluent method for checker IsType.
+func (a *Actual) IsType(expected interface{}) {
+	a.to(IsType, expected, 1)
 }
