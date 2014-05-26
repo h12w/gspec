@@ -12,14 +12,14 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/hailiang/gspec/errors"
+	ge "github.com/hailiang/gspec/error"
 	. "github.com/hailiang/gspec/extension"
 	ogdl "github.com/ogdl/flow"
 )
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	errors.Sprint = ogdlPrint
+	ge.Sprint = ogdlPrint
 }
 
 func ogdlPrint(v interface{}) string {

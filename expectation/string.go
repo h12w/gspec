@@ -7,7 +7,7 @@ package expectation
 import (
 	"strings"
 
-	"github.com/hailiang/gspec/errors"
+	ge "github.com/hailiang/gspec/error"
 )
 
 // HasPrefix checks if the actual value has a prefix of expected value.
@@ -19,7 +19,7 @@ func HasPrefix(actual, expected interface{}, skip int) error {
 	if strings.HasPrefix(a, e) {
 		return nil
 	}
-	return errors.Compare(actual, expected, "to has the prefix of", skip+1)
+	return ge.Compare(actual, expected, "to has the prefix of", skip+1)
 }
 
 // HasSuffix checks if the actual value has a suffix of expected value.
@@ -31,7 +31,7 @@ func HasSuffix(actual, expected interface{}, skip int) error {
 	if strings.HasSuffix(a, e) {
 		return nil
 	}
-	return errors.Compare(actual, expected, "to has the suffix of", skip+1)
+	return ge.Compare(actual, expected, "to has the suffix of", skip+1)
 }
 
 // Contains checks if the actual value contains expected value.
@@ -43,17 +43,17 @@ func Contains(actual, expected interface{}, skip int) error {
 	if strings.Contains(a, e) {
 		return nil
 	}
-	return errors.Compare(actual, expected, "to contain", skip+1)
+	return ge.Compare(actual, expected, "to contain", skip+1)
 }
 
 func checkStringType(actual, expected interface{}, skip int) (string, string, error) {
 	a, ok := actual.(string)
 	if !ok {
-		return "", "", errors.Expect("actual value is a string.", skip+1)
+		return "", "", ge.Expect("actual value is a string.", skip+1)
 	}
 	e, ok := expected.(string)
 	if !ok {
-		return "", "", errors.Expect("expected value is a string.", skip+1)
+		return "", "", ge.Expect("expected value is a string.", skip+1)
 	}
 	return a, e, nil
 }

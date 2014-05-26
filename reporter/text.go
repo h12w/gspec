@@ -9,7 +9,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/hailiang/gspec/errors"
+	ge "github.com/hailiang/gspec/error"
 	ext "github.com/hailiang/gspec/extension"
 )
 
@@ -109,14 +109,14 @@ func writeTestGroups(w io.Writer, gs ext.TestGroups, mid map[string]bool) bool {
 		if g.Error != nil {
 			if panicError, ok := g.Error.(*ext.PanicError); ok {
 				writePanicError(w, panicError)
-				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+				fmt.Fprintf(w, ge.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
 				//				fmt.Fprintf(w, string(panicError.SS))
 				fmt.Fprintln(w, ">>> Stop printing more errors due to a panic.")
 				return false
 			}
-			fmt.Fprintln(w, errors.Indent(g.Error.Error(), indent+"  "))
+			fmt.Fprintln(w, ge.Indent(g.Error.Error(), indent+"  "))
 			if !isPending(g.Error) {
-				fmt.Fprintf(w, errors.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+				fmt.Fprintf(w, ge.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
 			}
 		}
 	}

@@ -7,13 +7,13 @@ package expectation
 import (
 	"testing"
 
-	"github.com/hailiang/gspec/errors"
+	ge "github.com/hailiang/gspec/error"
 )
 
 func TestExpectTo(t *testing.T) {
 	m, expect := mockExpect()
 	expect(nil).To(func(actual, expected interface{}, skip int) error {
-		return errors.Expect("x", skip+1)
+		return ge.Expect("x", skip+1)
 	}, nil)
 	e, ok := m.Error()
 	if !ok {
@@ -59,7 +59,7 @@ func mockExpect() (*expectMock, ExpectFunc) {
 	return m, expect
 }
 
-func (m *expectMock) Error() (*errors.ExpectError, bool) {
-	e, ok := m.err.(*errors.ExpectError)
+func (m *expectMock) Error() (*ge.ExpectError, bool) {
+	e, ok := m.err.(*ge.ExpectError)
 	return e, ok
 }
