@@ -8,64 +8,21 @@ import (
 	"testing"
 )
 
-func TestHasPrefix(t *testing.T) {
-	{
-		m, expect := mockExpect()
-		expect("ab").HasPrefix("a")
-		if m.err != nil {
-			t.Errorf("HasPrefix test: ab has prefix a but returns an error.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect("ab").HasPrefix("c")
-		if m.err == nil {
-			t.Errorf("HasPrefix test: ab does not have prefix c but returns no error.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect(1).HasPrefix("c")
-		if m.err == nil {
-			t.Errorf("HasPrefix test: non-string value should cause an error.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect("ab").HasPrefix(1)
-		if m.err == nil {
-			t.Errorf("HasPrefix test: non-string value should cause an error.")
-		}
-	}
+var stringTestCases = []expectTestCase{
+	{`expect("ab").HasPrefix("a")`, func(expect ExpectFunc) { expect("ab").HasPrefix("a") }, true},
+	{`expect("ab").HasPrefix("c")`, func(expect ExpectFunc) { expect("ab").HasPrefix("c") }, false},
+	{`expect(1).HasPrefix("c")`, func(expect ExpectFunc) { expect(1).HasPrefix("c") }, false},
+	{`expect("c").HasPrefix(1)`, func(expect ExpectFunc) { expect("c").HasPrefix(1) }, false},
+
+	{`expect("ab").HasSuffix("b")`, func(expect ExpectFunc) { expect("ab").HasSuffix("b") }, true},
+	{`expect("ab").HasSuffix("c")`, func(expect ExpectFunc) { expect("ab").HasSuffix("c") }, false},
+	{`expect("c").HasSuffix(1)`, func(expect ExpectFunc) { expect("c").HasSuffix(1) }, false},
+
+	{`expect("abcd").Contains("bc")`, func(expect ExpectFunc) { expect("abcd").Contains("bc") }, true},
+	{`expect("abcd").Contains("cb")`, func(expect ExpectFunc) { expect("abcd").Contains("cb") }, false},
+	{`expect("abcd").Contains(1)`, func(expect ExpectFunc) { expect("abcd").Contains(1) }, false},
 }
 
-func TestHasSuffix(t *testing.T) {
-	{
-		m, expect := mockExpect()
-		expect("ab").HasSuffix("b")
-		if m.err != nil {
-			t.Errorf("HasSuffix test: ab has suffix b but returns an error.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect("ab").HasSuffix("c")
-		if m.err == nil {
-			t.Errorf("HasSuffix test: ab does not have suffix c but returns no error.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect(1).HasSuffix("c")
-		if m.err == nil {
-			t.Errorf("HasSuffix test: non-string value should cause an error.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect("ab").HasSuffix(1)
-		if m.err == nil {
-			t.Errorf("HasSuffix test: non-string value should cause an error.")
-		}
-	}
+func TestStringExpectations(t *testing.T) {
+	testExpectations(t, stringTestCases)
 }

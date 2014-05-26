@@ -31,6 +31,22 @@ func TestExpectTo(t *testing.T) {
 	}
 }
 
+type expectTestCase struct {
+	msg string
+	f   func(ExpectFunc)
+	r   bool // true if expectation is mean to succeed.
+}
+
+func testExpectations(t *testing.T, expectTestCases []expectTestCase) {
+	for _, c := range expectTestCases {
+		m, expect := mockExpect()
+		c.f(expect)
+		if c.r != (m.err == nil) {
+			t.Error(c.msg)
+		}
+	}
+}
+
 type expectMock struct {
 	err error
 }

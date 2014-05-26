@@ -34,6 +34,18 @@ func HasSuffix(actual, expected interface{}, skip int) error {
 	return errors.Compare(actual, expected, "to has the suffix of", skip+1)
 }
 
+// Contains checks if the actual value contains expected value.
+func Contains(actual, expected interface{}, skip int) error {
+	a, e, err := checkStringType(actual, expected, skip+1)
+	if err != nil {
+		return err
+	}
+	if strings.Contains(a, e) {
+		return nil
+	}
+	return errors.Compare(actual, expected, "to contain", skip+1)
+}
+
 func checkStringType(actual, expected interface{}, skip int) (string, string, error) {
 	a, ok := actual.(string)
 	if !ok {
@@ -54,4 +66,9 @@ func (a *Actual) HasPrefix(expected interface{}) {
 // HasSuffix is the fluent method for checker HasSuffix.
 func (a *Actual) HasSuffix(expected interface{}) {
 	a.to(HasSuffix, expected, 1)
+}
+
+// Contains is the fluent method for checker Contains.
+func (a *Actual) Contains(expected interface{}) {
+	a.to(Contains, expected, 1)
 }

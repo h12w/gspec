@@ -44,26 +44,12 @@ func TestNotEqual(t *testing.T) {
 	}
 }
 
+var panicTestCases = []expectTestCase{
+	{`expect(func() { panic("") }).Panic()`, func(expect ExpectFunc) { expect(func() { panic("") }).Panic() }, true},
+	{`expect(func() {}).Panic()`, func(expect ExpectFunc) { expect(func() {}).Panic() }, false},
+	{`wrong signature: expect(func(int) { panic("") }).Panic()`, func(expect ExpectFunc) { expect(func(int) { panic("") }).Panic() }, false},
+}
+
 func TestPanic(t *testing.T) {
-	{
-		m, expect := mockExpect()
-		expect(func() {}).Panic()
-		if m.err == nil {
-			t.Errorf("Panic test: func without panic should fail.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect(func() { panic("") }).Panic()
-		if m.err != nil {
-			t.Errorf("Panic test: func with panic should pass.")
-		}
-	}
-	{
-		m, expect := mockExpect()
-		expect(func(int) { panic("") }).Panic()
-		if m.err == nil {
-			t.Errorf("Panic test: func with wrong signature should fail.")
-		}
-	}
+	testExpectations(t, panicTestCases)
 }

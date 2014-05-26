@@ -329,8 +329,10 @@ This is a complete list of expectations, "+" means already supported:
 *  Implements: can be supported by IsType
 *  IsType: if a interface is of a type
 *  String
-    - +HasPrefix/HasSuffix
-    - Contains, Match...
+    - +HasPrefix
+    - +HasSuffix
+    - +Contains
+    - ContainsAny, ContainsRune, EqualFold, Match...
 *  Collection: HasLen, All, Any, Exact, InOrder, InPartialOrder ...
 
 ###Test Double
