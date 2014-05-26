@@ -109,18 +109,22 @@ func writeTestGroups(w io.Writer, gs ext.TestGroups, mid map[string]bool) bool {
 		if g.Error != nil {
 			if panicError, ok := g.Error.(*ext.PanicError); ok {
 				writePanicError(w, panicError)
-				fmt.Fprintf(w, ge.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+				printFocusInstruction(w, indent, g.ID)
 				//				fmt.Fprintf(w, string(panicError.SS))
 				fmt.Fprintln(w, ">>> Stop printing more errors due to a panic.")
 				return false
 			}
 			fmt.Fprintln(w, ge.Indent(g.Error.Error(), indent+"  "))
 			if !isPending(g.Error) {
-				fmt.Fprintf(w, ge.Indent("(Focus mode: go test -focus %s)", indent), g.ID)
+				printFocusInstruction(w, indent, g.ID)
 			}
 		}
 	}
 	return true
+}
+
+func printFocusInstruction(w io.Writer, indent, id string) {
+	fmt.Fprintf(w, ge.Indent(`  (use "go test -focus %s" to run the test case only.)`, indent), id)
 }
 
 func writePanicError(w io.Writer, e *ext.PanicError) {
