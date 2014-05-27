@@ -75,3 +75,13 @@ func TestTreeCollector(t *testing.T) {
 	}
 	expect(co.groups).Equal(exp) //, "TreeCollector fail to reconstruct correct tree"
 }
+
+func TestSortingTestGroups(t *testing.T) {
+	expect := exp.Alias(exp.TFail(t))
+	g0 := &TestGroup{ID: "0"}
+	g1 := &TestGroup{ID: "1"}
+	g2 := &TestGroup{ID: "2"}
+	groups := TestGroups{g2, g0, g1}
+	sortTestGroups(groups)
+	expect(groups).Equal(TestGroups{g0, g1, g2})
+}

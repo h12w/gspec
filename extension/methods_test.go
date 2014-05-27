@@ -107,13 +107,3 @@ func TestGroupStack(t *testing.T) {
 	expect(s.a).Equal(TestGroups{})
 	expect(func() { s.pop() }).Panic()
 }
-
-func TestSortingTestGroups(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
-	g0 := &TestGroup{ID: "0"}
-	g1 := &TestGroup{ID: "1"}
-	g2 := &TestGroup{ID: "2"}
-	groups := TestGroups{g2, g0, g1}
-	groups.Sort()
-	expect(groups).Equal(TestGroups{g0, g1, g2})
-}

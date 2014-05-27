@@ -5,6 +5,7 @@
 package core
 
 import (
+	"sort"
 	"sync"
 	"time"
 
@@ -70,7 +71,7 @@ func (c *collector) groupEnd(err error, path Path) {
 }
 
 func (c *collector) sort() {
-	c.groups.Sort()
+	sortTestGroups(c.groups)
 }
 
 func (c *collector) setDuration(path Path, d time.Duration) {
@@ -101,3 +102,23 @@ func (t *timer) start() {
 func (t *timer) end() {
 	t.setDuration(t.leaf, time.Now().Sub(t.startTime))
 }
+
+// Sort sorts the elements by ID.
+func sortTestGroups(s ext.TestGroups) {
+	sort.Sort(byID{s})
+	for _, c := range s {
+		sortTestGroups(c.Children)
+	}
+}
+
+// byID implements Less method of sort.Interface for sorting TestGroups by ID.
+type byID struct{ ext.TestGroups }
+
+// Len implements Len method of sort.Interface.
+func (s byID) Len() int { return len(s.TestGroups) }
+
+// Swap implements Swap method of sort.Interface.
+func (s byID) Swap(i, j int) { s.TestGroups[i], s.TestGroups[j] = s.TestGroups[j], s.TestGroups[i] }
+
+// Less implements Less method of sort.Interface.
+func (s byID) Less(i, j int) bool { return s.TestGroups[i].ID < s.TestGroups[j].ID }

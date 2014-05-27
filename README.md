@@ -114,6 +114,7 @@ import (
 	"github.com/hailiang/gspec/suite"
 )
 
+// Defined only once within a package.
 func TestAll(t *testing.T) {
 	suite.Run(t)
 }
@@ -135,14 +136,14 @@ go test -focus 1/1
 
 Extend GSpec
 ------------
-####Package organization
+###Package organization
 The subpackages are organized with minimal coupling.
 ```
 extension   <- 
 core        <- extension
 error       <- 
-expectation <- errors
-reporter    <- extension, errors
+expectation <- error
+reporter    <- extension, error
 suite       <- core, exntension, reporter
 ```
 1. the core package implements core algorithms of test organization and execution,
