@@ -12,11 +12,11 @@ import (
 // holds an object that contains minimal context needed to pass into a testing
 // goroutine.
 type S interface {
-	Alias(name string) DescFunc
-	Fail(err error)
-	FailNow(err error)
-	start()
-	end()
+	Alias(name string) DescFunc // Define an alias of a DescFunc.
+	Fail(err error)             // Report a failure and continue test execution.
+	FailNow(err error)          // Report a failure and stop test execution immediately.
+	start()                     // start time measurement.
+	end()                       // stop time measurement.
 }
 
 // spec implements "S" interface.

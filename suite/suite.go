@@ -54,7 +54,7 @@ type T interface {
 }
 
 // Run all tests in the global test suite.
-func Run(t T) {
+func Test(t T) {
 	if globalConfig.concurrent {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
