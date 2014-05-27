@@ -24,12 +24,18 @@ that makes it productive to organize and verify the mind model of software.
   - [Get GSpec](#get-gspec)
   - [Write tests with GSpec](#write-tests-with-gspec)
   - [Run tests with "go test"](#run-tests-with-go-test)
+- [Understand GSpec](#understand-gspec)
+  - [Test organization](#test-organization)
+  - [Test error](#test-error)
+  - [Test execution](#test-execution)
+  - [Test report](#test-report)
+  - [Package organization](#package-organization)
 - [Extend GSpec](#extend-gspec)
-    - [Package organization](#package-organization)
   - [Error](#error)
   - [Expectation](#expectation)
   - [Reporter](#reporter)
 - [Hack GSpec](#hack-gspec)
+  - [Test](#test)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -168,23 +174,20 @@ description of the test group becomes: "describe website login".
 
 Those DescFuncs can be nested, forming a tree of nested test groups. Each leaf
 test group corresponds to a test case. To run a specific test case, GSpec
-executes from the top level TestFunc down to the leaf test group, and the test
-groups not on path are ignored. GSpec will guarantee that each test case is
+executes from the top level TestFunc down to the leaf test group, ignoring test
+groups that are not on path. GSpec will guarantee that each test case is
 executed only once.
 
 ###Test error
 Within the closure of a test group, tests can fail and the test error is reported
-to GSpec via S.Fail or S.FailNow method. The only difference between FailNow and
-Fail is that FailNow stops the execution of the test case immediately while Fail
-continues after reporting the error. Fail and FailNow only affect the currently
-running test case.
+to GSpec via S.Fail or S.FailNow method. FailNow stops the execution of the test
+case immediately while Fail continues after reporting the error.
 
-core knows nothing about the internals of error objects, and only transfers
-them to reporters, but there are two exceptions: extension.PanicError and
-extension.PendingError:
+core does not care about the specific type of error objects, except two cases:
+extension.PanicError and extension.PendingError:
 
-1. core captures a panicking error, put it in a PanicError object and transfer
-   it the same as other errors.
+1. core captures a panicking error, wrap it in a PanicError object and report it
+   the same way as other errors.
 2. When a DescFunc is called with a nil test closure, it is treated as a pending
    test case, and a PendingError is passed to the test reporter.
 
@@ -270,7 +273,7 @@ suite       <- core, exntension, reporter
 Extend GSpec
 ------------
 ###Error
-Good error message is mandatory to productive testing.
+Good error message is very important to productive testing.
 
 ###Expectation
 
