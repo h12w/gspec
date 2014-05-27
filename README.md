@@ -8,11 +8,11 @@ GSpec: a productive Go test framework
 GSpec is an *expressive, reliable, concurrent and extensible* Go test framework
 that makes it productive to organize and verify the mind model of software.
 
-* *Expressive*: a complete running specification can be organized via both BDD
+* *Expressive*: a complete runnable specification can be organized via both BDD
                 and table driven styles.
 * *Reliable*:   the implementation has minimal footprint and is tested with 100%
                 coverage.
-* *Concurrent*: run test cases concurrently or sequentially.
+* *Concurrent*: test cases can be executed concurrently or sequentially.
 * *Extensible*: customizable BDD cue words, expectations and test reporters.
 * *Compatible*: "go test" is sufficient but not mandatory to run GSpec tests.
 
@@ -117,7 +117,7 @@ import (
 
 // Defined only once within a package.
 func TestAll(t *testing.T) {
-	suite.Run(t)
+	suite.Test(t)
 }
 ```
 
@@ -137,14 +137,10 @@ go test -focus 1/1
 
 Understand GSpec
 ----------------
-It is useful to understand the internals of GSpec to extend it according to
-specific need.
-
 ###Test organization
 GSpec tests are defined in a top level function of signature core.TestFunc.
 ```go
 type TestFunc func(S)
-
 ```
 S is an interface that provides methods for defining nested test groups and
 reporting test errors.
@@ -165,15 +161,16 @@ for the cue word of BDD style test. e.g.
 Then the "describe" function can be used to define a test group.
 ```go
 	describe("website login", func() {
-        })
+	})
 ```
 GSpec will concatenate the cue word and the description argument, so the complete
 description of the test group becomes: "describe website login".
 
 Those DescFuncs can be nested, forming a tree of nested test groups. Each leaf
-test group is a test case. To run a specific test case, GSpec executes from the
-top level TestFunc down to the leaf test group, and the test groups not on path
-are ignored. GSpec will guarantee that each test case is executed only once.
+test group corresponds to a test case. To run a specific test case, GSpec
+executes from the top level TestFunc down to the leaf test group, and the test
+groups not on path are ignored. GSpec will guarantee that each test case is
+executed only once.
 
 ###Test error
 Within the closure of a test group, tests can fail and the test error is reported
@@ -185,6 +182,7 @@ running test case.
 core knows nothing about the internals of error objects, and only transfers
 them to reporters, but there are two exceptions: extension.PanicError and
 extension.PendingError:
+
 1. core captures a panicking error, put it in a PanicError object and transfer
    it the same as other errors.
 2. When a DescFunc is called with a nil test closure, it is treated as a pending
