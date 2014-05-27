@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*
+Package suite integrates all other packages and provide a quick way of test
+gathering, executing and reporting.
+*/
 package suite
 
 import (

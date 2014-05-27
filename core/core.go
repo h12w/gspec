@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*
+Package core provides a minimal core for organizing, executing and reporting of
+test cases nested in test groups.
+*/
 package core
 
 import (

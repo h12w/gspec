@@ -3,14 +3,13 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package gspec is a Go testing framework that makes it easy to organize and
-verify the mind model of software.
+Package gspec is an expressive, reliable, concurrent and extensible Go test framework
+that makes it productive to organize and verify the mind model of software.
 
-Design goals:
-
-	- It should be natual to write readable and runnable specifications.
-	- It should be an extension rather than replacement to "go test".
-	- It should be reliable by robust design and 100% test coverage.
-	- It should be minimal and extensible.
+	- Expressive: a complete running specification can be organized via both BDD and table driven styles.
+	- Reliable:   the implementation has minimal footprint and is tested with 100% coverage.
+	- Concurrent: run test cases concurrently or sequentially.
+	- Extensible: customizable BDD cue words, expectations and test reporters.
+	- Compatible: "go test" is sufficient but not mandatory to run GSpec tests.
 */
 package gspec

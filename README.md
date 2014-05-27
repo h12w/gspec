@@ -5,18 +5,16 @@ GSpec: a productive Go test framework
 [![Coverage Status](https://coveralls.io/repos/hailiang/gspec/badge.png?branch=master)](https://coveralls.io/r/hailiang/gspec?branch=master)
 [![GoDoc](https://godoc.org/github.com/hailiang/gspec?status.png)](https://godoc.org/github.com/hailiang/gspec)
 
-GSpec is a *concurrent, minimal, extensible and reliable* test framework in Go
+GSpec is an *expressive, reliable, concurrent and extensible* Go test framework
 that makes it productive to organize and verify the mind model of software.
-
-Highlights:
 
 * *Expressive*: a complete running specification can be organized via both BDD
                 and table driven styles.
-* *Reliabile*:  the implementation has minimal footprint and is tested with 100%
+* *Reliable*:   the implementation has minimal footprint and is tested with 100%
                 coverage.
 * *Concurrent*: run test cases concurrently or sequentially.
 * *Extensible*: customizable BDD cue words, expectations and test reporters.
-* *Compatible*: "go test" is enough to run GSpec tests.
+* *Compatible*: "go test" is sufficient but not mandatory to run GSpec tests.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -45,17 +43,19 @@ go test github.com/hailiang/gspec/...
 ```
 
 ###Write tests with GSpec
-As Go's convention, write GSpec tests in file xxx_test.go to test code in xxx.go.
+According to the [convention of Go](http://golang.org/doc/code.html#Testing),
+write GSpec tests in file xxx_test.go to test code in xxx.go.
 ```go
-// GSpec follows modular design.
 import (
 	"fmt"
 
-	// core implements core alogrithms of nested test groups with less than 500 lines of code.
+        // GSpec follows modular design.
+
+	// core implements core alogrithms of nested test groups within 500 lines of code.
 	"github.com/hailiang/gspec/core"
 	// expectation contains extensible expectation (assertion) helpers.
 	exp "github.com/hailiang/gspec/expectation"
-	// suite gathers test functions and run them.
+	// suite gathers top level test functions (core.TestFunc) and run them.
 	"github.com/hailiang/gspec/suite"
 )
 
@@ -106,7 +106,8 @@ var _ = suite.Add(func(s core.S) {
 })
 ```
 
-Write the following go test function in any test file (e.g. all_test.go).
+Write the following go test function for only once in any test file within the
+package (e.g. all_test.go).
 
 ```go
 import (
@@ -129,7 +130,7 @@ Run all the tests and view the complete specification.
 ```
 go test -v
 ```
-Run only a failing test case (even an entry in the driven table):
+Run only a failing test case (even it is an entry in the driven table):
 ```
 go test -focus 1/1
 ```
@@ -172,7 +173,7 @@ Good error message is mandatory to productive testing.
 
 Hack GSpec
 ----------
-
+###Test
 [Design of GSpec](DESIGN.md)
 
 

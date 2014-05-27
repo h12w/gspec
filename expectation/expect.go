@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*
+Package expectation provides expectation (assertion) helpers.
+*/
 package expectation
 
 // FailFunc is the function type that is used to notify expectation failures.
