@@ -29,12 +29,12 @@ that makes it productive to organize and verify the mind model of software.
   - [Test error](#test-error)
   - [Test execution](#test-execution)
   - [Test report](#test-report)
-  - [Package organization](#package-organization)
 - [Extend GSpec](#extend-gspec)
   - [Error](#error)
   - [Expectation](#expectation)
   - [Reporter](#reporter)
 - [Hack GSpec](#hack-gspec)
+  - [Package organization](#package-organization)
   - [Test](#test)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -203,7 +203,7 @@ including all its descendants.
 
 suite package provides a convenient way to gather and run TestFuncs. suite.Add
 adds a TestFunc to a global slice and suite.Test runs all the gathered tests.
-Other parameters like path and concurrent are provided by command-line flag.
+Other parameters like path and concurrent are provided by command-line flags.
 
 ###Test report
 Test results are reported via extension.Reporter interface by the core.
@@ -243,6 +243,17 @@ core.NewController. These reporters are notified one by one.
 func NewController(reporters ...ext.Reporter) *Controller
 ```
 
+Extend GSpec
+------------
+###Error
+Good error message is very important to productive testing.
+
+###Expectation
+
+###Reporter
+
+Hack GSpec
+----------
 ###Package organization
 The subpackages are organized with minimal coupling.
 ```
@@ -270,17 +281,7 @@ suite       <- core, exntension, reporter
 5. the suite package integrates all other packages together, providing a quick
    way of test gathering, running and reporting.
 
-Extend GSpec
-------------
-###Error
-Good error message is very important to productive testing.
 
-###Expectation
-
-###Reporter
-
-Hack GSpec
-----------
 ###Test
 [Design of GSpec](DESIGN.md)
 
