@@ -53,7 +53,7 @@ type T interface {
 	Fail()
 }
 
-// Run all tests in the global test suite.
+// Test method runs all tests in the global test suite.
 func Test(t T) {
 	if globalConfig.concurrent {
 		runtime.GOMAXPROCS(runtime.NumCPU())
