@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Automatic checks
+test -z $(go fmt ./...)
+test -z $(goimports -w -l .)
 go vet -n ./...
 golint .
 go test -race ./...
