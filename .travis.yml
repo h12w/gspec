@@ -12,11 +12,13 @@ before_install:
 - go get github.com/golang/lint/golint
 - go get github.com/mattn/goveralls
 - go get github.com/ogdl/flow
+- export goclean=0f22736320abe6be71ce
+- git clone https://gist.github.com/$goclean.git
 
 script:
 - go version
 # a workaround related to go issue 6479.
 - go install -a -race std
 - export PATH=$HOME/gopath/bin:$PATH
-- ./check.sh
+- $goclean/goclean.sh
 - goveralls -coverprofile=profile.cov -service=travis-ci
