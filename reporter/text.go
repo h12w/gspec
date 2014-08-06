@@ -159,7 +159,7 @@ func NewFailReporter(t T) ext.Reporter {
 }
 
 func (r *failReporter) Progress(g *ext.TestGroup, stats *ext.Stats) {
-	if g.Error != nil {
+	if g.Error != nil && !isPending(g.Error) {
 		r.t.Fail()
 	}
 }
