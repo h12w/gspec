@@ -87,3 +87,7 @@ func Alias3(n1, n2, n3 string, s core.S) (_, _, _ core.DescFunc) {
 func Alias4(n1, n2, n3, n4 string, s core.S) (_, _, _, _ core.DescFunc) {
 	return s.Alias(n1), s.Alias(n2), s.Alias(n3), s.Alias(n4)
 }
+
+func Alias5(n1, n2, n3, n4, n5 string, s core.S) (_, _, _, _, _ core.DescFunc) {
+	return s.Alias(n1), s.Alias(n2), s.Alias(n3), s.Alias(n4), s.Alias(n5)
+}

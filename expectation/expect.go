@@ -13,6 +13,7 @@ type FailFunc func(error)
 // Actual provides checking methods for an actual value in an expectation.
 type Actual struct {
 	v    interface{}
+	skip int
 	fail FailFunc
 }
 
@@ -22,7 +23,7 @@ func (a *Actual) To(check Checker, expected interface{}) {
 }
 
 func (a *Actual) to(check Checker, expected interface{}, skip int) {
-	if err := check(a.v, expected, skip+1); err != nil {
+	if err := check(a.v, expected, a.skip+skip+1); err != nil {
 		a.fail(err)
 	}
 }
@@ -32,9 +33,15 @@ func (a *Actual) to(check Checker, expected interface{}, skip int) {
 type ExpectFunc func(actual interface{}) *Actual
 
 // Alias registers a fail function and returns an ExpectFunc.
-func Alias(fail FailFunc) ExpectFunc {
+// The optional skip parameter is used to skip extra function calls in the stack
+// trace in case the ExpectFunc is further wrapped by another function.
+func Alias(fail FailFunc, skip ...int) ExpectFunc {
+	_skip := 0
+	if len(skip) == 1 {
+		_skip = skip[0]
+	}
 	return func(actual interface{}) *Actual {
-		return &Actual{actual, func(e error) {
+		return &Actual{actual, _skip, func(e error) {
 			fail(e)
 		}}
 	}
