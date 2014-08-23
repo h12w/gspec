@@ -114,6 +114,7 @@ func TExpect(fail func(), skip ...int) expectation.ExpectFunc {
 	return expectation.Alias(expectation.TFail(fail), skip...)
 }
 
+// SetSprint is a trivial wrapper to set error.Sprint.
 func SetSprint(sprint func(interface{}) string) {
 	error.Sprint = sprint
 }
