@@ -56,22 +56,15 @@ write GSpec tests in file xxx_test.go to test code in xxx.go.
 import (
 	"fmt"
 
-	// GSpec follows modular design.
-
-	// core implements core alogrithms of nested test groups within 500 lines of code.
-	"github.com/hailiang/gspec/core"
-	// expectation contains extensible expectation (assertion) helpers.
-	exp "github.com/hailiang/gspec/expectation"
-	// suite gathers top level test functions (core.TestFunc) and run them.
-	"github.com/hailiang/gspec/suite"
+	"github.com/hailiang/gspec"
 )
 
 // Only one suite.Add is needed for each xxx_test.go file.
-var _ = suite.Add(func(s core.S) {
+var _ = gspec.Add(func(s gspec.S) {
 	// BDD cue word is customizible.
 	describe, given, when, it := s.Alias("describe"), s.Alias("given"), s.Alias("when"), s.Alias("it")
 	// expectation cue word is customizible too.
-	expect := exp.Alias(s.FailNow)
+	expect := gspec.Expect(s.FailNow)
 
 	// A BDD example.
 	describe("an integer i", func() {
@@ -119,12 +112,12 @@ package (e.g. all_test.go).
 ```go
 import (
 	"testing"
-	"github.com/hailiang/gspec/suite"
+	"github.com/hailiang/gspec"
 )
 
 // Defined only once within a package.
 func TestAll(t *testing.T) {
-	suite.Test(t)
+	gspec.Test(t)
 }
 ```
 
