@@ -104,14 +104,14 @@ func Alias5(n1, n2, n3, n4, n5 string, s S) (_, _, _, _, _ core.DescFunc) {
 	return s.Alias(n1), s.Alias(n2), s.Alias(n3), s.Alias(n4), s.Alias(n5)
 }
 
-// Expect is a trivial wrapper of expectation.Alias for GSpec tests.
-func Expect(fail expectation.FailFunc, skip ...int) expectation.ExpectFunc {
-	return expectation.Alias(fail, skip...)
-}
-
-// TExpect is a trivial wrapper of expectation.Alias for go tests.
-func TExpect(fail func(), skip ...int) expectation.ExpectFunc {
-	return expectation.Alias(expectation.TFail(fail), skip...)
+// Expect is a trivial wrapper of expectation.Alias for GSpec or Go tests.
+func Expect(fail interface{}, skip ...int) expectation.ExpectFunc {
+	if f, ok := fail.(expectation.FailFunc); ok {
+		return expectation.Alias(f, skip...)
+	} else if f, ok := fail.(func()); ok {
+		return expectation.Alias(expectation.TFail(f), skip...)
+	}
+	panic("argument fail should be either an expectation.FailFunc or a func()")
 }
 
 // SetSprint is a trivial wrapper to set error.Sprint.

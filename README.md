@@ -59,7 +59,7 @@ import (
 	"github.com/hailiang/gspec"
 )
 
-// Only one suite.Add is needed for each xxx_test.go file.
+// Only one gspec.Add is needed for each xxx_test.go file.
 var _ = gspec.Add(func(s gspec.S) {
 	// BDD cue word is customizible.
 	describe, given, when, it := s.Alias("describe"), s.Alias("given"), s.Alias("when"), s.Alias("it")
@@ -239,8 +239,8 @@ The path parameter is used to specify a path within the tree of nested test
 groups. An empty path means the top level of test group should be executed,
 including all its descendants.
 
-suite package provides a convenient way to gather and run TestFuncs. suite.Add
-adds a TestFunc to a global slice and suite.Test runs all the gathered tests.
+gspec package provides a convenient way to gather and run TestFuncs. gspec.Add
+adds a TestFunc to a global slice and gspec.Test runs all the gathered tests.
 Other parameters like path and concurrent are provided by command-line flags.
 
 ###Test report
@@ -318,7 +318,7 @@ core        <- extension
 error       <- 
 expectation <- error
 reporter    <- extension, error
-suite       <- core, exntension, reporter
+gspec       <- core, exntension, reporter
 ```
 1. the core package implements core algorithms of test organization and execution,
    but nothing else. It is extensible through the types defined in the extension
@@ -334,7 +334,7 @@ suite       <- core, exntension, reporter
    extension.Reporter. A reporter gets notifications about the progress of test
    running and gets a complete specification of all the nested test groups,
    including test errors.
-5. the suite package integrates all other packages together, providing a quick
+5. the gspec package integrates all other packages together, providing a quick
    way of test gathering, running and reporting.
 
 
