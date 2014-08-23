@@ -11,6 +11,7 @@ import (
 	"runtime"
 
 	"github.com/hailiang/gspec/core"
+	"github.com/hailiang/gspec/error"
 	"github.com/hailiang/gspec/expectation"
 	ext "github.com/hailiang/gspec/extension"
 	"github.com/hailiang/gspec/reporter"
@@ -111,4 +112,8 @@ func Expect(fail expectation.FailFunc, skip ...int) expectation.ExpectFunc {
 // TExpect is a trivial wrapper of expectation.Alias for go tests.
 func TExpect(fail func(), skip ...int) expectation.ExpectFunc {
 	return expectation.Alias(expectation.TFail(fail), skip...)
+}
+
+func SetSprint(sprint func(interface{}) string) {
+	error.Sprint = sprint
 }
