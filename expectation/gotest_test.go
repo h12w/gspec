@@ -27,7 +27,7 @@ func TestTFail(t *testing.T) {
 	defer SetOutput(os.Stdout)
 	mt := mockT()
 
-	f := TFail(mt)
+	f := TFail(mt.Fail)
 	f(errors.New("a"))
 	if *mt != (tMock{failCnt: 1, failNowCnt: 0}) {
 		t.Errorf("Only Fail should be called once: %v", mt)
@@ -43,7 +43,7 @@ func TestTFailNow(t *testing.T) {
 	defer SetOutput(os.Stdout)
 	mt := mockT()
 
-	f := TFailNow(mt)
+	f := TFail(mt.FailNow)
 	f(errors.New("a"))
 	if *mt != (tMock{failCnt: 0, failNowCnt: 1}) {
 		t.Errorf("Only FailNow should be called once: %v", mt)

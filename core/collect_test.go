@@ -24,8 +24,9 @@ Scenario: reconstruct nested test group to a tree
 	Then it is able to reconstruct the tree structure
 */
 func TestTreeCollector(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	co := newCollector(&ReporterStub{})
+	r := &TestGroup{}
 	a := &TestGroup{
 		Description: "a",
 	}
@@ -35,21 +36,23 @@ func TestTreeCollector(t *testing.T) {
 	c := &TestGroup{
 		Description: "c",
 	}
-	cp := Path{1, 2, 3}
 	d := &TestGroup{
 		Description: "d",
 	}
 	z := &TestGroup{
 		Description: "z",
 	}
-	co.groupStart(a, Path{1})
-	co.groupStart(b, Path{1, 2})
-	co.groupStart(c, cp)
+	co.groupStart(r, Path{1})
+	co.groupStart(a, Path{1, 2})
+	co.groupStart(b, Path{1, 2, 3})
+	co.groupStart(c, Path{1, 2, 3, 4})
 	c.Error = errors.New("c err")
-	co.groupStart(a, Path{1})
-	co.groupStart(b, Path{1, 2})
-	co.groupStart(d, Path{1, 2, 4})
-	co.groupStart(z, Path{5})
+	co.groupStart(r, Path{1})
+	co.groupStart(a, Path{1, 2})
+	co.groupStart(b, Path{1, 2, 3})
+	co.groupStart(d, Path{1, 2, 3, 5})
+	co.groupStart(r, Path{1})
+	co.groupStart(z, Path{1, 6})
 
 	exp := TestGroups{
 		&TestGroup{
@@ -73,15 +76,16 @@ func TestTreeCollector(t *testing.T) {
 			Description: "z",
 		},
 	}
-	expect(co.groups).Equal(exp) //, "TreeCollector fail to reconstruct correct tree"
+	expect("the root group", co.group).NotEqual(nil)
+	expect(co.group.Children).Equal(exp) //, "TreeCollector fail to reconstruct correct tree"
 }
 
 func TestSortingTestGroups(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	g0 := &TestGroup{ID: "0"}
 	g1 := &TestGroup{ID: "1"}
 	g2 := &TestGroup{ID: "2"}
-	groups := TestGroups{g2, g0, g1}
-	sortTestGroups(groups)
-	expect(groups).Equal(TestGroups{g0, g1, g2})
+	group := &TestGroup{Children: TestGroups{g2, g0, g1}}
+	sortTestGroup(group)
+	expect(group.Children).Equal(TestGroups{g0, g1, g2})
 }

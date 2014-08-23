@@ -33,17 +33,9 @@ type T interface {
 }
 
 // TFail return the FailFunc for testing.T.Fail
-func TFail(t T) FailFunc {
+func TFail(fail func()) FailFunc {
 	return func(err error) {
-		t.Fail()
 		fmt.Fprintln(std.out, err.Error())
-	}
-}
-
-// TFailNow return the FailFunc for testing.T.FailNow
-func TFailNow(t T) FailFunc {
-	return func(err error) {
-		t.FailNow()
-		fmt.Fprintln(std.out, err.Error())
+		fail()
 	}
 }

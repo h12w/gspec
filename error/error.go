@@ -39,11 +39,12 @@ func (e *ExpectError) Error() string {
 type CompareError struct {
 	ExpectError
 	Actual, Expected interface{}
+	Name             string
 }
 
 // Compare returns a new CompareError object.
-func Compare(actual, expected interface{}, verb string, skip int) error {
-	return &CompareError{ExpectError{GetPos(skip + 1), verb}, actual, expected}
+func Compare(actual, expected interface{}, verb string, name string, skip int) error {
+	return &CompareError{ExpectError{GetPos(skip + 1), verb}, actual, expected, name}
 }
 
 func (e *CompareError) verb() string {
@@ -56,13 +57,13 @@ func (e *CompareError) verb() string {
 func (e *CompareError) Error() string {
 	actual := Sprint(e.Actual)
 	expect := Sprint(e.Expected)
-	format := "%s %s %s"
+	format := "%s %s %s %s"
 	if endWithBreak(actual) {
-		format = "%s%s%s"
+		format = "%s%s%s%s"
 		actual = Indent(actual, IndentString)
 		expect = Indent(expect, IndentString)
 	}
-	return e.str(fmt.Sprintf(format, actual, e.verb(), expect))
+	return e.str(fmt.Sprintf(format, e.Name, actual, e.verb(), expect))
 }
 
 func endWithBreak(s string) bool {

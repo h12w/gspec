@@ -29,7 +29,7 @@ Scenario: test case fails
 	Then the error will be recorded and sent to the reporter
 */
 func TestCaseFails(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	r := &ReporterStub{}
 	NewController(r).Start(Path{}, true, func(s S) {
 		g := aliasGroup(s)
@@ -37,10 +37,9 @@ func TestCaseFails(t *testing.T) {
 			s.Fail(errors.New("err a"))
 		})
 	})
-	expect(len(r.groups)).Equal(1)
-	if len(r.groups) == 1 {
-		expect(r.groups[0].Error).Equal(errors.New("err a"))
-	}
+	expect("the root group", r.group).NotEqual(nil)
+	expect(len(r.group.Children)).Equal(1)
+	expect(r.group.Children[0].Error).Equal(errors.New("err a"))
 }
 
 /*
@@ -52,7 +51,7 @@ Scenario: FailNow
 	And the rest of the test cases continue to run
 */
 func TestFailNow(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	r := &ReporterStub{}
 	ch := NewSS()
 	NewController(r).Start(Path{}, true, func(s S) {
@@ -69,10 +68,9 @@ func TestFailNow(t *testing.T) {
 			ch.Send("another test case")
 		})
 	})
-	expect(len(r.groups)).Equal(2)
-	if len(r.groups) > 0 {
-		expect(r.groups[0].Error).Equal(errors.New("err a"))
-	}
+	expect(r.group).NotEqual(nil)
+	expect(len(r.group.Children)).Equal(2)
+	expect(r.group.Children[0].Error).Equal(errors.New("err a"))
 	expect(ch.Sorted()).Equal([]string{"another test case", "before FailNow", "defer func"})
 }
 
@@ -83,7 +81,7 @@ Scenario: test case panics
 	Then the error will be recorded and sent to the reporter
 */
 func TestCasePanics(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	r := &ReporterStub{}
 	NewController(r).Start(Path{}, true, func(s S) {
 		g := aliasGroup(s)
@@ -91,10 +89,9 @@ func TestCasePanics(t *testing.T) {
 			panic("panic error")
 		})
 	})
-	expect(len(r.groups)).Equal(1)
-	if len(r.groups) == 1 {
-		expect(r.groups[0].Error).Equal(errors.New("panic error"))
-	}
+	expect(r.group).NotEqual(nil)
+	expect(len(r.group.Children)).Equal(1)
+	expect(r.group.Children[0].Error).Equal(errors.New("panic error"))
 }
 
 /*
@@ -104,7 +101,7 @@ Scenario: Plain text progress indicator
 	Then I should see 2 dots with 3 F: "F.F.F"
 */
 func Test3Pass2Fail(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	var buf bytes.Buffer
 	NewController(NewTextProgresser(&buf)).Start(Path{}, true, func(s S) {
 		g := s.Alias("")
@@ -142,7 +139,7 @@ Scenario: Pending test group
 	Then a PendingError is set.
 */
 func TestPending(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	r := &ReporterStub{}
 	NewController(r).Start(Path{}, true, func(s S) {
 		g := aliasGroup(s)
@@ -152,8 +149,7 @@ func TestPending(t *testing.T) {
 		g(func() {
 		})
 	})
-	expect(len(r.groups)).Equal(3)
-	if len(r.groups) == 3 {
-		expect(r.groups[1].Error).Equal(&ext.PendingError{})
-	}
+	expect(r.group).NotEqual(nil)
+	expect(len(r.group.Children)).Equal(3)
+	expect(r.group.Children[1].Error).Equal(&ext.PendingError{})
 }

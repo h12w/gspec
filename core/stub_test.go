@@ -103,21 +103,21 @@ func (bs Bytes) Less(i, j int) bool {
 }
 
 type ReporterStub struct {
-	mu     sync.Mutex
-	groups TestGroups
+	mu    sync.Mutex
+	group *TestGroup
 }
 
 func (l *ReporterStub) Start() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.groups = nil
+	l.group = nil
 }
 
-func (l *ReporterStub) End(groups TestGroups) {
+func (l *ReporterStub) End(group *TestGroup) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	if l.groups == nil {
-		l.groups = groups
+	if l.group == nil {
+		l.group = group
 	} else {
 		panic("End should be only called once.")
 	}
@@ -139,16 +139,14 @@ func (m *TStub) Fail() {
 func (m *TStub) Parallel() {
 }
 
-func clearGroupForTest(gs TestGroups) {
-	for i := range gs {
-		gs[i].For(func(gs TestGroups) bool {
-			for j := range gs {
-				gs[j].ID = ""
-				gs[j].Duration = 0
-			}
-			return true
-		})
-	}
+func clearGroupForTest(g *TestGroup) {
+	g.For(func(gs TestGroups) bool {
+		for j := range gs {
+			gs[j].ID = ""
+			gs[j].Duration = 0
+		}
+		return true
+	})
 }
 
 func p(v ...interface{}) error {

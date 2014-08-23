@@ -35,9 +35,9 @@ type textReporter struct {
 	verbose bool
 }
 
-func (l *textReporter) End(groups ext.TestGroups) {
+func (l *textReporter) End(group *ext.TestGroup) {
 	mid := make(map[string]bool)
-	for _, g := range groups {
+	for _, g := range group.Children {
 		completed := g.For(func(path ext.TestGroups) bool {
 			last := path[len(path)-1]
 			if l.verbose || last.Error != nil {
@@ -88,14 +88,14 @@ func (p *textProgresser) Progress(g *ext.TestGroup, s *ext.Stats) {
 	p.Stats = *s
 }
 
-func (p *textProgresser) End(groups ext.TestGroups) {
+func (p *textProgresser) End(group *ext.TestGroup) {
 	fmt.Fprintln(p.w, "$")
 }
 
 type dummyReporter struct{}
 
 func (dummyReporter) Start()                              {}
-func (dummyReporter) End(ext.TestGroups)                  {}
+func (dummyReporter) End(*ext.TestGroup)                  {}
 func (dummyReporter) Progress(*ext.TestGroup, *ext.Stats) {}
 
 // Write writes TestGroups from root to leaf.

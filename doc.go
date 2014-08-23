@@ -11,5 +11,9 @@ that makes it productive to organize and verify the mind model of software.
 	- Concurrent: test cases can be executed concurrently or sequentially.
 	- Extensible: customizable BDD cue words, expectations and test reporters.
 	- Compatible: "go test" is sufficient but not mandatory to run GSpec tests.
+
+GSpec is very modular and sub packages have minimal or no dependance on each
+other. The top package "gspec" integrates all other sub packages and provide a
+quick way of test gathering, executing and reporting.
 */
 package gspec

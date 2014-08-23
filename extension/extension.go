@@ -14,7 +14,7 @@ import (
 // Reporter is a interface to accept events from tests running.
 type Reporter interface {
 	Start()                          // Start should be called before all tests start.
-	End(groups TestGroups)           // End should be called after all tests end.
+	End(group *TestGroup)            // End should be called after all tests end.
 	Progress(g *TestGroup, s *Stats) // Progress should be called whenever the statistics change.
 }
 

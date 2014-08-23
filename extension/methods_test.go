@@ -22,7 +22,7 @@ Scenario: Traversal over all test cases in the tree of nested test group
 	Then each test case will get visited once
 */
 func TestTestCaseTraversal(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	g := &TestGroup{
 		Description: "a",
 		Children: TestGroups{
@@ -88,7 +88,7 @@ Story: Internal Tests
 */
 
 func TestGroupStack(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	s := groupStack{}
 	s.push(&TestGroup{Description: "a"})
 	s.push(&TestGroup{Description: "b"})

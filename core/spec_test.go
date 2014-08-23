@@ -27,7 +27,7 @@ Scenario: Attach customized alias name and description for each test group metho
 	Then the alias name and description are combined and passed to the reporter
 */
 func TestDescribeTests(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	r := &ReporterStub{}
 	NewController(r).Start(Path{}, false, func(s S) {
 		describe, context, it := s.Alias("describe"), s.Alias("context"), s.Alias("it")
@@ -38,8 +38,8 @@ func TestDescribeTests(t *testing.T) {
 			})
 		})
 	})
-	clearGroupForTest(r.groups)
-	expect(r.groups).Equal(TestGroups{
+	clearGroupForTest(r.group)
+	expect(r.group.Children).Equal(TestGroups{
 		{
 			Description: "describe a",
 			Children: TestGroups{

@@ -12,7 +12,7 @@ import (
 
 func TestExpectTo(t *testing.T) {
 	m, expect := mockExpect()
-	expect(nil).To(func(actual, expected interface{}, skip int) error {
+	expect(nil).To(func(actual, expected interface{}, name string, skip int) error {
 		return ge.Expect("x", skip+1)
 	}, nil)
 	e, ok := m.Error()

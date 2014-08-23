@@ -16,7 +16,7 @@ Story: Internal Tests
 */
 
 func TestFuncIDString(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	expect(Serial(0).String()).Equal("0")
 	expect(Serial(3).String()).Equal("3")
 
@@ -30,7 +30,7 @@ func TestFuncIDString(t *testing.T) {
 }
 
 func TestPathSerialization(t *testing.T) {
-	expect := exp.Alias(exp.TFailNow(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 
 	var p Path
 	p.Set("0/1/2")
@@ -47,7 +47,7 @@ func TestPathSerialization(t *testing.T) {
 }
 
 func TestIDStack(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	p := serialStack{}
 	p.push(Serial(1))
 	p.push(Serial(2))

@@ -17,7 +17,7 @@ Story: Internal Tests
 */
 
 func TestNewPanicError(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	e := NewPanicError(errors.New("a"), 0)
 	expect(e.Error()).Equal(errors.New("a"))
 
@@ -29,7 +29,7 @@ func TestNewPanicError(t *testing.T) {
 }
 
 func TestNewPendingError(t *testing.T) {
-	expect := exp.Alias(exp.TFail(t))
+	expect := exp.Alias(exp.TFail(t.FailNow))
 	e := NewPendingError()
 	expect(e).IsType(&PendingError{})
 	expect(e.Error()).Contains("pending")

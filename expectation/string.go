@@ -11,7 +11,7 @@ import (
 )
 
 // HasPrefix checks if the actual value has a prefix of expected value.
-func HasPrefix(actual, expected interface{}, skip int) error {
+func HasPrefix(actual, expected interface{}, name string, skip int) error {
 	a, e, err := checkStringType(actual, expected, skip+1)
 	if err != nil {
 		return err
@@ -19,11 +19,11 @@ func HasPrefix(actual, expected interface{}, skip int) error {
 	if strings.HasPrefix(a, e) {
 		return nil
 	}
-	return ge.Compare(actual, expected, "to has the prefix of", skip+1)
+	return ge.Compare(actual, expected, "to has the prefix of", name, skip+1)
 }
 
 // HasSuffix checks if the actual value has a suffix of expected value.
-func HasSuffix(actual, expected interface{}, skip int) error {
+func HasSuffix(actual, expected interface{}, name string, skip int) error {
 	a, e, err := checkStringType(actual, expected, skip+1)
 	if err != nil {
 		return err
@@ -31,11 +31,11 @@ func HasSuffix(actual, expected interface{}, skip int) error {
 	if strings.HasSuffix(a, e) {
 		return nil
 	}
-	return ge.Compare(actual, expected, "to has the suffix of", skip+1)
+	return ge.Compare(actual, expected, "to has the suffix of", name, skip+1)
 }
 
 // Contains checks if the actual value contains expected value.
-func Contains(actual, expected interface{}, skip int) error {
+func Contains(actual, expected interface{}, name string, skip int) error {
 	a, e, err := checkStringType(actual, expected, skip+1)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func Contains(actual, expected interface{}, skip int) error {
 	if strings.Contains(a, e) {
 		return nil
 	}
-	return ge.Compare(actual, expected, "to contain", skip+1)
+	return ge.Compare(actual, expected, "to contain", name, skip+1)
 }
 
 func checkStringType(actual, expected interface{}, skip int) (string, string, error) {

@@ -13,29 +13,29 @@ import (
 
 // Checker is the type of function that checks between actual and expected value
 // then returns an Error if the expectation fails.
-type Checker func(actual, expected interface{}, skip int) error
+type Checker func(actual, expected interface{}, name string, skip int) error
 
 // Equal checks for the equality of contents and is tolerant of type differences.
-func Equal(actual, expected interface{}, skip int) error {
+func Equal(actual, expected interface{}, name string, skip int) error {
 	if reflect.DeepEqual(actual, expected) {
 		return nil
 	}
 	if fmt.Sprint(actual) == fmt.Sprint(expected) {
 		return nil
 	}
-	return ge.Compare(actual, expected, "to equal", skip+1)
+	return ge.Compare(actual, expected, "to equal", name, skip+1)
 }
 
 // NotEqual is the reverse of Equal.
-func NotEqual(actual, expected interface{}, skip int) error {
-	if Equal(actual, expected, skip+1) != nil {
+func NotEqual(actual, expected interface{}, name string, skip int) error {
+	if Equal(actual, expected, name, skip+1) != nil {
 		return nil
 	}
-	return ge.Compare(actual, expected, "not to equal", skip+1)
+	return ge.Compare(actual, expected, "not to equal", name, skip+1)
 }
 
 // Panic checks if a function panics.
-func Panic(actual, expected interface{}, skip int) (ret error) {
+func Panic(actual, expected interface{}, name string, skip int) (ret error) {
 	f, ok := actual.(func())
 	if !ok {
 		ret = ge.Expect("the argument of Panic has to be a function of type func().", skip)
@@ -50,9 +50,9 @@ func Panic(actual, expected interface{}, skip int) (ret error) {
 }
 
 // IsType checks if the actual value is of the same type as the expected value.
-func IsType(actual, expected interface{}, skip int) error {
+func IsType(actual, expected interface{}, name string, skip int) error {
 	if reflect.TypeOf(actual) != reflect.TypeOf(expected) {
-		return ge.Compare(actual, expected, "to have type of", skip+1)
+		return ge.Compare(actual, expected, "to have type of", name, skip+1)
 	}
 	return nil
 }

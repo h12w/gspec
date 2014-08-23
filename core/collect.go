@@ -13,10 +13,10 @@ import (
 )
 
 type collector struct {
-	groups ext.TestGroups
-	m      map[string]*ext.TestGroup
-	mu     sync.Mutex
-	r      ext.Reporter
+	group *ext.TestGroup
+	m     map[string]*ext.TestGroup
+	mu    sync.Mutex
+	r     ext.Reporter
 	ext.Stats
 }
 
@@ -36,7 +36,10 @@ func (c *collector) groupStart(g *ext.TestGroup, path Path) {
 	}
 	c.Total++
 	if len(path) == 1 { // root node
-		c.groups = append(c.groups, g)
+		if c.group != nil {
+			panic("tests should be organized in one single top group")
+		}
+		c.group = g
 	} else {
 		parentID := path[:len(path)-1].String()
 		parent := c.m[parentID] // must exists
@@ -71,7 +74,7 @@ func (c *collector) groupEnd(err error, path Path) {
 }
 
 func (c *collector) sort() {
-	sortTestGroups(c.groups)
+	sortTestGroup(c.group)
 }
 
 func (c *collector) setDuration(path Path, d time.Duration) {
@@ -104,10 +107,10 @@ func (t *timer) end() {
 }
 
 // Sort sorts the elements by ID.
-func sortTestGroups(s ext.TestGroups) {
-	sort.Sort(byID{s})
-	for _, c := range s {
-		sortTestGroups(c.Children)
+func sortTestGroup(s *ext.TestGroup) {
+	sort.Sort(byID{s.Children})
+	for _, c := range s.Children {
+		sortTestGroup(c)
 	}
 }
 

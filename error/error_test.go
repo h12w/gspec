@@ -11,16 +11,16 @@ import (
 
 func TestCompareError(t *testing.T) {
 	// inline
-	ce := Compare(0, 1, "to equal", 0)
-	exp := "error_test.go:14: expect 0 to equal 1."
+	ce := Compare(0, 1, "to equal", "int", 0)
+	exp := "error_test.go:14: expect int 0 to equal 1."
 	if msg := ce.Error(); msg != exp {
 		t.Errorf(`Expect error message "%s" but got "%s"`, exp, msg)
 	}
 
 	// multiple lines
-	ce = Compare("\na\nb\n", "\na\nc\n", "to equal", 0)
+	ce = Compare("\na\nb\n", "\na\nc\n", "to equal", "msg", 0)
 	exp = `error_test.go:21:
-    expect
+    expect msg
         a
         b
     to equal

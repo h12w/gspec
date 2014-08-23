@@ -38,13 +38,16 @@ func (c *Controller) Start(path Path, concurrent bool, funcs ...TestFunc) error 
 	c.broadcaster.Start()
 	defer func() {
 		c.collector.sort()
-		c.broadcaster.End(c.groups)
+		c.broadcaster.End(c.group)
 	}()
 
 	newRunner(func(s S) {
-		for _, f := range funcs {
-			f(s)
-		}
+		top := s.Alias("")
+		top("", func() {
+			for _, f := range funcs {
+				f(s)
+			}
+		})
 	}, concurrent, c.collector).run(path)
 
 	return nil
@@ -68,11 +71,11 @@ func (b *broadcaster) Start() {
 	}
 }
 
-func (b *broadcaster) End(groups ext.TestGroups) {
+func (b *broadcaster) End(group *ext.TestGroup) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for _, r := range b.a {
-		r.End(groups)
+		r.End(group)
 	}
 }
 

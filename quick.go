@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-/*
-Package suite integrates all other packages and provide a quick way of test
-gathering, executing and reporting.
-*/
-package suite
+package gspec
 
 import (
 	"flag"
@@ -15,6 +11,7 @@ import (
 	"runtime"
 
 	"github.com/hailiang/gspec/core"
+	"github.com/hailiang/gspec/expectation"
 	ext "github.com/hailiang/gspec/extension"
 	"github.com/hailiang/gspec/reporter"
 )
@@ -30,6 +27,14 @@ var (
 	globalConfig  config
 )
 
+// TestFunc is a trivial wrapper to core.TestFunc.
+type TestFunc func(S)
+
+// S is a trivial wrapper to core.S.
+type S struct {
+	core.S
+}
+
 type config struct {
 	focus      core.Path
 	concurrent bool
@@ -42,8 +47,10 @@ func init() {
 
 // Add GSpec test functions to the global test suite.
 // Return value has no meaning, allowing it to be called in global scope.
-func Add(fs ...core.TestFunc) int {
-	testFunctions = append(testFunctions, fs...)
+func Add(fs ...TestFunc) int {
+	for _, f := range fs {
+		testFunctions = append(testFunctions, func(s core.S) { f(S{s}) })
+	}
 	return 0
 }
 
@@ -76,18 +83,32 @@ func Verbose() bool {
 	return false
 }
 
-func Alias2(n1, n2 string, s core.S) (_, _ core.DescFunc) {
+// Alias2 accepts 2 names and returns 2 alias DescFuncs.
+func Alias2(n1, n2 string, s S) (_, _ core.DescFunc) {
 	return s.Alias(n1), s.Alias(n2)
 }
 
-func Alias3(n1, n2, n3 string, s core.S) (_, _, _ core.DescFunc) {
+// Alias3 accepts 3 names and returns 3 alias DescFuncs.
+func Alias3(n1, n2, n3 string, s S) (_, _, _ core.DescFunc) {
 	return s.Alias(n1), s.Alias(n2), s.Alias(n3)
 }
 
-func Alias4(n1, n2, n3, n4 string, s core.S) (_, _, _, _ core.DescFunc) {
+// Alias4 accepts 4 names and returns 4 alias DescFuncs.
+func Alias4(n1, n2, n3, n4 string, s S) (_, _, _, _ core.DescFunc) {
 	return s.Alias(n1), s.Alias(n2), s.Alias(n3), s.Alias(n4)
 }
 
-func Alias5(n1, n2, n3, n4, n5 string, s core.S) (_, _, _, _, _ core.DescFunc) {
+// Alias5 accepts 5 names and returns 5 alias DescFuncs.
+func Alias5(n1, n2, n3, n4, n5 string, s S) (_, _, _, _, _ core.DescFunc) {
 	return s.Alias(n1), s.Alias(n2), s.Alias(n3), s.Alias(n4), s.Alias(n5)
+}
+
+// Expect is a trivial wrapper of expectation.Alias for GSpec tests.
+func Expect(fail expectation.FailFunc, skip ...int) expectation.ExpectFunc {
+	return expectation.Alias(fail, skip...)
+}
+
+// TExpect is a trivial wrapper of expectation.Alias for go tests.
+func TExpect(fail func(), skip ...int) expectation.ExpectFunc {
+	return expectation.Alias(expectation.TFail(fail), skip...)
 }

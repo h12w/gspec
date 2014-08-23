@@ -46,10 +46,10 @@ type focusTestCase struct {
 }
 
 var focusTestCases = []focusTestCase{
-	{Path{0, 0}, []string{"x", "a"}},
-	{Path{0, 1}, []string{"x", "b"}},
-	{Path{1, 0}, []string{"y", "c"}},
-	{Path{1, 1}, []string{"y", "d"}},
+	{Path{0, 0, 0}, []string{"x", "a"}},
+	{Path{0, 0, 1}, []string{"x", "b"}},
+	{Path{0, 1, 0}, []string{"y", "c"}},
+	{Path{0, 1, 1}, []string{"y", "d"}},
 }
 
 func TestRunFocus(t *testing.T) {
