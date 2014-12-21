@@ -5,7 +5,7 @@
 /*
 Package expectation provides expectation (assertion) helpers.
 */
-package expectation
+package expectation // import "h12.me/gspec/expectation"
 
 import "fmt"
 

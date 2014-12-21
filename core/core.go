@@ -6,7 +6,7 @@
 Package core provides a minimal core for organizing, executing and reporting of
 test cases nested in test groups.
 */
-package core
+package core // import "h12.me/gspec/core"
 
 import (
 	"sync"
