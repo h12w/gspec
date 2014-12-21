@@ -45,7 +45,7 @@ Quick start
 
 ###Get GSpec
 ```bash
-go get -t -u h12.me/gspec
+go get -u -f h12.me/gspec
 go test h12.me/gspec/...
 ```
 

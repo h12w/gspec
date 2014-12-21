@@ -56,18 +56,10 @@ func (e *CompareError) Error() string {
 	actual := Sprint(e.Actual)
 	expect := Sprint(e.Expected)
 	format := "%s %s %s %s"
-	if strings.Contains(actual, "\n") {
-		format = "%s%s%s%s"
+	if strings.Contains(expect, "\n") || strings.Contains(actual, "\n") {
+		format = "%s\n%s\n%s\n%s\n"
 		actual = Indent(actual, IndentString)
 		expect = Indent(expect, IndentString)
 	}
 	return e.str(fmt.Sprintf(format, e.Name, actual, e.verb(), expect))
-}
-
-func endWithBreak(s string) bool {
-	return len(s) > 0 && s[len(s)-1] == '\n'
-}
-
-func startWithBreak(s string) bool {
-	return len(s) > 0 && s[0] == '\n'
 }

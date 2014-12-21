@@ -18,7 +18,7 @@ func TestCompareError(t *testing.T) {
 	}
 
 	// multiple lines
-	ce = Compare("\na\nb\n", "\na\nc\n", "to equal", "msg", 0)
+	ce = Compare("a\nb", "a\nc", "to equal", "msg", 0)
 	exp = `error_test.go:21:
     expect msg
         a
@@ -26,8 +26,7 @@ func TestCompareError(t *testing.T) {
     to equal
         a
         c
-    .
-`
+    .`
 	if msg := ce.Error(); msg != exp {
 		t.Errorf("Expect error message\n%s\nbut got\n%s", strconv.Quote(exp),
 			strconv.Quote(msg))
@@ -36,7 +35,7 @@ func TestCompareError(t *testing.T) {
 
 func TestExpectError(t *testing.T) {
 	ce := Expect("a", 0)
-	exp := "error_test.go:38: expect a."
+	exp := "error_test.go:37: expect a."
 	if msg := ce.Error(); msg != exp {
 		t.Errorf(`Expect error message "%s" but got "%s"`, exp, msg)
 	}

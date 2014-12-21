@@ -69,14 +69,11 @@ func toLines(s string) []string {
 
 // Indent splits s to lines and indent each line with argument indent.
 func Indent(s, indent string) string {
-	var buf bytes.Buffer
 	lines := toLines(s)
-	for _, line := range lines {
+	for i, line := range lines {
 		if len(line) > 0 {
-			buf.WriteString(indent)
-			buf.WriteString(line)
+			lines[i] = indent + line
 		}
-		buf.WriteByte('\n')
 	}
-	return buf.String()
+	return strings.Join(lines, "\n")
 }
