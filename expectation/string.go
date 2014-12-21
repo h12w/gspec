@@ -7,7 +7,7 @@ package expectation
 import (
 	"strings"
 
-	ge "github.com/hailiang/gspec/error"
+	ge "github.com/hailiang/gspec/errors"
 )
 
 // HasPrefix checks if the actual value has a prefix of expected value.

@@ -38,7 +38,7 @@ func TestConcurrentRunningTime(t *testing.T) {
 		})
 	})
 	d := time.Now().Sub(tm)
-	if d > time.Duration(2.5*float64(delay)) {
+	if d > time.Duration(3*float64(delay)) {
 		t.Fatalf("Tests are not run concurrently, duration: %v", d)
 	}
 }

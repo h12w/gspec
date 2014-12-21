@@ -9,7 +9,7 @@ import (
 	"io"
 	"strings"
 
-	ge "github.com/hailiang/gspec/error"
+	ge "github.com/hailiang/gspec/errors"
 	ext "github.com/hailiang/gspec/extension"
 )
 
@@ -35,9 +35,12 @@ type textReporter struct {
 	verbose bool
 }
 
-func (l *textReporter) End(group *ext.TestGroup) {
+func (l *textReporter) End(root *ext.TestGroup) {
 	mid := make(map[string]bool)
-	for _, g := range group.Children {
+	if root.Error != nil {
+		writeTestGroups(l.w, ext.TestGroups{root}, mid)
+	}
+	for _, g := range root.Children {
 		completed := g.For(func(path ext.TestGroups) bool {
 			last := path[len(path)-1]
 			if l.verbose || last.Error != nil {

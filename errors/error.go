@@ -3,12 +3,13 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package error provides all types of test error.
+Package errors provides all types of test error.
 */
-package error
+package errors
 
 import (
 	"fmt"
+	"strings"
 )
 
 // ExpectError is the base type of an expectation error.
@@ -24,9 +25,6 @@ func Expect(text string, skip int) error {
 
 func (e *ExpectError) str(msg string) string {
 	format := "expect %s."
-	if startWithBreak(msg) {
-		format = "expect%s."
-	}
 	return e.Pos.Decorate(fmt.Sprintf(format, msg), "")
 }
 
@@ -58,7 +56,7 @@ func (e *CompareError) Error() string {
 	actual := Sprint(e.Actual)
 	expect := Sprint(e.Expected)
 	format := "%s %s %s %s"
-	if endWithBreak(actual) {
+	if strings.Contains(actual, "\n") {
 		format = "%s%s%s%s"
 		actual = Indent(actual, IndentString)
 		expect = Indent(expect, IndentString)

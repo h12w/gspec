@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	ge "github.com/hailiang/gspec/error"
+	ge "github.com/hailiang/gspec/errors"
 	. "github.com/hailiang/gspec/extension"
 	ogdl "github.com/ogdl/flow"
 )

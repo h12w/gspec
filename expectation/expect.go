@@ -42,9 +42,7 @@ func Alias(fail FailFunc, skip ...int) ExpectFunc {
 	_skip := getSkip(skip)
 	return func(s ...interface{}) *Actual {
 		actual, name := getActual(s)
-		return &Actual{actual, name, _skip, func(e error) {
-			fail(e)
-		}}
+		return &Actual{actual, name, _skip, fail}
 	}
 }
 

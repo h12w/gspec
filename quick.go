@@ -11,7 +11,7 @@ import (
 	"runtime"
 
 	"github.com/hailiang/gspec/core"
-	"github.com/hailiang/gspec/error"
+	"github.com/hailiang/gspec/errors"
 	"github.com/hailiang/gspec/expectation"
 	ext "github.com/hailiang/gspec/extension"
 	"github.com/hailiang/gspec/reporter"
@@ -106,7 +106,7 @@ func Alias5(n1, n2, n3, n4, n5 string, s S) (_, _, _, _, _ core.DescFunc) {
 
 // Expect is a trivial wrapper of expectation.Alias for GSpec or Go tests.
 func Expect(fail interface{}, skip ...int) expectation.ExpectFunc {
-	if f, ok := fail.(expectation.FailFunc); ok {
+	if f, ok := fail.(func(error)); ok {
 		return expectation.Alias(f, skip...)
 	} else if f, ok := fail.(func()); ok {
 		return expectation.Alias(expectation.TFail(f), skip...)
@@ -116,5 +116,5 @@ func Expect(fail interface{}, skip ...int) expectation.ExpectFunc {
 
 // SetSprint is a trivial wrapper to set error.Sprint.
 func SetSprint(sprint func(interface{}) string) {
-	error.Sprint = sprint
+	errors.Sprint = sprint
 }

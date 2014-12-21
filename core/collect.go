@@ -36,9 +36,6 @@ func (c *collector) groupStart(g *ext.TestGroup, path Path) {
 	}
 	c.Total++
 	if len(path) == 1 { // root node
-		if c.group != nil {
-			panic("tests should be organized in one single top group")
-		}
 		c.group = g
 	} else {
 		parentID := path[:len(path)-1].String()

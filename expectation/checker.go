@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	ge "github.com/hailiang/gspec/error"
+	"github.com/hailiang/gspec/errors"
 )
 
 // Checker is the type of function that checks between actual and expected value
@@ -23,7 +23,7 @@ func Equal(actual, expected interface{}, name string, skip int) error {
 	if fmt.Sprint(actual) == fmt.Sprint(expected) {
 		return nil
 	}
-	return ge.Compare(actual, expected, "to equal", name, skip+1)
+	return errors.Compare(actual, expected, "to equal", name, skip+1)
 }
 
 // NotEqual is the reverse of Equal.
@@ -31,18 +31,18 @@ func NotEqual(actual, expected interface{}, name string, skip int) error {
 	if Equal(actual, expected, name, skip+1) != nil {
 		return nil
 	}
-	return ge.Compare(actual, expected, "not to equal", name, skip+1)
+	return errors.Compare(actual, expected, "not to equal", name, skip+1)
 }
 
 // Panic checks if a function panics.
 func Panic(actual, expected interface{}, name string, skip int) (ret error) {
 	f, ok := actual.(func())
 	if !ok {
-		ret = ge.Expect("the argument of Panic has to be a function of type func().", skip)
+		ret = errors.Expect("the argument of Panic has to be a function of type func().", skip)
 	}
 	defer func() {
 		if err := recover(); err == nil {
-			ret = ge.Expect("panicking", skip+1)
+			ret = errors.Expect("panicking", skip+1)
 		}
 	}()
 	f()
@@ -52,7 +52,7 @@ func Panic(actual, expected interface{}, name string, skip int) (ret error) {
 // IsType checks if the actual value is of the same type as the expected value.
 func IsType(actual, expected interface{}, name string, skip int) error {
 	if reflect.TypeOf(actual) != reflect.TypeOf(expected) {
-		return ge.Compare(actual, expected, "to have type of", name, skip+1)
+		return errors.Compare(actual, expected, "to have type of", name, skip+1)
 	}
 	return nil
 }

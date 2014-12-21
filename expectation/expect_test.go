@@ -7,27 +7,30 @@ package expectation
 import (
 	"testing"
 
-	ge "github.com/hailiang/gspec/error"
+	"github.com/hailiang/gspec/errors"
 )
 
 func TestExpectTo(t *testing.T) {
 	m, expect := mockExpect()
 	expect(nil).To(func(actual, expected interface{}, name string, skip int) error {
-		return ge.Expect("x", skip+1)
+		return errors.Expect("x", skip+1)
 	}, nil)
-	e, ok := m.Error()
-	if !ok {
-		t.Errorf("Expect error to be type ExpectError, got %v.", e)
+	if m.err == nil {
+		t.Error("Expect error but got nil.")
 	}
-	if e.Text != "x" {
-		t.Errorf("Expect error message %v to be x.", e.Text)
+	if m.err.Error() != "expect_test.go:17: expect x." {
+		t.Errorf("Got error message %v.", m.err.Error())
 	}
-	if e.Pos.BasePath() != "expect_test.go" {
-		t.Errorf("Expect error position in file expect_test.go, but got %s.",
-			e.Pos.BasePath())
+}
+
+func TestExpectName(t *testing.T) {
+	m, expect := mockExpect()
+	expect("integer", 0).Equal(1)
+	if m.err == nil {
+		t.Error("Expect error but got nil.")
 	}
-	if e.Pos.Line != 17 {
-		t.Errorf("Expect error position at line 17, but got %d.", e.Pos.Line)
+	if m.err.Error() != "expect_test.go:28: expect integer 0 to equal 1." {
+		t.Errorf("Got error message %v.", m.err.Error())
 	}
 }
 
@@ -57,9 +60,4 @@ func mockExpect() (*expectMock, ExpectFunc) {
 		m.err = err
 	})
 	return m, expect
-}
-
-func (m *expectMock) Error() (*ge.ExpectError, bool) {
-	e, ok := m.err.(*ge.ExpectError)
-	return e, ok
 }
