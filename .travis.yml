@@ -1,3 +1,4 @@
+sudo: false
 language: go
 go:
 - 1.4
@@ -6,6 +7,7 @@ notifications:
   email: false
 
 before_install:
+- go version
 - go get golang.org/x/tools/cmd/cover
 - go get golang.org/x/tools/cmd/vet
 - go get github.com/bradfitz/goimports
@@ -14,10 +16,12 @@ before_install:
 - export goclean=0f22736320abe6be71ce
 - git clone https://gist.github.com/$goclean.git
 
-script:
-- go version
+install:
 # a workaround related to go issue 6479.
 - go install -a -race std
+- go get h12.me/gspec
+
+script:
 - export PATH=$HOME/gopath/bin:$PATH
 - $goclean/goclean.sh
 - goveralls -coverprofile=profile.cov -service=travis-ci
