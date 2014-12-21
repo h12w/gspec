@@ -8,6 +8,9 @@ notifications:
 
 before_install:
 - go version
+- export GSPEC=$HOME/gopath/src/h12.me/gspec
+- mkdir -p $GSPEC 
+- cd $GSPEC
 - go get golang.org/x/tools/cmd/cover
 - go get golang.org/x/tools/cmd/vet
 - go get github.com/bradfitz/goimports
@@ -15,7 +18,6 @@ before_install:
 - go get github.com/mattn/goveralls
 - export goclean=0f22736320abe6be71ce
 - git clone https://gist.github.com/$goclean.git
-- export PATH=$HOME/gopath/bin:$PATH
 
 install:
 # a workaround related to go issue 6479.
@@ -23,6 +25,5 @@ install:
 - go get h12.me/gspec
 
 script:
-- cd $HOME/gopath/src/h12.me/gspec
 - $goclean/goclean.sh
 - goveralls -coverprofile=profile.cov -service=travis-ci
