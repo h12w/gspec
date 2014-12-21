@@ -6,23 +6,18 @@ go:
 notifications:
   email: false
 
-before_install:
+install:
 - go version
-- export GSPEC=$HOME/gopath/src/h12.me/gspec
-- mkdir -p $GSPEC 
-- cd $GSPEC
 - go get golang.org/x/tools/cmd/cover
 - go get golang.org/x/tools/cmd/vet
 - go get github.com/bradfitz/goimports
 - go get github.com/golang/lint/golint
 - go get github.com/mattn/goveralls
+- go get h12.me/gspec
+- export GSPEC=$HOME/gopath/src/h12.me/gspec
+- cd $GSPEC
 - export goclean=0f22736320abe6be71ce
 - git clone https://gist.github.com/$goclean.git
-
-install:
-# a workaround related to go issue 6479.
-- go install -a -race std
-- go get h12.me/gspec
 
 script:
 - $goclean/goclean.sh
