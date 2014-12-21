@@ -13,8 +13,8 @@ before_install:
 - go get github.com/bradfitz/goimports
 - go get github.com/golang/lint/golint
 - go get github.com/mattn/goveralls
-- git clone https://gist.github.com/$goclean.git
 - export goclean=0f22736320abe6be71ce
+- git clone https://gist.github.com/$goclean.git
 - export PATH=$HOME/gopath/bin:$PATH
 
 install:
