@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package gspec
+package gspec // import "h12.me/gspec"
 
 import (
 	"flag"
@@ -10,11 +10,11 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/hailiang/gspec/core"
-	"github.com/hailiang/gspec/errors"
-	"github.com/hailiang/gspec/expectation"
-	ext "github.com/hailiang/gspec/extension"
-	"github.com/hailiang/gspec/reporter"
+	"h12.me/gspec/core"
+	"h12.me/gspec/errors"
+	"h12.me/gspec/expectation"
+	ext "h12.me/gspec/extension"
+	"h12.me/gspec/reporter"
 )
 
 var (

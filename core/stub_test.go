@@ -12,9 +12,9 @@ import (
 	"strings"
 	"sync"
 
-	ge "github.com/hailiang/gspec/errors"
-	. "github.com/hailiang/gspec/extension"
 	ogdl "github.com/ogdl/flow"
+	ge "h12.me/gspec/errors"
+	. "h12.me/gspec/extension"
 )
 
 func init() {

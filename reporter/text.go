@@ -9,11 +9,11 @@ import (
 	"io"
 	"strings"
 
-	ge "github.com/hailiang/gspec/errors"
-	ext "github.com/hailiang/gspec/extension"
+	ge "h12.me/gspec/errors"
+	ext "h12.me/gspec/extension"
 )
 
-const gspecPath = "github.com/hailiang/gspec"
+const gspecPath = "h12.me/gspec"
 
 // NewTextReporter creates and initialize a new text reporter using w to write
 // the output.

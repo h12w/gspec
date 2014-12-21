@@ -11,7 +11,7 @@ package core
 import (
 	"sync"
 
-	ext "github.com/hailiang/gspec/extension"
+	ext "h12.me/gspec/extension"
 )
 
 // Controller is the "C" of MVC (Model View Controller). In a test framework,

@@ -3,7 +3,7 @@ GSpec: a productive Go test framework
 
 [![Build Status](https://travis-ci.org/hailiang/gspec.png?branch=master)](https://travis-ci.org/hailiang/gspec)
 [![Coverage Status](https://coveralls.io/repos/hailiang/gspec/badge.png?branch=master)](https://coveralls.io/r/hailiang/gspec?branch=master)
-[![GoDoc](https://godoc.org/github.com/hailiang/gspec?status.png)](https://godoc.org/github.com/hailiang/gspec)
+[![GoDoc](https://godoc.org/h12.me/gspec?status.png)](https://godoc.org/h12.me/gspec)
 
 GSpec is an *expressive, reliable, concurrent and extensible* Go test framework
 that makes it productive to organize and verify the mind model of software.
@@ -45,8 +45,8 @@ Quick start
 
 ###Get GSpec
 ```bash
-go get -t -u github.com/hailiang/gspec
-go test github.com/hailiang/gspec/...
+go get -t -u h12.me/gspec
+go test h12.me/gspec/...
 ```
 
 ###Write tests with GSpec
@@ -56,7 +56,7 @@ write GSpec tests in file xxx_test.go to test code in xxx.go.
 import (
 	"fmt"
 
-	"github.com/hailiang/gspec"
+	"h12.me/gspec"
 )
 
 // Only one gspec.Add is needed for each xxx_test.go file.
@@ -112,7 +112,7 @@ package (e.g. all_test.go).
 ```go
 import (
 	"testing"
-	"github.com/hailiang/gspec"
+	"h12.me/gspec"
 )
 
 // Defined only once within a package.

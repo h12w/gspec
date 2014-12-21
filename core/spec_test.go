@@ -7,8 +7,8 @@ package core
 import (
 	"testing"
 
-	exp "github.com/hailiang/gspec/expectation"
-	. "github.com/hailiang/gspec/extension"
+	exp "h12.me/gspec/expectation"
+	. "h12.me/gspec/extension"
 )
 
 /*
