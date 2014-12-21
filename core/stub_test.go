@@ -12,26 +12,11 @@ import (
 	"strings"
 	"sync"
 
-	ogdl "github.com/ogdl/flow"
-	ge "h12.me/gspec/errors"
 	. "h12.me/gspec/extension"
 )
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	ge.Sprint = ogdlPrint
-}
-
-func ogdlPrint(v interface{}) string {
-	buf, _ := ogdl.MarshalIndent(v, "    ", "    ")
-	typ := ""
-	if v != nil {
-		typ = reflect.TypeOf(v).String() + "\n"
-	}
-	return "\n" +
-		typ +
-		string(buf) +
-		"\n"
 }
 
 var (
