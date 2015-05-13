@@ -1,0 +1,19 @@
+box: google/golang
+
+build:
+    steps:
+	- go version
+	- go get golang.org/x/tools/cmd/cover
+	- go get golang.org/x/tools/cmd/vet
+	- go get github.com/bradfitz/goimports
+	- go get github.com/golang/lint/golint
+	- go get github.com/mattn/goveralls
+	- go get h12.me/gspec
+	#- export GSPEC=$HOME/gopath/src/h12.me/gspec
+	#- cd $GSPEC
+	#- export goclean=0f22736320abe6be71ce
+	- git clone https://gist.github.com/$goclean.git
+	- go test ./...
+	#- $goclean/goclean.sh
+	#- goveralls -coverprofile=profile.cov -service=travis-ci
+	
