@@ -3,15 +3,14 @@ box: golang
 build:
     steps:
          - setup-go-workspace
+             package-dir: h12.me/gspec
 
          - script:
-             name: go-get
+             name: go-build
              code: |
                pwd
                go version
-               go get h12.me/gspec
-               export WERCKER_SOURCE_DIR=/gopath/src/h12.me
-               cd $WERCKER_SOURCE_DIR
+               go build ./...
 
          - script:
              name: go-test
