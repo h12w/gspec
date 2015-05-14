@@ -1,12 +1,14 @@
 package docker
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"os/exec"
 )
 
-func IP(containerID string) (string, error) {
-	out, err := exec.Command("docker", "inspect", containerID).Output()
+func (c *Container) ip() (string, error) {
+	out, err := exec.Command("docker", "inspect", c.ID).Output()
 	if err != nil {
 		return "", err
 	}
@@ -16,14 +18,14 @@ func IP(containerID string) (string, error) {
 	type container struct {
 		NetworkSettings networkSettings
 	}
-	var c []container
-	if err := json.NewDecoder(bytes.NewReader(out)).Decode(&c); err != nil {
+	var cs []container
+	if err := json.NewDecoder(bytes.NewReader(out)).Decode(&cs); err != nil {
 		return "", err
 	}
-	if len(c) == 0 {
+	if len(cs) == 0 {
 		return "", errors.New("no output from docker inspect")
 	}
-	if ip := c[0].NetworkSettings.IPAddress; ip != "" {
+	if ip := cs[0].NetworkSettings.IPAddress; ip != "" {
 		return ip, nil
 	}
 	return "", errors.New("could not find an IP. Not running?")
