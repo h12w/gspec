@@ -12,8 +12,7 @@ build:
         #- cd $GSPEC
         - export goclean=0f22736320abe6be71ce
         - git clone https://gist.github.com/$goclean.git
-	- pwd
+        - pwd
         - go test ./...
         #- $goclean/goclean.sh
         #- goveralls -coverprofile=profile.cov -service=travis-ci
-	
