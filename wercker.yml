@@ -10,6 +10,7 @@ build:
              code: |
                pwd
                go version
+               go get ./...
                go build ./...
 
          - script:
