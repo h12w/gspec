@@ -2,7 +2,7 @@ box: golang
 
 build:
     steps:
-         - setup-go-workspace
+         - setup-go-workspace:
              package-dir: h12.me/gspec
 
          - script:
