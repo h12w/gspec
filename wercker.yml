@@ -2,9 +2,19 @@ box: google/golang
 
 build:
     steps:
-         - pwd
-         - go version
-#        - go version
+         - setup-go-workspace
+
+         - script:
+             name: go-build
+             code: |
+               pwd
+               go version
+               go build ./...
+
+         - script:
+             name: go-test
+             code: |
+               go test ./...
 #        - go get golang.org/x/tools/cmd/cover
 #        - go get golang.org/x/tools/cmd/vet
 #        - go get github.com/bradfitz/goimports
