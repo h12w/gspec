@@ -1,19 +1,22 @@
-box: google/golang
+box: golang
 
 build:
     steps:
          - setup-go-workspace
 
          - script:
-             name: go-build
+             name: go-get
              code: |
                pwd
                go version
-               go build ./...
+               go get h12.me/gspec
+               export WERCKER_SOURCE_DIR=/gopath/src/h12.me
+               cd $WERCKER_SOURCE_DIR
 
          - script:
              name: go-test
              code: |
+               pwd
                go test ./...
 #        - go get golang.org/x/tools/cmd/cover
 #        - go get golang.org/x/tools/cmd/vet
