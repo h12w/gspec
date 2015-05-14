@@ -8,7 +8,6 @@ build:
         - go get github.com/bradfitz/goimports
         - go get github.com/golang/lint/golint
         - go get github.com/mattn/goveralls
-        - go get h12.me/gspec
         #- export GSPEC=$HOME/gopath/src/h12.me/gspec
         #- cd $GSPEC
         - export goclean=0f22736320abe6be71ce
