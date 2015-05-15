@@ -1,77 +1,69 @@
 package docker
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"net"
-	"os/exec"
 	"strings"
 	"time"
 )
 
-type T interface {
-	Fatalf(format string, args ...interface{})
-}
-
-func New(t T, image string, timeout time.Duration, start func() (string, error)) (*Container, error) {
-	checkStatus(t, image)
-	id, err := start()
+func New(image string, args ...string) (*Container, error) {
+	if err := initImage(image); err != nil {
+		return nil, err
+	}
+	id, err := run(image, args)
 	if err != nil {
 		return nil, err
 	}
 	return newContainer(id)
 }
 
-func checkStatus(t T, image string) {
-	if !haveDocker() {
-		t.Fatalf("'docker' command not found")
+func initImage(image string) error {
+	if err := initDocker(); err != nil {
+		return err
 	}
 	if ok, err := haveImage(image); !ok || err != nil {
 		if err != nil {
-			t.Fatalf("Error running docker to check for %s: %v", image, err)
+			return err
 		}
-		log.Printf("Pulling docker image %s ...", image)
-		if err := Pull(image); err != nil {
-			t.Fatalf("Error pulling %s: %v", image, err)
+		if err := pull(image); err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
-func haveImage(name string) (ok bool, err error) {
-	out, err := exec.Command("docker", "images", "--no-trunc").Output()
-	if err != nil {
-		log.Println(err)
-		return
+func haveImage(name string) (bool, error) {
+	cmd := command("docker", "images", "--no-trunc")
+	out := cmd.Output()
+	if cmd.Err() != nil {
+		return false, cmd.Err()
 	}
-	return bytes.Contains(out, []byte(name)), nil
+	return strings.Contains(out, name), nil
 }
 
-func Run(args ...string) (containerID string, err error) {
-	cmd := exec.Command("docker", append([]string{"run"}, args...)...)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &stdout, &stderr
-	if err = cmd.Run(); err != nil {
-		err = fmt.Errorf("%v%v", stderr.String(), err)
-		return
+func run(image string, args []string) (string, error) {
+	args = append([]string{"run"}, args...)
+	args = append(args, image)
+	cmd := command("docker", args...)
+	containerID := strings.TrimSpace(cmd.Output())
+	if cmd.Err() != nil {
+		return "", cmd.Err()
 	}
-	containerID = strings.TrimSpace(stdout.String())
-	if containerID == "" {
-		return "", errors.New("unexpected empty output from `docker run`")
-	}
-	return
+	return containerID, nil
 }
 
-func Pull(image string) error {
-	out, err := exec.Command("docker", "pull", image).CombinedOutput()
-	if err != nil {
-		err = fmt.Errorf("%v: %s", err, out)
+func pull(image string) error {
+	log.Printf("docker pull %s ...\n", image)
+	cmd := command("docker", "pull", image)
+	if err := cmd.Run(); err != nil {
+		return err
 	}
-	return err
+	return nil
 }
 
-func AwaitReachable(addr string, maxWait time.Duration) error {
+func awaitReachable(addr string, maxWait time.Duration) error {
 	done := time.Now().Add(maxWait)
 	for time.Now().Before(done) {
 		c, err := net.Dial("tcp", addr)

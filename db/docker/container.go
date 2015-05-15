@@ -80,6 +80,6 @@ func (c *Container) lookup(port int, timeout time.Duration) (ip string, err erro
 		return
 	}
 	addr := fmt.Sprintf("%s:%d", ip, port)
-	err = AwaitReachable(addr, timeout)
+	err = awaitReachable(addr, timeout)
 	return
 }

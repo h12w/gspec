@@ -2,7 +2,11 @@ package docker
 
 import (
 	"bytes"
+	"errors"
+	"log"
+	"os"
 	"os/exec"
+	"strings"
 )
 
 func (c Container) ip() (string, error) {
@@ -13,11 +17,31 @@ func (c Container) ip() (string, error) {
 	return string(bytes.TrimSpace(out)), nil
 }
 
-func haveDocker() bool {
-	_, err := exec.LookPath("docker")
-	if err != nil {
-		return false
+func initDocker() error {
+	if !(cmdExists("boot2docker") && cmdExists("docker")) {
+		return errors.New("docker not installed")
 	}
-	_, err = exec.LookPath("boot2docker")
+	if status := command("boot2docker", "status").Output(); status != "running" {
+		log.Println("boot2docker start ...")
+		if err := command("boot2docker", "start").Run(); err != nil {
+			return err
+		}
+	}
+	if os.Getenv("DOCKER_HOST") == "" || os.Getenv("DOCKER_CERT_PATH") == "" || os.Getenv("DOCKER_TLS_VERIFY") == "" {
+		for _, line := range strings.Split(command("boot2docker", "shellinit").Output(), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			line = strings.TrimPrefix(line, "set -x ")
+			keyVal := strings.Split(line, " ")
+			os.Setenv(keyVal[0], keyVal[1])
+		}
+	}
+	return nil
+}
+
+func cmdExists(s string) bool {
+	_, err := exec.LookPath("docker")
 	return err == nil
 }
