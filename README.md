@@ -1,8 +1,7 @@
 GSpec: a productive Go test framework
 =====================================
 
-[![Build Status](https://travis-ci.org/hailiang/gspec.png?branch=master)](https://travis-ci.org/hailiang/gspec)
-[![Coverage Status](https://coveralls.io/repos/hailiang/gspec/badge.png?branch=master)](https://coveralls.io/r/hailiang/gspec?branch=master)
+[![wercker status](https://app.wercker.com/status/d5ed30f0d03d4a5210f65659ead13888/m/master "wercker status")](https://app.wercker.com/project/bykey/d5ed30f0d03d4a5210f65659ead13888)
 [![GoDoc](https://godoc.org/h12.me/gspec?status.png)](https://godoc.org/h12.me/gspec)
 
 GSpec is an *expressive, reliable, concurrent and extensible* Go test framework
