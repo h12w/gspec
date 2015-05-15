@@ -45,7 +45,6 @@ func haveImage(name string) (bool, error) {
 
 func run(image string, args []string) (string, error) {
 	args = append([]string{"run"}, args...)
-	args = append(args, image)
 	cmd := command("docker", args...)
 	containerID := strings.TrimSpace(cmd.Output())
 	if cmd.Err() != nil {
