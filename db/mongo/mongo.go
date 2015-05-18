@@ -13,15 +13,6 @@ type mgoSession struct {
 	*mgo.Session
 }
 
-func (s *Session) Copy() *mgo.Session {
-	return s.Session.Copy()
-}
-
-func (s *Session) Close() {
-	s.Session.Close()
-	s.c.Close()
-}
-
 func New() (*Session, error) {
 	container, err := docker.New("-d", "-P", "mongo:latest")
 	if err != nil {
@@ -32,4 +23,17 @@ func New() (*Session, error) {
 		return nil, err
 	}
 	return &Session{mgoSession{session}, container}, nil
+}
+
+func (s *Session) Copy() *mgo.Session {
+	return s.Session.Copy()
+}
+
+func (s *Session) Close() {
+	s.Session.Close()
+	s.c.Close()
+}
+
+func (s *Session) Addr() string {
+	return s.c.Addr.String()
 }
