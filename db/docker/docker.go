@@ -9,7 +9,7 @@ import (
 )
 
 func New(image string, args ...string) (*Container, error) {
-	if err := initImage(image); err != nil {
+	if err := initDocker(); err != nil {
 		return nil, err
 	}
 	id, err := run(image, args)
@@ -17,30 +17,6 @@ func New(image string, args ...string) (*Container, error) {
 		return nil, err
 	}
 	return newContainer(id)
-}
-
-func initImage(image string) error {
-	if err := initDocker(); err != nil {
-		return err
-	}
-	if ok, err := haveImage(image); !ok || err != nil {
-		if err != nil {
-			return err
-		}
-		if err := pull(image); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func haveImage(name string) (bool, error) {
-	cmd := command("docker", "images", "--no-trunc")
-	out := cmd.Output()
-	if cmd.Err() != nil {
-		return false, cmd.Err()
-	}
-	return strings.Contains(out, name), nil
 }
 
 func run(image string, args []string) (string, error) {
