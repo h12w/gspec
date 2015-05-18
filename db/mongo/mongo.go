@@ -23,7 +23,7 @@ func (s *Session) Close() {
 }
 
 func New() (*Session, error) {
-	container, err := docker.New("mongo:latest", "-d", "-P", "mongo:latest", "mongod", "--smallfiles")
+	container, err := docker.New("-d", "-P", "mongo:latest")
 	if err != nil {
 		return nil, err
 	}

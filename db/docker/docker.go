@@ -2,24 +2,23 @@ package docker
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"strings"
 	"time"
 )
 
-func New(image string, args ...string) (*Container, error) {
+func New(args ...string) (*Container, error) {
 	if err := initDocker(); err != nil {
 		return nil, err
 	}
-	id, err := run(image, args)
+	id, err := run(args)
 	if err != nil {
 		return nil, err
 	}
 	return newContainer(id)
 }
 
-func run(image string, args []string) (string, error) {
+func run(args []string) (string, error) {
 	args = append([]string{"run"}, args...)
 	cmd := command("docker", args...)
 	containerID := strings.TrimSpace(cmd.Output())
@@ -27,15 +26,6 @@ func run(image string, args []string) (string, error) {
 		return "", cmd.Err()
 	}
 	return containerID, nil
-}
-
-func pull(image string) error {
-	log.Printf("docker pull %s ...\n", image)
-	cmd := command("docker", "pull", image)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func awaitReachable(addr string, maxWait time.Duration) error {
