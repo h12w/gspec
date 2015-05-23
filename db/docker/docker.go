@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 	"time"
+	"os/exec"
 )
 
 func New(args ...string) (*Container, error) {
@@ -39,4 +40,9 @@ func awaitReachable(addr string, maxWait time.Duration) error {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return fmt.Errorf("%v unreachable for %v", addr, maxWait)
+}
+
+func cmdExists(s string) bool {
+	_, err := exec.LookPath("docker")
+	return err == nil
 }
