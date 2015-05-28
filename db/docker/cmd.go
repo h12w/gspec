@@ -19,13 +19,13 @@ func command(name string, arg ...string) *cmd {
 	return &cmd
 }
 
-func (c *cmd) Output() string {
+func (c *cmd) Output() []byte {
 	r, err := c.c.Output()
 	if err != nil {
 		c.err = c.formatError(err)
-		return ""
+		return nil
 	}
-	return string(bytes.TrimSpace(r))
+	return bytes.TrimSpace(r)
 }
 
 func (c *cmd) Err() error {
@@ -42,4 +42,9 @@ func (c *cmd) Run() error {
 
 func (c *cmd) formatError(err error) error {
 	return fmt.Errorf("%s (%s): %s", strings.Join(c.c.Args, " "), err.Error(), c.errBuf.String())
+}
+
+func cmdExists(file string) bool {
+	_, err := exec.LookPath(file)
+	return err == nil
 }

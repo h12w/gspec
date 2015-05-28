@@ -3,9 +3,7 @@ package docker
 import (
 	"fmt"
 	"net"
-	"strings"
 	"time"
-	"os/exec"
 )
 
 func New(args ...string) (*Container, error) {
@@ -22,7 +20,7 @@ func New(args ...string) (*Container, error) {
 func run(args []string) (string, error) {
 	args = append([]string{"run"}, args...)
 	cmd := command("docker", args...)
-	containerID := strings.TrimSpace(cmd.Output())
+	containerID := string(cmd.Output())
 	if cmd.Err() != nil {
 		return "", cmd.Err()
 	}
@@ -40,9 +38,4 @@ func awaitReachable(addr string, maxWait time.Duration) error {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return fmt.Errorf("%v unreachable for %v", addr, maxWait)
-}
-
-func cmdExists(s string) bool {
-	_, err := exec.LookPath("docker")
-	return err == nil
 }

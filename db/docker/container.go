@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os/exec"
 	"strconv"
 	"time"
 )
@@ -41,10 +40,7 @@ func (c *Container) addr() (*net.TCPAddr, error) {
 }
 
 func (c *Container) port() (int, error) {
-	out, err := exec.Command("docker", "port", c.ID).Output()
-	if err != nil {
-		return 0, err
-	}
+	out := command("docker", "port", c.ID).Output()
 	tok := bytes.Split(out, []byte(":"))
 	if len(tok) == 2 {
 		return strconv.Atoi(string(bytes.TrimSpace(tok[1])))
@@ -53,11 +49,11 @@ func (c *Container) port() (int, error) {
 }
 
 func (c *Container) Kill() error {
-	return exec.Command("docker", "kill", c.ID).Run()
+	return command("docker", "kill", c.ID).Run()
 }
 
 func (c *Container) Remove() error {
-	return exec.Command("docker", "rm", c.ID).Run()
+	return command("docker", "rm", c.ID).Run()
 }
 
 // KillRemove calls Kill on the container, and then Remove if there was
@@ -83,3 +79,6 @@ func (c *Container) lookup(port int, timeout time.Duration) (ip string, err erro
 	err = awaitReachable(addr, timeout)
 	return
 }
+
+//func (c Container) log() string {
+//}

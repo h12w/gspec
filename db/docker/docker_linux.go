@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"os/exec"
 )
 
 func (c *Container) ip() (string, error) {
@@ -30,7 +29,6 @@ func (c *Container) ip() (string, error) {
 	}
 	return "", errors.New("could not find an IP. Not running?")
 }
-
 
 func initDocker() error {
 	if !(cmdExists("boot2docker") && cmdExists("docker")) {
