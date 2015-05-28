@@ -18,8 +18,9 @@ func newContainer(id string) (_ *Container, err error) {
 	c := &Container{ID: id}
 	c.Addr, err = c.addr()
 	if err != nil {
+		log := c.Log()
 		c.Close()
-		return nil, err
+		return nil, fmt.Errorf("%s: %s", err.Error(), log)
 	}
 	return c, nil
 }
@@ -80,5 +81,6 @@ func (c *Container) lookup(port int, timeout time.Duration) (ip string, err erro
 	return
 }
 
-//func (c Container) log() string {
-//}
+func (c Container) Log() string {
+	return string(command("docker", "logs", c.ID).Output())
+}
