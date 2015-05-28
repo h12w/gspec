@@ -41,7 +41,3 @@ func initDocker() error {
 	return nil
 }
 
-func cmdExists(s string) bool {
-	_, err := exec.LookPath("docker")
-	return err == nil
-}

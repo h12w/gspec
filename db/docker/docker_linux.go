@@ -31,7 +31,10 @@ func (c *Container) ip() (string, error) {
 	return "", errors.New("could not find an IP. Not running?")
 }
 
-func haveDocker() bool {
-	_, err := exec.LookPath("docker")
-	return err == nil
+
+func initDocker() error {
+	if !(cmdExists("boot2docker") && cmdExists("docker")) {
+		return errors.New("docker not installed")
+	}
+	return nil
 }
