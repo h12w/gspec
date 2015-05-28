@@ -20,6 +20,7 @@ func New() (*Session, error) {
 	}
 	session, err := mgo.Dial(container.Addr.String())
 	if err != nil {
+		container.Close()
 		return nil, err
 	}
 	return &Session{mgoSession{session}, container}, nil

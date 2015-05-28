@@ -15,11 +15,11 @@ type Container struct {
 	Addr *net.TCPAddr
 }
 
-func newContainer(id string) (*Container, error) {
+func newContainer(id string) (_ *Container, err error) {
 	c := &Container{ID: id}
-	var err error
 	c.Addr, err = c.addr()
 	if err != nil {
+		c.Close()
 		return nil, err
 	}
 	return c, nil
