@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"strconv"
-	"time"
 )
 
 type Container struct {
@@ -66,19 +65,6 @@ func (c *Container) Close() {
 	if err := c.Remove(); err != nil {
 		log.Println(err)
 	}
-}
-
-// lookup retrieves the ip address of the container, and tries to reach
-// before timeout the tcp address at this ip and given port.
-func (c *Container) lookup(port int, timeout time.Duration) (ip string, err error) {
-	ip, err = c.ip()
-	if err != nil {
-		err = fmt.Errorf("error getting IP: %v", err)
-		return
-	}
-	addr := fmt.Sprintf("%s:%d", ip, port)
-	err = awaitReachable(addr, timeout)
-	return
 }
 
 func (c Container) Log() string {

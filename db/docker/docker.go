@@ -14,7 +14,15 @@ func New(args ...string) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newContainer(id)
+	c, err := newContainer(id)
+	if err != nil {
+		return nil, err
+	}
+	if err := awaitReachable(c.Addr, 30*time.Second); err != nil {
+		c.Close()
+		return nil, err
+	}
+	return c, nil
 }
 
 func run(args []string) (string, error) {
@@ -27,10 +35,10 @@ func run(args []string) (string, error) {
 	return containerID, nil
 }
 
-func awaitReachable(addr string, maxWait time.Duration) error {
+func awaitReachable(addr *net.TCPAddr, maxWait time.Duration) error {
 	done := time.Now().Add(maxWait)
 	for time.Now().Before(done) {
-		c, err := net.Dial("tcp", addr)
+		c, err := net.DialTCP("tcp", nil, addr)
 		if err == nil {
 			c.Close()
 			return nil
