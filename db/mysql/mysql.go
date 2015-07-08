@@ -15,12 +15,13 @@ type Session struct {
 	c *docker.Container
 }
 
-func New(password string) (*Session, error) {
-	container, err := docker.New("--detach=true", "--publish-all=true", "--env=MYSQL_ROOT_PASSWORD="+password, "mysql:latest")
+func New() (*Session, error) {
+	container, err := docker.New("--detach=true", "--publish-all=true", "h12w/mysql:latest")
 	if err != nil {
 		return nil, err
 	}
 	time.Sleep(time.Second)
+	password := ""
 	connStr := fmt.Sprintf("root:%s@tcp(%s)/", password, container.Addr.String())
 	x, err := sql.Open("mysql", connStr)
 	if err != nil {

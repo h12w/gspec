@@ -3,7 +3,7 @@ package mysql
 import "testing"
 
 func TestMysql(t *testing.T) {
-	s, err := New("1234")
+	s, err := New()
 	if err != nil {
 		t.Fatal(err)
 	}
