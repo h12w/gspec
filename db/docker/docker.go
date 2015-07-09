@@ -18,7 +18,7 @@ func New(args ...string) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := util.AwaitReachable(c.Addr, 30*time.Second); err != nil {
+	if err := util.AwaitReachable(c.Addr.String(), 30*time.Second); err != nil {
 		c.Close()
 		return nil, err
 	}

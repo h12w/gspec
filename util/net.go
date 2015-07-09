@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-func AwaitReachable(addr *net.TCPAddr, maxWait time.Duration) error {
+func AwaitReachable(addr string, maxWait time.Duration) error {
 	done := time.Now().Add(maxWait)
 	for time.Now().Before(done) {
-		c, err := net.DialTCP("tcp", nil, addr)
+		c, err := net.Dial("tcp", addr)
 		if err == nil {
 			c.Close()
 			return nil
