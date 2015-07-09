@@ -1,9 +1,9 @@
 package docker
 
 import (
-	"fmt"
-	"net"
 	"time"
+
+	"h12.me/gspec/util"
 )
 
 func New(args ...string) (*Container, error) {
@@ -18,7 +18,7 @@ func New(args ...string) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := awaitReachable(c.Addr, 30*time.Second); err != nil {
+	if err := util.AwaitReachable(c.Addr, 30*time.Second); err != nil {
 		c.Close()
 		return nil, err
 	}
@@ -33,17 +33,4 @@ func run(args []string) (string, error) {
 		return "", cmd.Err()
 	}
 	return containerID, nil
-}
-
-func awaitReachable(addr *net.TCPAddr, maxWait time.Duration) error {
-	done := time.Now().Add(maxWait)
-	for time.Now().Before(done) {
-		c, err := net.DialTCP("tcp", nil, addr)
-		if err == nil {
-			c.Close()
-			return nil
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	return fmt.Errorf("%v unreachable for %v", addr, maxWait)
 }
