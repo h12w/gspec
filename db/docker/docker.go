@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"fmt"
 	"time"
 
 	"h12.me/gspec/util"
@@ -25,6 +26,17 @@ func New(args ...string) (*Container, error) {
 	return c, nil
 }
 
+func Find(name string) (*Container, error) {
+	if err := initDocker(); err != nil {
+		return nil, err
+	}
+	id, err := ps("name=" + name)
+	if err != nil {
+		return nil, err
+	}
+	return newContainer(id)
+}
+
 func run(args []string) (string, error) {
 	args = append(args, "--rm=true") // remove after stopped
 	args = append([]string{"run"}, args...)
@@ -32,6 +44,24 @@ func run(args []string) (string, error) {
 	containerID := string(cmd.Output())
 	if cmd.Err() != nil {
 		return "", cmd.Err()
+	}
+	return containerID, nil
+}
+
+func ps(filter string) (string, error) {
+	args := []string{
+		"ps",
+		"--no-trunc=true",
+		"--quiet=true",
+		"--filter=" + filter,
+	}
+	cmd := command("docker", args...)
+	containerID := string(cmd.Output())
+	if cmd.Err() != nil {
+		return "", cmd.Err()
+	}
+	if containerID == "" {
+		return "", fmt.Errorf("cannot find container with condition %s", filter)
 	}
 	return containerID, nil
 }

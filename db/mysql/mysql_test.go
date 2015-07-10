@@ -8,7 +8,4 @@ func TestMysql(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer s.Close()
-	if _, err := s.Exec("CREATE DATABASE abc"); err != nil {
-		t.Fatal(err)
-	}
 }
