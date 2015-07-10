@@ -16,7 +16,7 @@ type Session struct {
 }
 
 func New() (*Session, error) {
-	container, err := docker.New("--detach=true", "--publish-all=true", "h12w/mysql:latest")
+	container, err := docker.New("--detach=true", "--publish-all=true", "h12w/mariadb:latest")
 	if err != nil {
 		return nil, err
 	}
