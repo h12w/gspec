@@ -42,7 +42,8 @@ func New() (*Redis, error) {
 	}, nil
 }
 
-func (s *Redis) Close() {
+func (s *Redis) Pool() *redis.Pool {
+	return s.pool
 }
 
 func (s *Redis) Addr() string {
