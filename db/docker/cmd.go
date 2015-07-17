@@ -44,6 +44,10 @@ func (c *cmd) formatError(err error) error {
 	return fmt.Errorf("%s (%s): %s", strings.Join(c.c.Args, " "), err.Error(), c.errBuf.String())
 }
 
+func (c *cmd) String() string {
+	return c.c.Path + " " + strings.Join(c.c.Args, " ")
+}
+
 func cmdExists(file string) bool {
 	_, err := exec.LookPath(file)
 	return err == nil

@@ -40,12 +40,13 @@ func (c *Container) addr() (*net.TCPAddr, error) {
 }
 
 func (c *Container) port() (int, error) {
-	out := command("docker", "port", c.ID).Output()
+	cmd := command("docker", "port", c.ID)
+	out := cmd.Output()
 	tok := bytes.Split(out, []byte(":"))
 	if len(tok) == 2 {
 		return strconv.Atoi(string(bytes.TrimSpace(tok[1])))
 	}
-	return 0, fmt.Errorf("fail to parse port from %s", string(out))
+	return 0, fmt.Errorf("fail to parse port from %s, cmd: %v, id: %s\n", string(out), cmd, c.ID)
 }
 
 func (c *Container) Kill() error {

@@ -38,7 +38,6 @@ func Find(name string) (*Container, error) {
 }
 
 func run(args []string) (string, error) {
-	args = append(args, "--rm=true") // remove after stopped
 	args = append([]string{"run"}, args...)
 	cmd := command("docker", args...)
 	containerID := string(cmd.Output())
