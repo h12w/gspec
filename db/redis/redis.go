@@ -17,7 +17,7 @@ type Redis struct {
 func New() (*Redis, error) {
 	container, err := docker.Find(containerName)
 	if err != nil {
-		container, err = docker.New("--name="+containerName, "--detach=true", "--publish=8379:6379", "redis")
+		container, err = docker.New("--name="+containerName, "--detach=true", "--publish=6379:6379", "redis")
 		if err != nil {
 			return nil, err
 		}
