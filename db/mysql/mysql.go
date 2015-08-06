@@ -11,6 +11,7 @@ import (
 )
 
 const containerName = "gspec-db-mysql-f762b7f19a06403cb27bc8ab5f735840"
+const password = "1234"
 
 type Database struct {
 	Name    string
@@ -23,13 +24,12 @@ type Database struct {
 func New() (*Database, error) {
 	container, err := docker.Find(containerName)
 	if err != nil {
-		container, err = docker.New("--name="+containerName, "--detach=true", "--publish=3306:3306", "h12w/mysql:latest")
+		container, err = docker.New("--name="+containerName, "--detach=true", "--publish=3306:3306", "--env=MYSQL_ROOT_PASSWORD="+password, "mysql:latest")
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	password := ""
 	connStr := fmt.Sprintf("root:%s@tcp(%s)/", password, container.Addr.String())
 	x, err := sql.Open("mysql", connStr)
 	if err != nil {
