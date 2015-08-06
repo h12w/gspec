@@ -21,12 +21,12 @@ type ZooKeeper struct {
 	Addr string
 }
 
-func (zk *ZooKeeper) NewTopic() (string, error) {
+func (zk *ZooKeeper) NewTopic(partition int) (string, error) {
 	if !util.CmdExists(kafkaTopicsCmd) {
 		return "", errors.New(kafkaTopicsCmd + " not found in path, please install Kafka first")
 	}
 	topic := "topic_" + strconv.Itoa(rand.Int())
-	return topic, util.Command("kafka-topics.sh", "--zookeeper", zk.Addr, "--create", "--topic", topic, "--partitions", "1", "--eplication-factor", "1").Run()
+	return topic, util.Command("kafka-topics.sh", "--zookeeper", zk.Addr, "--create", "--topic", topic, "--partitions", strconv.Itoa(partition), "--eplication-factor", "1").Run()
 }
 
 func (zk *ZooKeeper) DeleteTopic(topic string) error {
