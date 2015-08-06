@@ -1,10 +1,15 @@
 package kafka
 
 import (
+	"errors"
 	"math/rand"
 	"strconv"
 
 	"h12.me/gspec/util"
+)
+
+const (
+	kafkaTopicsCmd = "kafka-topics.sh"
 )
 
 type ZooKeeper struct {
@@ -12,6 +17,9 @@ type ZooKeeper struct {
 }
 
 func (zk *ZooKeeper) NewTopic() (string, error) {
+	if !util.CmdExists(kafkaTopicsCmd) {
+		return "", errors.New(kafkaTopicsCmd + " not found in path, please install Kafka first")
+	}
 	topic := "topic_" + strconv.Itoa(rand.Int())
 	return topic, util.Command("kafka-topics.sh", "--zookeeper", zk.Addr, "--create", "--topic", topic, "--partitions", "1", "--eplication-factor", "1").Run()
 }
