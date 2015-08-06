@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/rand"
 	"strconv"
+	"time"
 
 	"h12.me/gspec/util"
 )
@@ -11,6 +12,10 @@ import (
 const (
 	kafkaTopicsCmd = "kafka-topics.sh"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type ZooKeeper struct {
 	Addr string

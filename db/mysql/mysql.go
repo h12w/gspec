@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"h12.me/gspec/db/docker"
@@ -12,6 +13,10 @@ import (
 
 const containerName = "gspec-db-mysql-f762b7f19a06403cb27bc8ab5f735840"
 const password = "1234"
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type Database struct {
 	Name    string
