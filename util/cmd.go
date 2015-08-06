@@ -1,4 +1,4 @@
-package docker
+package util
 
 import (
 	"bytes"
@@ -7,19 +7,19 @@ import (
 	"strings"
 )
 
-type cmd struct {
+type Cmd struct {
 	c      *exec.Cmd
 	err    error
 	errBuf bytes.Buffer
 }
 
-func command(name string, arg ...string) *cmd {
-	cmd := cmd{c: exec.Command(name, arg...)}
+func Command(name string, arg ...string) *Cmd {
+	cmd := Cmd{c: exec.Command(name, arg...)}
 	cmd.c.Stderr = &cmd.errBuf
 	return &cmd
 }
 
-func (c *cmd) Output() []byte {
+func (c *Cmd) Output() []byte {
 	r, err := c.c.Output()
 	if err != nil {
 		c.err = c.formatError(err)
@@ -28,11 +28,11 @@ func (c *cmd) Output() []byte {
 	return bytes.TrimSpace(r)
 }
 
-func (c *cmd) Err() error {
+func (c *Cmd) Err() error {
 	return c.err
 }
 
-func (c *cmd) Run() error {
+func (c *Cmd) Run() error {
 	err := c.c.Run()
 	if err != nil {
 		c.err = c.formatError(err)
@@ -40,15 +40,15 @@ func (c *cmd) Run() error {
 	return nil
 }
 
-func (c *cmd) formatError(err error) error {
+func (c *Cmd) formatError(err error) error {
 	return fmt.Errorf("%s (%s): %s", strings.Join(c.c.Args, " "), err.Error(), c.errBuf.String())
 }
 
-func (c *cmd) String() string {
+func (c *Cmd) String() string {
 	return c.c.Path + " " + strings.Join(c.c.Args, " ")
 }
 
-func cmdExists(file string) bool {
+func CmdExists(file string) bool {
 	_, err := exec.LookPath(file)
 	return err == nil
 }

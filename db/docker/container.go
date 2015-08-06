@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"strconv"
+
+	"h12.me/gspec/util"
 )
 
 type Container struct {
@@ -40,7 +42,7 @@ func (c *Container) addr() (*net.TCPAddr, error) {
 }
 
 func (c *Container) port() (int, error) {
-	cmd := command("docker", "port", c.ID)
+	cmd := util.Command("docker", "port", c.ID)
 	out := cmd.Output()
 	tok := bytes.Split(out, []byte(":"))
 	if len(tok) == 2 {
@@ -50,11 +52,11 @@ func (c *Container) port() (int, error) {
 }
 
 func (c *Container) Kill() error {
-	return command("docker", "kill", c.ID).Run()
+	return util.Command("docker", "kill", c.ID).Run()
 }
 
 func (c *Container) Remove() error {
-	return command("docker", "rm", c.ID).Run()
+	return util.Command("docker", "rm", c.ID).Run()
 }
 
 // KillRemove calls Kill on the container, and then Remove if there was
@@ -69,5 +71,5 @@ func (c *Container) Close() {
 }
 
 func (c Container) Log() string {
-	return string(command("docker", "logs", c.ID).Output())
+	return string(util.Command("docker", "logs", c.ID).Output())
 }

@@ -39,7 +39,7 @@ func Find(name string) (*Container, error) {
 
 func run(args []string) (string, error) {
 	args = append([]string{"run"}, args...)
-	cmd := command("docker", args...)
+	cmd := util.Command("docker", args...)
 	containerID := string(cmd.Output())
 	if cmd.Err() != nil {
 		return "", cmd.Err()
@@ -54,7 +54,7 @@ func ps(filter string) (string, error) {
 		"--quiet=true",
 		"--filter=" + filter,
 	}
-	cmd := command("docker", args...)
+	cmd := util.Command("docker", args...)
 	containerID := string(cmd.Output())
 	if cmd.Err() != nil {
 		return "", cmd.Err()
