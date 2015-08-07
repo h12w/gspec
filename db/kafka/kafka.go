@@ -26,9 +26,13 @@ func (zk *ZooKeeper) NewTopic(partition int) (string, error) {
 		return "", errors.New(kafkaTopicsCmd + " not found in path, please install Kafka first")
 	}
 	topic := "topic_" + strconv.Itoa(rand.Int())
-	return topic, util.Command("kafka-topics.sh", "--zookeeper", zk.Addr, "--create", "--topic", topic, "--partitions", strconv.Itoa(partition), "--eplication-factor", "1").Run()
+	return topic, util.Command(kafkaTopicsCmd, "--zookeeper", zk.Addr, "--create", "--topic", topic, "--partitions", strconv.Itoa(partition), "--replication-factor", "1").Run()
 }
 
 func (zk *ZooKeeper) DeleteTopic(topic string) error {
-	return util.Command("kafka-topics.sh", "--zookeeper", zk.Addr, "--delete", "--topic", topic).Run()
+	return util.Command(kafkaTopicsCmd, "--zookeeper", zk.Addr, "--delete", "--topic", topic).Run()
+}
+
+func (zk *ZooKeeper) DescribeTopic(topic string) string {
+	return string(util.Command(kafkaTopicsCmd, "--zookeeper", zk.Addr, "--describe", "--topic", topic).Output())
 }

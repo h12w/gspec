@@ -36,6 +36,7 @@ func (c *Cmd) Run() error {
 	err := c.c.Run()
 	if err != nil {
 		c.err = c.formatError(err)
+		return c.err
 	}
 	return nil
 }
