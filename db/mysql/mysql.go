@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"h12.me/gspec/db/docker"
@@ -14,14 +13,9 @@ import (
 const containerName = "gspec-db-mysql-f762b7f19a06403cb27bc8ab5f735840"
 const password = "1234"
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 type Database struct {
-	Name    string
-	ConnStr string
 	DBName  string
+	ConnStr string
 	*sql.DB
 	c *docker.Container
 }
@@ -49,7 +43,6 @@ func New() (*Database, error) {
 		return nil, err
 	}
 	return &Database{
-		Name:    dbName,
 		ConnStr: connStr + dbName,
 		DBName:  dbName,
 		DB:      x,
@@ -58,7 +51,7 @@ func New() (*Database, error) {
 }
 
 func (s *Database) Close() {
-	s.DB.Exec("DROP DATABASE " + s.Name)
+	s.DB.Exec("DROP DATABASE " + s.DBName)
 	if s.DB != nil {
 		s.DB.Close()
 		s.DB = nil

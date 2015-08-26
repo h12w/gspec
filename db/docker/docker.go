@@ -2,10 +2,15 @@ package docker
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	"h12.me/gspec/util"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func New(args ...string) (*Container, error) {
 	if err := initDocker(); err != nil {
