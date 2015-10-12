@@ -10,6 +10,5 @@ func TestMysql(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Close()
 	fmt.Println(s.Addr())
 }

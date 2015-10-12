@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"gopkg.in/mgo.v2"
-	"h12.me/gspec/db/docker"
+	"h12.me/gspec/docker/container"
 )
 
 const containerName = "gspec-db-mongo-79cb399e9230494cb475d8461a0183c7"
@@ -15,21 +15,21 @@ type Mongo struct {
 	ConnStr string
 	*mgo.Session
 	*mgo.Database
-	c *docker.Container
+	c *container.Container
 }
 
 func New() (*Mongo, error) {
-	container, err := docker.Find(containerName)
+	c, err := container.Find(containerName)
 	if err != nil {
-		container, err = docker.New("--name="+containerName, "--detach=true", "--publish=27017:27017", "mongo:latest")
+		c, err = container.New("--name="+containerName, "--detach=true", "--publish=27017:27017", "mongo:latest")
 		if err != nil {
 			return nil, err
 		}
 	}
-	connStr := "mongodb://" + container.Addr.String()
+	connStr := "mongodb://" + c.Addr.String()
 	session, err := mgo.Dial(connStr)
 	if err != nil {
-		container.Close()
+		c.Close()
 		return nil, err
 	}
 	dbName := "db_" + strconv.Itoa(rand.Int())
@@ -39,7 +39,7 @@ func New() (*Mongo, error) {
 		ConnStr:  connStr,
 		Session:  session,
 		Database: db,
-		c:        container,
+		c:        c,
 	}, nil
 }
 

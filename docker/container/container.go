@@ -1,11 +1,10 @@
-package docker
+package container
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net"
-	"strconv"
+	"time"
 
 	"h12.me/gspec/util"
 )
@@ -13,6 +12,36 @@ import (
 type Container struct {
 	ID   string
 	Addr *net.TCPAddr
+}
+
+func New(args ...string) (*Container, error) {
+	if err := initDocker(); err != nil {
+		return nil, err
+	}
+	id, err := dockerRun(args)
+	if err != nil {
+		return nil, err
+	}
+	c, err := newContainer(id)
+	if err != nil {
+		return nil, err
+	}
+	if err := util.AwaitReachable(c.Addr.String(), 30*time.Second); err != nil {
+		c.Close()
+		return nil, err
+	}
+	return c, nil
+}
+
+func Find(name string) (*Container, error) {
+	if err := initDocker(); err != nil {
+		return nil, err
+	}
+	id, err := dockerPS("name=" + name)
+	if err != nil {
+		return nil, err
+	}
+	return newContainer(id)
 }
 
 func newContainer(id string) (_ *Container, err error) {
@@ -41,24 +70,6 @@ func (c *Container) addr() (*net.TCPAddr, error) {
 	}, nil
 }
 
-func (c *Container) port() (int, error) {
-	cmd := util.Command("docker", "port", c.ID)
-	out := cmd.Output()
-	tok := bytes.Split(out, []byte(":"))
-	if len(tok) == 2 {
-		return strconv.Atoi(string(bytes.TrimSpace(tok[1])))
-	}
-	return 0, fmt.Errorf("fail to parse port from %s, cmd: %v, id: %s\n", string(out), cmd, c.ID)
-}
-
-func (c *Container) Kill() error {
-	return util.Command("docker", "kill", c.ID).Run()
-}
-
-func (c *Container) Remove() error {
-	return util.Command("docker", "rm", c.ID).Run()
-}
-
 // KillRemove calls Kill on the container, and then Remove if there was
 // no error. It logs any error to t.
 func (c *Container) Close() {
@@ -68,8 +79,4 @@ func (c *Container) Close() {
 	if err := c.Remove(); err != nil {
 		log.Println(err)
 	}
-}
-
-func (c Container) Log() string {
-	return string(util.Command("docker", "logs", c.ID).Output())
 }

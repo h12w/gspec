@@ -4,20 +4,20 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
-	"h12.me/gspec/db/docker"
+	"h12.me/gspec/docker/container"
 )
 
 const containerName = "gspec-db-redis-ac3bfb841b3c47378dfdecca51b23042"
 
 type Redis struct {
 	pool *redis.Pool
-	c    *docker.Container
+	c    *container.Container
 }
 
 func New() (*Redis, error) {
-	container, err := docker.Find(containerName)
+	c, err := container.Find(containerName)
 	if err != nil {
-		container, err = docker.New("--name="+containerName, "--detach=true", "--publish=6379:6379", "redis")
+		c, err = container.New("--name="+containerName, "--detach=true", "--publish=6379:6379", "redis")
 		if err != nil {
 			return nil, err
 		}
@@ -27,7 +27,7 @@ func New() (*Redis, error) {
 			MaxIdle:     3,
 			IdleTimeout: 240 * time.Second,
 			Dial: func() (redis.Conn, error) {
-				c, err := redis.Dial("tcp", container.Addr.String())
+				c, err := redis.Dial("tcp", c.Addr.String())
 				if err != nil {
 					return nil, err
 				}
@@ -38,7 +38,7 @@ func New() (*Redis, error) {
 				return err
 			},
 		},
-		c: container,
+		c: c,
 	}, nil
 }
 
