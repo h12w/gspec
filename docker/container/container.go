@@ -41,7 +41,14 @@ func Find(name string) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newContainer(id)
+	if err = dockerStart(id); err != nil {
+		return nil, err
+	}
+	c, err := newContainer(id)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
 }
 
 func newContainer(id string) (_ *Container, err error) {

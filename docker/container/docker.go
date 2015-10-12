@@ -21,6 +21,7 @@ func dockerRun(args []string) (string, error) {
 func dockerPS(filter string) (string, error) {
 	args := []string{
 		"ps",
+		"--all=true",
 		"--no-trunc=true",
 		"--quiet=true",
 		"--filter=" + filter,
@@ -44,6 +45,10 @@ func (c *Container) port() (int, error) {
 		return strconv.Atoi(string(bytes.TrimSpace(tok[1])))
 	}
 	return 0, fmt.Errorf("fail to parse port from %s, cmd: %v, id: %s\n", string(out), cmd, c.ID)
+}
+
+func dockerStart(id string) error {
+	return util.Command("docker", "start", id).Run()
 }
 
 func (c *Container) Kill() error {
