@@ -3,6 +3,7 @@ package container
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"strconv"
 
 	"h12.me/gspec/util"
@@ -37,14 +38,29 @@ func dockerPS(filter string) (string, error) {
 	return containerID, nil
 }
 
-func (c *Container) port() (int, error) {
+var rxPortMapping = regexp.MustCompile(`([0-9]+)/.* -> .*:([0-9]+)`)
+
+func (c *Container) ports() (map[int]int, error) {
+	result := make(map[int]int)
 	cmd := util.Command("docker", "port", c.ID)
 	out := cmd.Output()
-	tok := bytes.Split(out, []byte(":"))
-	if len(tok) == 2 {
-		return strconv.Atoi(string(bytes.TrimSpace(tok[1])))
+	lines := bytes.Split(out, []byte("\n"))
+	for _, line := range lines {
+		m := rxPortMapping.FindSubmatch(line)
+		if len(m) != 3 {
+			return nil, fmt.Errorf("unexpected input %s", string(line))
+		}
+		from, err := strconv.Atoi(string(m[1]))
+		if err != nil {
+			return nil, err
+		}
+		to, err := strconv.Atoi(string(m[2]))
+		if err != nil {
+			return nil, err
+		}
+		result[from] = to
 	}
-	return 0, fmt.Errorf("fail to parse port from %s, cmd: %v, id: %s\n", string(out), cmd, c.ID)
+	return result, nil
 }
 
 func dockerStart(id string) error {

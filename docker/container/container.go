@@ -3,15 +3,16 @@ package container
 import (
 	"fmt"
 	"log"
-	"net"
+	"strconv"
 	"time"
 
 	"h12.me/gspec/util"
 )
 
 type Container struct {
-	ID   string
-	Addr *net.TCPAddr
+	ID    string
+	IP    string
+	Ports map[int]int
 }
 
 func New(args ...string) (*Container, error) {
@@ -26,7 +27,7 @@ func New(args ...string) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := util.AwaitReachable(c.Addr.String(), 30*time.Second); err != nil {
+	if err := util.AwaitReachable(c.anyAddr(), 30*time.Second); err != nil {
 		c.Close()
 		return nil, err
 	}
@@ -53,7 +54,13 @@ func Find(name string) (*Container, error) {
 
 func newContainer(id string) (_ *Container, err error) {
 	c := &Container{ID: id}
-	c.Addr, err = c.addr()
+	c.IP, err = c.ip()
+	if err != nil {
+		log := c.Log()
+		c.Close()
+		return nil, fmt.Errorf("%s: %s", err.Error(), log)
+	}
+	c.Ports, err = c.ports()
 	if err != nil {
 		log := c.Log()
 		c.Close()
@@ -62,19 +69,15 @@ func newContainer(id string) (_ *Container, err error) {
 	return c, nil
 }
 
-func (c *Container) addr() (*net.TCPAddr, error) {
-	ip, err := c.ip()
-	if err != nil {
-		return nil, err
+func (c *Container) anyAddr() string {
+	for _, port := range c.Ports {
+		return c.IP + ":" + strconv.Itoa(port)
 	}
-	port, err := c.port()
-	if err != nil {
-		return nil, err
-	}
-	return &net.TCPAddr{
-		IP:   net.ParseIP(ip),
-		Port: port,
-	}, nil
+	return ""
+}
+
+func (c *Container) Addr(port int) string {
+	return c.IP + ":" + strconv.Itoa(c.Ports[port])
 }
 
 // KillRemove calls Kill on the container, and then Remove if there was

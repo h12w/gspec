@@ -10,7 +10,11 @@ import (
 	"h12.me/gspec/docker/container"
 )
 
-const containerName = "gspec-db-mysql-f762b7f19a06403cb27bc8ab5f735840"
+const (
+	containerName = "gspec-db-mysql-f762b7f19a06403cb27bc8ab5f735840"
+	internalPort  = 3306
+)
+
 const password = "1234"
 
 type Database struct {
@@ -29,7 +33,7 @@ func New() (*Database, error) {
 		}
 	}
 
-	connStr := fmt.Sprintf("root:%s@tcp(%s)/", password, c.Addr.String())
+	connStr := fmt.Sprintf("root:%s@tcp(%s)/", password, c.Addr(internalPort))
 	x, err := sql.Open("mysql", connStr)
 	if err != nil {
 		c.Close()
@@ -59,5 +63,5 @@ func (s *Database) Close() {
 }
 
 func (s *Database) Addr() string {
-	return s.c.Addr.String()
+	return s.c.Addr(internalPort)
 }

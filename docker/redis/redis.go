@@ -7,7 +7,10 @@ import (
 	"h12.me/gspec/docker/container"
 )
 
-const containerName = "gspec-db-redis-ac3bfb841b3c47378dfdecca51b23042"
+const (
+	containerName = "gspec-db-redis-ac3bfb841b3c47378dfdecca51b23042"
+	internalPort  = 6379
+)
 
 type Redis struct {
 	pool *redis.Pool
@@ -17,7 +20,7 @@ type Redis struct {
 func New() (*Redis, error) {
 	c, err := container.Find(containerName)
 	if err != nil {
-		c, err = container.New("--name="+containerName, "--detach=true", "--publish=6379:6379", "redis")
+		c, err = container.New("--name="+containerName, "--detach=true", "--publish-all=true", "redis")
 		if err != nil {
 			return nil, err
 		}
@@ -27,7 +30,7 @@ func New() (*Redis, error) {
 			MaxIdle:     3,
 			IdleTimeout: 240 * time.Second,
 			Dial: func() (redis.Conn, error) {
-				c, err := redis.Dial("tcp", c.Addr.String())
+				c, err := redis.Dial("tcp", c.Addr(internalPort))
 				if err != nil {
 					return nil, err
 				}
@@ -47,5 +50,5 @@ func (s *Redis) Pool() *redis.Pool {
 }
 
 func (s *Redis) Addr() string {
-	return s.c.Addr.String()
+	return s.c.Addr(internalPort)
 }
