@@ -4,13 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+
+	"h12.me/gspec/util"
 )
 
 func (c *Container) ip() (string, error) {
-	out, err := exec.Command("docker", "inspect", c.ID).Output()
-	if err != nil {
-		return "", err
-	}
 	type networkSettings struct {
 		IPAddress string
 	}
@@ -18,6 +16,7 @@ func (c *Container) ip() (string, error) {
 		NetworkSettings networkSettings
 	}
 	var cs []container
+	out := util.Command("docker", "inspect", c.ID).Output()
 	if err := json.NewDecoder(bytes.NewReader(out)).Decode(&cs); err != nil {
 		return "", err
 	}
@@ -31,7 +30,7 @@ func (c *Container) ip() (string, error) {
 }
 
 func initDocker() error {
-	if !(cmdExists("boot2docker") && cmdExists("docker")) {
+	if !util.CmdExists("docker") {
 		return errors.New("docker not installed")
 	}
 	return nil
