@@ -8,7 +8,10 @@ import (
 	"h12.me/gspec/docker/container"
 )
 
-const containerName = "gspec-db-mongo-79cb399e9230494cb475d8461a0183c7"
+const (
+	containerName = "gspec-db-mongo-79cb399e9230494cb475d8461a0183c7"
+	internalPort  = 27017
+)
 
 type Mongo struct {
 	DBName  string
@@ -26,7 +29,7 @@ func New() (*Mongo, error) {
 			return nil, err
 		}
 	}
-	connStr := "mongodb://" + c.Addr.String()
+	connStr := "mongodb://" + c.Addr(internalPort)
 	session, err := mgo.Dial(connStr)
 	if err != nil {
 		c.Close()
@@ -55,5 +58,5 @@ func (s *Mongo) Close() {
 }
 
 func (s *Mongo) Addr() string {
-	return s.c.Addr.String()
+	return s.c.Addr(internalPort)
 }
