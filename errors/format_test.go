@@ -12,12 +12,12 @@ func TestGetPos(t *testing.T) {
 	var check = func(int, int, int) *Pos {
 		return GetPos(1)
 	}
-	pos := check(
+	pos := check( // this is the line that should be restored.
 		0,
 		1,
 		2,
-	) // this is the line that should be restored.
-	exp := &Pos{"format_test.go", 19}
+	)
+	exp := &Pos{"format_test.go", 15}
 	if pos.BasePath() != exp.File {
 		t.Fatalf(`Expect "%v" to be "%v"`, pos.BasePath(), exp.File)
 	}
