@@ -1,7 +1,7 @@
 GSpec: a productive Go test framework
 =====================================
 
-[![wercker status](https://app.wercker.com/status/d5ed30f0d03d4a5210f65659ead13888/m/master "wercker status")](https://app.wercker.com/project/bykey/d5ed30f0d03d4a5210f65659ead13888)
+[![wercker status](https://app.wercker.com/status/d5ed30f0d03d4a5210f65659ead13888/s "wercker status")](https://app.wercker.com/project/bykey/d5ed30f0d03d4a5210f65659ead13888)
 [![GoDoc](https://godoc.org/h12.me/gspec?status.png)](https://godoc.org/h12.me/gspec)
 
 GSpec is an *expressive, reliable, concurrent and extensible* Go test framework
@@ -207,7 +207,7 @@ for the cue word of the expecation. e.g.
 ```go
 expect := exp.Alias(s.FailNow)
 ```
-It does rot have to be named as "expect", any valid Go variable name is 
+It does rot have to be named as "expect", any valid Go variable name is
 possible. Usually s.FailNow should be used, unless you want to test the
 expecation within another goroutine.
 
@@ -312,9 +312,9 @@ of every design decisions.
 ###Package organization
 The subpackages are organized with minimal coupling.
 ```
-extension   <- 
+extension   <-
 core        <- extension
-error       <- 
+error       <-
 expectation <- error
 reporter    <- extension, error
 gspec       <- core, exntension, reporter
