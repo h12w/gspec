@@ -56,6 +56,7 @@ func TestIDStack(t *testing.T) {
 	expect(p.Path).Equal(Path{1})
 	expect(i).Equal(Serial(2))
 	i = p.pop()
+	expect(i).Equal(Serial(1))
 	expect(p.Path).Equal(Path{})
 	expect(func() { p.pop() }).Panic()
 }

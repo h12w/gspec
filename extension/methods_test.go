@@ -104,6 +104,7 @@ func TestGroupStack(t *testing.T) {
 		})
 	expect(g).Equal(&TestGroup{Description: "b"})
 	g = s.pop()
+	expect(g).Equal(&TestGroup{Description: "a"})
 	expect(s.a).Equal(TestGroups{})
 	expect(func() { s.pop() }).Panic()
 }
