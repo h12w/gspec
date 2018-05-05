@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	ext "h12.me/gspec/extension"
+	ext "h12.io/gspec/extension"
 )
 
 type collector struct {

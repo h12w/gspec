@@ -2,7 +2,7 @@ GSpec: a productive Go test framework
 =====================================
 
 [![wercker status](https://app.wercker.com/status/d5ed30f0d03d4a5210f65659ead13888/s "wercker status")](https://app.wercker.com/project/bykey/d5ed30f0d03d4a5210f65659ead13888)
-[![GoDoc](https://godoc.org/h12.me/gspec?status.png)](https://godoc.org/h12.me/gspec)
+[![GoDoc](https://godoc.org/h12.io/gspec?status.png)](https://godoc.org/h12.io/gspec)
 
 GSpec is an *expressive, reliable, concurrent and extensible* Go test framework
 that makes it productive to organize and verify the mind model of software.
@@ -44,8 +44,8 @@ Quick start
 
 ###Get GSpec
 ```bash
-go get -u -f h12.me/gspec
-go test h12.me/gspec/...
+go get -u -f h12.io/gspec
+go test h12.io/gspec/...
 ```
 
 ###Write tests with GSpec
@@ -55,7 +55,7 @@ write GSpec tests in file xxx_test.go to test code in xxx.go.
 import (
 	"fmt"
 
-	"h12.me/gspec"
+	"h12.io/gspec"
 )
 
 // Only one gspec.Add is needed for each xxx_test.go file.
@@ -111,7 +111,7 @@ package (e.g. all_test.go).
 ```go
 import (
 	"testing"
-	"h12.me/gspec"
+	"h12.io/gspec"
 )
 
 // Defined only once within a package.

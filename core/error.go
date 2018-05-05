@@ -7,7 +7,7 @@ package core
 import (
 	"sync"
 
-	ext "h12.me/gspec/extension"
+	ext "h12.io/gspec/extension"
 )
 
 type failNowError struct {

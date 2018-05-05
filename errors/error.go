@@ -5,7 +5,7 @@
 /*
 Package errors provides all types of test error.
 */
-package errors // import "h12.me/gspec/errors"
+package errors // import "h12.io/gspec/errors"
 
 import (
 	"fmt"

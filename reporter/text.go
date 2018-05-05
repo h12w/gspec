@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package reporter // import "h12.me/gspec/reporter"
+package reporter // import "h12.io/gspec/reporter"
 
 import (
 	"fmt"
 	"io"
 	"strings"
 
-	ge "h12.me/gspec/errors"
-	ext "h12.me/gspec/extension"
+	ge "h12.io/gspec/errors"
+	ext "h12.io/gspec/extension"
 )
 
-const gspecPath = "h12.me/gspec"
+const gspecPath = "h12.io/gspec"
 
 // NewTextReporter creates and initialize a new text reporter using w to write
 // the output.

@@ -5,7 +5,7 @@
 /*
 Package extension contains the types for extending the core package.
 */
-package extension // import "h12.me/gspec/extension"
+package extension // import "h12.io/gspec/extension"
 
 import (
 	"time"

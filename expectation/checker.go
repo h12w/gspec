@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"h12.me/gspec/errors"
+	"h12.io/gspec/errors"
 )
 
 // Checker is the type of function that checks between actual and expected value

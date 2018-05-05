@@ -9,9 +9,9 @@ import (
 	"errors"
 	"testing"
 
-	exp "h12.me/gspec/expectation"
-	ext "h12.me/gspec/extension"
-	. "h12.me/gspec/reporter"
+	exp "h12.io/gspec/expectation"
+	ext "h12.io/gspec/extension"
+	. "h12.io/gspec/reporter"
 )
 
 /*

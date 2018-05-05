@@ -5,7 +5,7 @@
 package core
 
 import (
-	ext "h12.me/gspec/extension"
+	ext "h12.io/gspec/extension"
 )
 
 // S (short for "spec") provides the interface for writing tests and internally

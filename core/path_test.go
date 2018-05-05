@@ -7,7 +7,7 @@ package core
 import (
 	"testing"
 
-	exp "h12.me/gspec/expectation"
+	exp "h12.io/gspec/expectation"
 )
 
 /*

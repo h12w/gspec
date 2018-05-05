@@ -7,7 +7,7 @@ package expectation
 import (
 	"testing"
 
-	"h12.me/gspec/errors"
+	"h12.io/gspec/errors"
 )
 
 func TestExpectTo(t *testing.T) {
